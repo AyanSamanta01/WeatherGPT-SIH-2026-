@@ -1,0 +1,135 @@
+// Prisma Schema for WeatherGPT Database
+// Target DB: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String            @id @default(uuid())
+  name              String
+  email             String            @unique
+  passwordHash      String            @map("password_hash")
+  preferredLanguage String            @default("en") @map("preferred_language")
+  deviceToken       String?           @map("device_token")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  locations         Location[]
+  chatMessages      ChatMessage[]
+  alertPreferences  AlertPreference[]
+
+  @@map("users")
+}
+
+model Location {
+  id               String            @id @default(uuid())
+  userId           String            @map("user_id")
+  name             String
+  latitude         Float
+  longitude        Float
+  isDefault        Boolean           @default(false) @map("is_default")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertPreferences AlertPreference[]
+
+  @@map("locations")
+}
+
+model WeatherRecord {
+  id           String   @id @default(uuid())
+  locationName String   @map("location_name")
+  latitude     Float
+  longitude    Float
+  observedAt   DateTime @map("observed_at")
+  temperature  Float
+  humidity     Float
+  pressure     Float?
+  windSpeed    Float    @map("wind_speed")
+  rainfall     Float    @default(0.0)
+  source       String   @default("open-meteo")
+  rawPayload   Json?    @map("raw_payload")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([latitude, longitude, observedAt])
+  @@map("weather_records")
+}
+
+model Forecast {
+  id                  String   @id @default(uuid())
+  locationName        String   @map("location_name")
+  latitude            Float
+  longitude           Float
+  forecastTime        DateTime @map("forecast_time")
+  temperature         Float
+  rainfallProbability Float    @map("rainfall_probability")
+  precipitation       Float    @default(0.0)
+  windSpeed           Float    @map("wind_speed")
+  source              String   @default("open-meteo")
+  model               String   @default("nwp-standard")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@index([latitude, longitude, forecastTime])
+  @@map("forecasts")
+}
+
+model Alert {
+  id           String   @id @default(uuid())
+  locationName String   @map("location_name")
+  latitude     Float
+  longitude    Float
+  radiusKm     Float    @default(50.0) @map("radius_km")
+  severity     String   // e.g. 'warning', 'severe', 'extreme', 'advisory'
+  alertType    String   @map("alert_type") // e.g. 'flood', 'cyclone', 'heatwave', 'thunderstorm'
+  title        String
+  description  String
+  validFrom    DateTime @map("valid_from")
+  validUntil   DateTime @map("valid_until")
+  source       String   @default("IMD")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([latitude, longitude, validUntil])
+  @@map("alerts")
+}
+
+model ChatMessage {
+  id             String   @id @default(uuid())
+  userId         String?  @map("user_id")
+  conversationId String   @default(uuid()) @map("conversation_id")
+  role           String   // 'user' | 'assistant' | 'system'
+  content        String
+  intent         String?  // e.g. 'forecast_query', 'current_weather', 'climate_trend', 'alert_check'
+  language       String   @default("en")
+  sources        String[] @default([])
+  riskLevel      String?  @map("risk_level") // 'low' | 'moderate' | 'high' | 'extreme'
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
+}
+
+model AlertPreference {
+  id                   String   @id @default(uuid())
+  userId               String   @map("user_id")
+  locationId           String?  @map("location_id")
+  alertTypes           String[] @default(["cyclone", "flood", "heatwave", "thunderstorm"]) @map("alert_types")
+  notificationChannels String[] @default(["in-app", "push"]) @map("notification_channels")
+  deviceToken          String?  @map("device_token")
+  enabled              Boolean  @default(true)
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location             Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@map("alert_preferences")
+}
