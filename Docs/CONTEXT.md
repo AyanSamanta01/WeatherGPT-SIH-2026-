@@ -1,8 +1,372 @@
+# WeatherGPT: AI Context & Project Guide
 
-{
-  "owner": "AyanSamanta01",
-  "repo": "WeatherGPT-SIH-2026-",
-  "branch": "docs/add-context-md",
-  "path": "Docs/CONTEXT.md",
-  "message": "docs: Add comprehensive AI context guide for WeatherGPT project\n\nThis document provides AI/LLM models with essential project context,\narchitecture overview, and development guidance to reduce token consumption\nand improve model understanding of the codebase structure.\"",
-  "content": "# WeatherGPT: AI Context & Project Guide\n\n**Target Audience:** AI/LLM Models | **Purpose:** Token-efficient project understanding | **Last Updated:** August 2026\n\n---\n\n## 🎯 Executive Summary\n\n**WeatherGPT** is a conversational AI platform that integrates meteorological datasets, forecasting models, and disaster warning systems into a natural language interface. It enables users to query weather information, receive forecasts, get alerts, and access climate analysis through chat, voice, and GIS visualization.\n\n**Core Mission:** Transform fragmented weather data across multiple portals into an accessible, intelligent, multi-lingual conversational platform serving farmers, aviation, maritime, urban planning, and disaster management sectors.\n\n---\n\n## 🏗️ Project Architecture at a Glance\n\n### Layered System Design\n\n```\n┌─────────────────────────────────────────────────────────────────┐\n│                    USER INTERFACE LAYER                         │\n│  (React/Mobile UI → Chat, Maps, Alerts, Analytics, Voice)       │\n└──────────────────────────┬──────────────────────────────────────┘\n                          │\n┌──────────────────────────v──────────────────────────────────────┐\n│                  API GATEWAY / BACKEND LAYER                     │\n│         (Node.js/Express | Authentication | Orchestration)      │\n└──────────┬─────────────────┬────────────────┬──────────────────┘\n           │                 │                │\n     ┌─────v─────┐    ┌─────v──────┐   ┌────v──────┐\n     │ AI/LLM    │    │   Weather  │   │ GIS/Alerts│\n     │  Service  │    │   Service  │   │  Service  │\n     │ (Python)  │    │ (ML/Data)  │   │           │\n     └─────┬─────┘    └─────┬──────┘   └────┬──────┘\n           │                │              │\n     ┌─────v─────────────────v──────────────v──────┐\n     │   Trusted Data Sources & APIs               │\n     │  (Weather APIs, NWP Models, GIS Data)       │\n     └─────┬──────────────────────────────────────┘\n           │\n     ┌─────v──────────────────────────┐\n     │  PostgreSQL / MongoDB           │\n     │  (Users, Chat History, Alerts,  │\n     │   Locations, Analytics)         │\n     └────────────────────────────────┘\n```\n\n---\n\n## 📁 Repository Structure (Monorepo)\n\n```\nweathergpt/\n│\n├── frontend/                          # React + Vite + Tailwind CSS\n│   ├── src/\n│   │   ├── components/               # Reusable UI components\n│   │   ├── pages/                    # Page-level components\n│   │   ├── hooks/                    # Custom React hooks\n│   │   ├── services/                 # API client & external service calls\n│   │   ├── store/                    # State management (Redux/Zustand)\n│   │   └── utils/                    # Helper functions\n│   └── package.json\n│\n├── backend/                           # Node.js / Express.js\n│   ├── src/\n│   │   ├── controllers/              # Route handlers\n│   │   ├── routes/                   # API endpoints\n│   │   ├── services/                 # Business logic\n│   │   ├── models/                   # Database schemas\n│   │   ├── middleware/               # Auth, logging, error handling\n│   │   ├── utils/                    # Common utilities\n│   │   └── config/                   # Environment & database config\n│   └── package.json\n│\n├── ai-service/                        # Python (FastAPI)\n│   ├── app/\n│   │   ├── agents/                   # LLM orchestration & agents\n│   │   ├── tools/                    # Tool/function definitions for LLM\n│   │   ├── prompts/                  # System & few-shot prompts\n│   │   └── services/                 # LLM calls, RAG, intent detection\n│   └── requirements.txt\n│\n├── weather-ml/                        # ML & Data Processing\n│   ├── data/                          # Raw & processed datasets\n│   ├── notebooks/                     # EDA & experimentation\n│   ├── models/                        # Trained ML models\n│   └── src/                           # Forecast processing, feature engineering\n│\n├── gis-alerts/                        # GIS & Alert Engine\n│   ├── src/                           # Map visualization, hazard detection\n│   └── data/                          # GIS boundaries, risk layers\n│\n├── Docs/                              # Comprehensive documentation\n│   ├── README.md                      # Problem statement & overview\n│   ├── ARCHITECTURE.md                # System architecture\n│   ├── FOLDER_STRUCTURE.md            # This structure explained\n│   ├── API.md                         # API endpoint reference\n│   ├── DATABASE.md                    # Schema & data models\n│   ├── AI_DESIGN.md                   # AI/LLM design patterns\n│   ├── ALERTS_GIS.md                  # Alert & GIS functionality\n│   ├── DEMO_FLOW.md                   # User journey examples\n│   ├── DEVELOPMENT_PLAN.md            # Phases & timeline\n│   ├── TEAM_TASKS.md                  # Role-based responsibilities\n│   └── CONTEXT.md                     # THIS FILE\n│\n├── docker-compose.yml                 # Container orchestration\n└── .gitignore\n```\n\n---\n\n## 🔄 Data Flow: From Question to Answer\n\n### Complete Request-Response Cycle\n\n```\n┌─────────────────────────────────────────────────────────────────────────┐\n│ PHASE 1: USER INPUT                                                     │\n│ ─────────────────────────────────────────────────────────────────────── │\n│ User: \"Will it rain tomorrow in Mumbai?\"                                 │\n│        [Via Chat, Voice, or Structured Query]                           │\n└────────────────────────┬────────────────────────────────────────────────┘\n                         │\n┌────────────────────────v────────────────────────────────────────────────┐\n│ PHASE 2: BACKEND PROCESSING                                             │\n│ ─────────────────────────────────────────────────────────────────────── │\n│  • Authenticate user                                                     │\n│  • Extract location (user default or explicit)                          │\n│  • Timestamp & timezone handling                                        │\n│  • Build weather query context                                          │\n└────────────────────────┬────────────────────────────────────────────────┘\n                         │\n┌────────────────────────v────────────────────────────────────────────────┐\n│ PHASE 3: AI/LLM SERVICE (Intent & Reasoning)                             │\n│ ─────────────────────────────────────────────────────────────────────── │\n│ 1. Parse natural language question                                       │\n│    └─ Intent: \"forecast_query\" | Scope: \"precipitation\"                 │\n│                                                                          │\n│ 2. Structure request                                                     │\n│    └─ {location: \"Mumbai\", time: \"tomorrow\", var: \"rain\", ...}          │\n│                                                                          │\n│ 3. Select appropriate tool/function (Tool Calling)                       │\n│    └─ [get_forecast, get_current, get_alerts, get_climate, ...]        │\n│                                                                          │\n│ 4. Invoke tool with guardrails (never hallucinate data)                  │\n└────────────────────────┬────────────────────────────────────────────────┘\n                         │\n┌────────────────────────v────────────────────────────────────────────────┐\n│ PHASE 4: WEATHER SERVICE (Data Retrieval)                                │\n│ ─────────────────────────────────────────────────────────────────────── │\n│ • Query weather APIs or NWP models (GFS, WRF, OpenWeatherMap, etc.)      │\n│ • Fetch forecast: Probability of rain, intensity, timing                │\n│ • Include data timestamp & confidence levels                            │\n│ • Filter by location boundaries (GIS)                                    │\n│                                                                          │\n│ Returns: {rain_prob: 0.75, amount: \"15mm\", time: \"18:00-22:00\", ...}   │\n└────────────────────────┬────────────────────────────────────────────────┘\n                         │\n┌────────────────────────v────────────────────────────────────────────────┐\n│ PHASE 5: ANALYTICS & RISK ENGINE (ML)                                    │\n│ ─────────────────────────────────────────────────────────────────────── │\n│ • Compute derived metrics (flooding risk, heat index, etc.)             │\n│ • Cross-reference historical patterns                                   │\n│ • ML-based risk scoring                                                 │\n│ • Check active alerts in that region                                    │\n│                                                                          │\n│ Returns: {risk_level: \"moderate\", advisories: [...], related_alerts: [...]}\n└────────────────────────┬────────────────────────────────────────────────┘\n                         │\n┌────────────────────────v────────────────────────────────────────────────┐\n│ PHASE 6: LLM RESPONSE GENERATION                                         │\n│ ─────────────────────────────────────────────────────────────────────── │\n│ • Ground response in retrieved data (RAG-style)                         │\n│ • Generate natural language explanation                                  │\n│ • Add practical advice (bring umbrella, travel advisory, etc.)          │\n│ • Include data source & confidence disclaimer                           │\n│ • Support multilingual output                                           │\n│                                                                          │\n│ Response:                                                                │\n│ \"Tomorrow evening in Mumbai, there's a 75% chance of rain (15mm).       │\n│  Consider carrying an umbrella. Data source: GFS Model, 6h forecast.\"   │\n└────────────────────────┬────────────────────────────────────────────────┘\n                         │\n┌────────────────────────v────────────────────────────────────────────────┐\n│ PHASE 7: DELIVERY TO USER                                               │\n│ ─────────────────────────────────────────────────────────────────────── │\n│ • Chat response with formatting                                         │\n│ • Related map visualization (precipitation overlay)                     │\n│ • Alert notifications (if applicable)                                   │\n│ • Voice playback (if requested)                                         │\n│ • Save to chat history & user preferences                               │\n└─────────────────────────────────────────────────────────────────────────┘\n```\n\n---\n\n## 🤖 AI/LLM Integration Strategy\n\n### Tool/Function Calling Framework\n\nThe AI service uses **function calling** to ground responses in verified weather data:\n\n```python\n# PSEUDO-CODE: LLM Tool Definitions\n\nTOOLS = [\n    {\n        \"name\": \"get_current_weather\",\n        \"description\": \"Fetch real-time weather for a location\",\n        \"parameters\": {\n            \"location\": str,        # \"Mumbai, India\" or lat/lon\n            \"units\": str            # \"metric\" | \"imperial\"\n        }\n    },\n    {\n        \"name\": \"get_forecast\",\n        \"description\": \"Get weather forecast for next 7-10 days\",\n        \"parameters\": {\n            \"location\": str,\n            \"time_range\": str,      # \"tomorrow\", \"next_week\", \"specific_date\"\n            \"variables\": list       # [\"temperature\", \"precipitation\", \"wind\"]\n        }\n    },\n    {\n        \"name\": \"get_alerts\",\n        \"description\": \"Fetch active weather alerts for a location\",\n        \"parameters\": {\n            \"location\": str,\n            \"alert_type\": str       # \"flood\", \"cyclone\", \"heat\", \"wind\"\n        }\n    },\n    {\n        \"name\": \"get_climate_analysis\",\n        \"description\": \"Historical trends and climate patterns\",\n        \"parameters\": {\n            \"location\": str,\n            \"metric\": str,          # \"temperature_trend\", \"rainfall_pattern\"\n            \"period\": str           # \"monthly\", \"seasonal\", \"yearly\"\n        }\n    }\n]\n\n# PSEUDO-CODE: LLM Processing Loop\n\ndef process_user_query(user_question: str, context: dict):\n    # 1. Intent Detection\n    intent = llm.extract_intent(user_question, context)\n    \n    # 2. Call LLM with tools\n    response = llm.call_with_tools(\n        user_message=user_question,\n        system_prompt=SYSTEM_PROMPT,\n        tools=TOOLS,\n        conversation_history=context['chat_history']\n    )\n    \n    # 3. Handle tool calls iteratively\n    while response.contains_tool_calls():\n        tool_call = response.next_tool_call()\n        tool_result = execute_tool(tool_call.name, tool_call.arguments)\n        \n        # Add tool result back to context\n        response = llm.continue_conversation(\n            tool_result=tool_result,\n            conversation_history=context\n        )\n    \n    # 4. Final response (guaranteed to use fetched data)\n    return response.final_message\n\n# PSEUDO-CODE: System Prompt (Guard Rails)\n\nSYSTEM_PROMPT = \"\"\"\nYou are WeatherGPT, a weather expert AI assistant.\n\nCRITICAL RULES:\n1. NEVER fabricate weather data. Always use tool results.\n2. If data is unavailable, say so explicitly.\n3. Include source and timestamp with every forecast.\n4. Distinguish between official warnings and AI-generated advisories.\n5. Show uncertainty: \"75% confidence\", \"might change\", etc.\n6. Respond in the user's language (detected from query or profile).\n7. Be concise for mobile; verbose for desktop (detect device type).\n8. For critical alerts (floods, cyclones), escalate to human warning.\n\nCONTEXT:\n- User Location: {user_location}\n- User Language: {user_language}\n- Current Time: {timestamp}\n- Recent Chat: {chat_history_summary}\n\"\"\"\n```\n\n### Retrieval-Augmented Generation (RAG) Pipeline\n\n```\nQuery → Embed → Search Weather Vector DB → Retrieve Context → Prompt → LLM → Answer\n```\n\n**Use Case:**\n- User asks: \"How does this monsoon compare to last year?\"\n- System retrieves historical rainfall data\n- LLM synthesizes comparison using both current and historical data\n- Response grounded in verified metrics\n\n---\n\n## 🗂️ Key Module Explanations\n\n### Frontend Module\n- **Purpose:** Provide accessible, responsive UI for all user interactions\n- **Primary Tech:** React, Vite, Tailwind CSS\n- **Key Features:**\n  - Chat interface with message history\n  - Real-time weather cards & interactive forecasts\n  - GIS map overlay with alerts\n  - Voice input/output controls\n  - Accessibility (WCAG 2.1) for rural users\n  - Multi-language support (Hindi, Tamil, Telugu, Kannada, etc.)\n\n### Backend Module\n- **Purpose:** API orchestration, authentication, business logic\n- **Primary Tech:** Node.js, Express.js\n- **Responsibilities:**\n  - User authentication & session management\n  - Route all requests to appropriate services\n  - Manage database transactions\n  - Handle rate limiting & caching\n  - WebSocket management for real-time updates\n  - Generate API responses in standardized format\n\n### AI Service Module\n- **Purpose:** LLM integration & conversational logic\n- **Primary Tech:** Python, FastAPI, LangChain/LlamaIndex (optional)\n- **Core Functions:**\n  1. **Query Understanding:** Parse user intent from natural language\n  2. **Tool Routing:** Select appropriate weather/analytics tools\n  3. **Response Generation:** LLM-based synthesis of grounded data\n  4. **Multilingual Support:** Translate prompts, responses\n}
+**Target Audience:** AI/LLM Models | **Purpose:** Token-efficient project understanding | **Last Updated:** August 2026
+
+---
+
+## 🎯 Executive Summary
+
+**WeatherGPT** is a conversational AI platform that integrates meteorological datasets, forecasting models, and disaster warning systems into a natural language interface. It enables users to query weather information, receive forecasts, get alerts, and access climate analysis through chat, voice, and GIS visualization.
+
+**Core Mission:** Transform fragmented weather data across multiple portals into an accessible, intelligent, multi-lingual conversational platform serving farmers, aviation, maritime, urban planning, and disaster management sectors.
+
+---
+
+## 🏗️ Project Architecture at a Glance
+
+### Layered System Design
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    USER INTERFACE LAYER                         │
+│  (React/Mobile UI → Chat, Maps, Alerts, Analytics, Voice)       │
+└──────────────────────────┬──────────────────────────────────────┘
+                          │
+┌──────────────────────────v──────────────────────────────────────┐
+│                  API GATEWAY / BACKEND LAYER                     │
+│         (Node.js/Express | Authentication | Orchestration)      │
+└──────────┬─────────────────┬────────────────┬──────────────────┘
+           │                 │                │
+     ┌─────v─────┐    ┌─────v──────┐   ┌────v──────┐
+     │ AI/LLM    │    │   Weather  │   │ GIS/Alerts│
+     │  Service  │    │   Service  │   │  Service  │
+     │ (Python)  │    │ (ML/Data)  │   │           │
+     └─────┬─────┘    └─────┬──────┘   └────┬──────┘
+           │                │              │
+     ┌─────v─────────────────v──────────────v──────┐
+     │   Trusted Data Sources & APIs               │
+     │  (Weather APIs, NWP Models, GIS Data)       │
+     └─────┬──────────────────────────────────────┘
+           │
+     ┌─────v──────────────────────────┐
+     │  PostgreSQL / MongoDB           │
+     │  (Users, Chat History, Alerts,  │
+     │   Locations, Analytics)         │
+     └────────────────────────────────┘
+```
+
+---
+
+## 📁 Repository Structure (Monorepo)
+
+```
+weathergpt/
+│
+├── frontend/                          # React + Vite + Tailwind CSS
+│   ├── src/
+│   │   ├── components/               # Reusable UI components
+│   │   ├── pages/                    # Page-level components
+│   │   ├── hooks/                    # Custom React hooks
+│   │   ├── services/                 # API client & external service calls
+│   │   ├── store/                    # State management (Redux/Zustand)
+│   │   └── utils/                    # Helper functions
+│   └── package.json
+│
+├── backend/                           # Node.js / Express.js
+│   ├── prisma/
+│   │   ├── schema.prisma             # PostgreSQL schema (Users, Locations, Records, Alerts, Chat)
+│   │   └── seed.js                   # Development seed script
+│   ├── src/
+│   │   ├── controllers/              # Route handlers (auth, weather, alerts, chat, climate)
+│   │   ├── routes/                   # API endpoints (v1 routes)
+│   │   ├── services/                 # Business logic (weather, alerts, chat, climate, location)
+│   │   ├── providers/                # Weather provider integrations (Open-Meteo, OpenWeather, IMD)
+│   │   ├── middleware/               # Auth (JWT), logging, error handling, validation
+│   │   ├── utils/                    # Common utilities & logger
+│   │   └── config/                   # Environment, database & Swagger config
+│   └── package.json
+│
+├── ai-service/                        # Python (FastAPI)
+│   ├── app/
+│   │   ├── agents/                   # LLM orchestration & agents
+│   │   ├── tools/                    # Tool/function definitions for LLM
+│   │   ├── prompts/                  # System & few-shot prompts
+│   │   └── services/                 # LLM calls, RAG, intent detection
+│   └── requirements.txt
+│
+├── weather-ml/                        # ML & Data Processing
+│   ├── data/                          # Raw & processed datasets
+│   ├── notebooks/                     # EDA & experimentation
+│   ├── models/                        # Trained ML models
+│   └── src/                           # Forecast processing, feature engineering
+│
+├── gis-alerts/                        # GIS & Alert Engine
+│   ├── src/                           # Map visualization, hazard detection
+│   └── data/                          # GIS boundaries, risk layers
+│
+├── Docs/                              # Comprehensive documentation
+│   ├── README.md                      # Problem statement & overview
+│   ├── ARCHITECTURE.md                # System architecture
+│   ├── FOLDER_STRUCTURE.md            # This structure explained
+│   ├── API.md                         # API endpoint reference
+│   ├── DATABASE.md                    # Schema & data models
+│   ├── AI_DESIGN.md                   # AI/LLM design patterns
+│   ├── ALERTS_GIS.md                  # Alert & GIS functionality
+│   ├── DEMO_FLOW.md                   # User journey examples
+│   ├── DEVELOPMENT_PLAN.md            # Phases & timeline
+│   ├── TEAM_TASKS.md                  # Role-based responsibilities
+│   └── CONTEXT.md                     # THIS FILE
+│
+├── docker-compose.yml                 # Container orchestration
+└── .gitignore
+```
+
+---
+
+## 🔄 Data Flow: From Question to Answer
+
+### Complete Request-Response Cycle
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ PHASE 1: USER INPUT                                                     │
+│ ─────────────────────────────────────────────────────────────────────── │
+│ User: "Will it rain tomorrow in Mumbai?"                                 │
+│        [Via Chat, Voice, or Structured Query]                           │
+└────────────────────────┬────────────────────────────────────────────────┘
+                         │
+┌────────────────────────v────────────────────────────────────────────────┐
+│ PHASE 2: BACKEND PROCESSING                                             │
+│ ─────────────────────────────────────────────────────────────────────── │
+│  • Authenticate user                                                     │
+│  • Extract location (user default or explicit)                          │
+│  • Timestamp & timezone handling                                        │
+│  • Build weather query context                                          │
+└────────────────────────┬────────────────────────────────────────────────┘
+                         │
+┌────────────────────────v────────────────────────────────────────────────┐
+│ PHASE 3: AI/LLM SERVICE (Intent & Reasoning)                             │
+│ ─────────────────────────────────────────────────────────────────────── │
+│ 1. Parse natural language question                                       │
+│    └─ Intent: "forecast_query" | Scope: "precipitation"                 │
+│                                                                          │
+│ 2. Structure request                                                     │
+│    └─ {location: "Mumbai", time: "tomorrow", var: "rain", ...}          │
+│                                                                          │
+│ 3. Select appropriate tool/function (Tool Calling)                       │
+│    └─ [get_forecast, get_current, get_alerts, get_climate, ...]        │
+│                                                                          │
+│ 4. Invoke tool with guardrails (never hallucinate data)                  │
+└────────────────────────┬────────────────────────────────────────────────┘
+                         │
+┌────────────────────────v────────────────────────────────────────────────┐
+│ PHASE 4: WEATHER SERVICE (Data Retrieval)                                │
+│ ─────────────────────────────────────────────────────────────────────── │
+│ • Query weather APIs or NWP models (GFS, WRF, OpenWeatherMap, etc.)      │
+│ • Fetch forecast: Probability of rain, intensity, timing                │
+│ • Include data timestamp & confidence levels                            │
+│ • Filter by location boundaries (GIS)                                    │
+│                                                                          │
+│ Returns: {rain_prob: 0.75, amount: "15mm", time: "18:00-22:00", ...}   │
+└────────────────────────┬────────────────────────────────────────────────┘
+                         │
+┌────────────────────────v────────────────────────────────────────────────┐
+│ PHASE 5: ANALYTICS & RISK ENGINE (ML)                                    │
+│ ─────────────────────────────────────────────────────────────────────── │
+│ • Compute derived metrics (flooding risk, heat index, etc.)             │
+│ • Cross-reference historical patterns                                   │
+│ • ML-based risk scoring                                                 │
+│ • Check active alerts in that region                                    │
+│                                                                          │
+│ Returns: {risk_level: "moderate", advisories: [...], related_alerts: [...]}
+└────────────────────────┬────────────────────────────────────────────────┘
+                         │
+┌────────────────────────v────────────────────────────────────────────────┐
+│ PHASE 6: LLM RESPONSE GENERATION                                         │
+│ ─────────────────────────────────────────────────────────────────────── │
+│ • Ground response in retrieved data (RAG-style)                         │
+│ • Generate natural language explanation                                  │
+│ • Add practical advice (bring umbrella, travel advisory, etc.)          │
+│ • Include data source & confidence disclaimer                           │
+│ • Support multilingual output                                           │
+│                                                                          │
+│ Response:                                                                │
+│ "Tomorrow evening in Mumbai, there's a 75% chance of rain (15mm).       │
+│  Consider carrying an umbrella. Data source: GFS Model, 6h forecast."   │
+└────────────────────────┬────────────────────────────────────────────────┘
+                         │
+┌────────────────────────v────────────────────────────────────────────────┐
+│ PHASE 7: DELIVERY TO USER                                               │
+│ ─────────────────────────────────────────────────────────────────────── │
+│ • Chat response with formatting                                         │
+│ • Related map visualization (precipitation overlay)                     │
+│ • Alert notifications (if applicable)                                   │
+│ • Voice playback (if requested)                                         │
+│ • Save to chat history & user preferences                               │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🤖 AI/LLM Integration Strategy
+
+### Tool/Function Calling Framework
+
+The AI service uses **function calling** to ground responses in verified weather data:
+
+```python
+# PSEUDO-CODE: LLM Tool Definitions
+
+TOOLS = [
+    {
+        "name": "get_current_weather",
+        "description": "Fetch real-time weather for a location",
+        "parameters": {
+            "location": str,        # "Mumbai, India" or lat/lon
+            "units": str            # "metric" | "imperial"
+        }
+    },
+    {
+        "name": "get_forecast",
+        "description": "Get weather forecast for next 7-10 days",
+        "parameters": {
+            "location": str,
+            "time_range": str,      # "tomorrow", "next_week", "specific_date"
+            "variables": list       # ["temperature", "precipitation", "wind"]
+        }
+    },
+    {
+        "name": "get_alerts",
+        "description": "Fetch active weather alerts for a location",
+        "parameters": {
+            "location": str,
+            "alert_type": str       # "flood", "cyclone", "heat", "wind"
+        }
+    },
+    {
+        "name": "get_climate_analysis",
+        "description": "Historical trends and climate patterns",
+        "parameters": {
+            "location": str,
+            "metric": str,          # "temperature_trend", "rainfall_pattern"
+            "period": str           # "monthly", "seasonal", "yearly"
+        }
+    }
+]
+
+# PSEUDO-CODE: LLM Processing Loop
+
+def process_user_query(user_question: str, context: dict):
+    # 1. Intent Detection
+    intent = llm.extract_intent(user_question, context)
+    
+    # 2. Call LLM with tools
+    response = llm.call_with_tools(
+        user_message=user_question,
+        system_prompt=SYSTEM_PROMPT,
+        tools=TOOLS,
+        conversation_history=context['chat_history']
+    )
+    
+    # 3. Handle tool calls iteratively
+    while response.contains_tool_calls():
+        tool_call = response.next_tool_call()
+        tool_result = execute_tool(tool_call.name, tool_call.arguments)
+        
+        # Add tool result back to context
+        response = llm.continue_conversation(
+            tool_result=tool_result,
+            conversation_history=context
+        )
+    
+    # 4. Final response (guaranteed to use fetched data)
+    return response.final_message
+
+# PSEUDO-CODE: System Prompt (Guard Rails)
+
+SYSTEM_PROMPT = """
+You are WeatherGPT, a weather expert AI assistant.
+
+CRITICAL RULES:
+1. NEVER fabricate weather data. Always use tool results.
+2. If data is unavailable, say so explicitly.
+3. Include source and timestamp with every forecast.
+4. Distinguish between official warnings and AI-generated advisories.
+5. Show uncertainty: "75% confidence", "might change", etc.
+6. Respond in the user's language (detected from query or profile).
+7. Be concise for mobile; verbose for desktop (detect device type).
+8. For critical alerts (floods, cyclones), escalate to human warning.
+
+CONTEXT:
+- User Location: {user_location}
+- User Language: {user_language}
+- Current Time: {timestamp}
+- Recent Chat: {chat_history_summary}
+"""
+```
+
+### Retrieval-Augmented Generation (RAG) Pipeline
+
+```
+Query → Embed → Search Weather Vector DB → Retrieve Context → Prompt → LLM → Answer
+```
+
+**Use Case:**
+- User asks: "How does this monsoon compare to last year?"
+- System retrieves historical rainfall data
+- LLM synthesizes comparison using both current and historical data
+- Response grounded in verified metrics
+
+---
+
+## 🗂️ Key Module Explanations
+
+### Frontend Module
+- **Purpose:** Provide accessible, responsive UI for all user interactions
+- **Primary Tech:** React, Vite, Tailwind CSS
+- **Key Features:**
+  - Chat interface with message history
+  - Real-time weather cards & interactive forecasts
+  - GIS map overlay with alerts
+  - Voice input/output controls
+  - Accessibility (WCAG 2.1) for rural users
+  - Multi-language support (Hindi, Tamil, Telugu, Kannada, etc.)
+
+### Backend Module
+- **Purpose:** API orchestration, authentication, business logic
+- **Primary Tech:** Node.js, Express.js, Prisma ORM
+- **Database Schema (PostgreSQL):**
+  - `User`: User profile, credentials, preferred language, device tokens
+  - `Location`: Saved & default favorite user locations
+  - `WeatherRecord`: Point-in-time observations and historical weather logs
+  - `Forecast`: NWP model predictions and rain probabilities
+  - `Alert`: CAP-compatible disaster warnings (flood, cyclone, heatwave, thunderstorm)
+  - `ChatMessage`: Conversational history with detected intents and sources
+  - `AlertPreference`: Channel subscriptions and notification filters
+- **Weather Providers Integration:**
+  - `OpenMeteoProvider` (default free NWP & forecast source)
+  - `OpenWeatherProvider` (secondary fallback)
+  - `IMDProvider` (national agency bulletins and advisories)
+- **API Endpoints (`/api/v1`):**
+  - `/auth` (`register`, `login`, `me`)
+  - `/weather` (`current`, `forecast`, `historical`)
+  - `/alerts` (`active`, `all`, `preferences`)
+  - `/chat` (`query`, `history/:conversationId`)
+  - `/locations` (CRUD user locations)
+  - `/climate` (`trends`)
+  - Swagger UI accessible at `/api-docs`
+
+### AI Service Module
+- **Purpose:** LLM integration & conversational logic
+- **Primary Tech:** Python, FastAPI, LangChain/LlamaIndex (optional)
+- **Core Functions:**
+  1. **Query Understanding:** Parse user intent from natural language
+  2. **Tool Routing:** Select appropriate weather/analytics tools
+  3. **Response Generation:** LLM-based synthesis of grounded data
+  4. **Multilingual Support:** Translate prompts, responses
+
+### Weather-ML Module
+- **Purpose:** Meteorological data ingestion, NWP model post-processing, and risk analytics
+- **Primary Tech:** Python (Pandas, NumPy, Scikit-learn, Xarray)
+- **Core Functions:**
+  1. Process GFS, WRF, and IMD gridded forecast datasets
+  2. Compute derived indices (Heat Index, Flash Flood Guidance, Fire Weather Index)
+  3. Historical baseline comparisons and climate anomaly detection
+
+### GIS & Alerts Module
+- **Purpose:** Spatial geofencing, hazard visualization, and CAP alert distribution
+- **Primary Tech:** PostGIS / Turf.js / Leaflet
+- **Core Functions:**
+  1. Point-in-polygon checks for active disaster zones
+  2. Multi-tier alert severity management (`advisory`, `warning`, `severe`, `extreme`)
+  3. GeoJSON overlays for precipitation radar, wind vectors, and cyclone tracks
