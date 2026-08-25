@@ -11,8 +11,11 @@ const climateRoutes = require('./climateRoutes');
 router.use('/auth', authRoutes);
 router.use('/weather', weatherRoutes);
 router.use('/chat', chatRoutes);
+router.use('/ai', chatRoutes);
 router.use('/alerts', alertRoutes);
 router.use('/locations', locationRoutes);
 router.use('/climate', climateRoutes);
+router.use('/analytics', climateRoutes);
 
 module.exports = router;
+
