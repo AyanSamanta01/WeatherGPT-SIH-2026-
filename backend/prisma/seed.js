@@ -63,6 +63,12 @@ async function main() {
         alertType: 'cyclone',
         title: 'Deep Depression warning over Bay of Bengal',
         description: 'Wind speeds of 50-65 km/h with heavy squalls expected along coastal regions.',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [[86.5, 20.5], [88.5, 20.5], [88.5, 22.5], [86.5, 22.5], [86.5, 20.5]]
+          ]
+        },
         validFrom: new Date(),
         validUntil: new Date(Date.now() + 72 * 3600 * 1000),
         source: 'IMD'
@@ -76,6 +82,7 @@ async function main() {
         alertType: 'heatwave',
         title: 'Heatwave condition advisory',
         description: 'Daytime temperatures exceeding 42°C with low humidity. Stay hydrated.',
+        geometry: null,
         validFrom: new Date(),
         validUntil: new Date(Date.now() + 48 * 3600 * 1000),
         source: 'IMD'
@@ -85,6 +92,38 @@ async function main() {
   });
 
   console.log('⚠️ Seeded sample alerts.');
+
+  // Seed Sample Conversation & Messages
+  const demoConv = await prisma.conversation.create({
+    data: {
+      userId: demoUser.id,
+      title: 'Monsoon forecast inquiry for Kolkata',
+      messages: {
+        create: [
+          {
+            userId: demoUser.id,
+            role: 'user',
+            content: 'Will it rain tomorrow in Kolkata?',
+            intent: 'forecast_query',
+            language: 'en',
+            sources: ['open-meteo'],
+            riskLevel: 'low'
+          },
+          {
+            userId: demoUser.id,
+            role: 'assistant',
+            content: 'Forecast indicates temperatures between 26.5°C and 32.0°C with moderate cloud cover and 20% chance of light drizzle.',
+            intent: 'forecast_query',
+            language: 'en',
+            sources: ['open-meteo'],
+            riskLevel: 'low'
+          }
+        ]
+      }
+    }
+  });
+
+  console.log(`💬 Seeded sample conversation: "${demoConv.title}"`);
   console.log('✅ Database seeding complete!');
 }
 

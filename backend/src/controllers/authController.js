@@ -160,9 +160,73 @@ const getMe = async (req, res, next) => {
   }
 };
 
+const updateMe = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return errorResponse(res, 'Unauthenticated', 401);
+    }
+
+    const { name, preferredLanguage, deviceToken, currentPassword, newPassword } = req.body;
+    const updateData = {};
+
+    if (name) updateData.name = name;
+    if (preferredLanguage) updateData.preferredLanguage = preferredLanguage;
+    if (deviceToken !== undefined) updateData.deviceToken = deviceToken;
+
+    if (prisma && prisma.user) {
+      try {
+        const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+        if (!user) {
+          return errorResponse(res, 'User not found', 404);
+        }
+
+        if (newPassword) {
+          if (!currentPassword) {
+            return errorResponse(res, 'Current password is required to set new password', 400);
+          }
+          const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+          if (!isMatch) {
+            return errorResponse(res, 'Current password does not match', 400);
+          }
+          updateData.passwordHash = await bcrypt.hash(newPassword, 10);
+        }
+
+        const updated = await prisma.user.update({
+          where: { id: req.user.id },
+          data: updateData,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            preferredLanguage: true,
+            deviceToken: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        });
+
+        return successResponse(res, { user: updated }, 'Profile updated successfully');
+      } catch (dbErr) {
+        if (dbErr.name === 'PrismaClientInitializationError' || dbErr.message.includes('Can\'t reach database server')) {
+          const updated = { ...req.user, ...updateData, updatedAt: new Date() };
+          return successResponse(res, { user: updated }, 'Profile updated successfully (dev mode)');
+        }
+        throw dbErr;
+      }
+    }
+
+    const updated = { ...req.user, ...updateData, updatedAt: new Date() };
+    return successResponse(res, { user: updated }, 'Profile updated successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   signup,
   login,
   logout,
-  getMe
+  getMe,
+  updateMe
 };
+

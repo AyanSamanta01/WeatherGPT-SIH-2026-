@@ -21,6 +21,7 @@ model User {
   updatedAt         DateTime          @updatedAt @map("updated_at")
 
   locations         Location[]
+  conversations     Conversation[]
   chatMessages      ChatMessage[]
   alertPreferences  AlertPreference[]
 
@@ -90,6 +91,7 @@ model Alert {
   alertType    String   @map("alert_type") // e.g. 'flood', 'cyclone', 'heatwave', 'thunderstorm'
   title        String
   description  String
+  geometry     Json?    // Optional GeoJSON polygon / boundary for GIS overlays
   validFrom    DateTime @map("valid_from")
   validUntil   DateTime @map("valid_until")
   source       String   @default("IMD")
@@ -99,19 +101,34 @@ model Alert {
   @@map("alerts")
 }
 
-model ChatMessage {
-  id             String   @id @default(uuid())
-  userId         String?  @map("user_id")
-  conversationId String   @default(uuid()) @map("conversation_id")
-  role           String   // 'user' | 'assistant' | 'system'
-  content        String
-  intent         String?  // e.g. 'forecast_query', 'current_weather', 'climate_trend', 'alert_check'
-  language       String   @default("en")
-  sources        String[] @default([])
-  riskLevel      String?  @map("risk_level") // 'low' | 'moderate' | 'high' | 'extreme'
-  createdAt      DateTime @default(now()) @map("created_at")
+model Conversation {
+  id        String        @id @default(uuid())
+  userId    String?       @map("user_id")
+  title     String        @default("New Conversation")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
 
-  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+
+  @@index([userId, updatedAt])
+  @@map("conversations")
+}
+
+model ChatMessage {
+  id             String        @id @default(uuid())
+  userId         String?       @map("user_id")
+  conversationId String?       @map("conversation_id")
+  role           String        // 'user' | 'assistant' | 'system'
+  content        String
+  intent         String?       // e.g. 'forecast_query', 'current_weather', 'climate_trend', 'alert_check'
+  language       String        @default("en")
+  sources        String[]      @default([])
+  riskLevel      String?       @map("risk_level") // 'low' | 'moderate' | 'high' | 'extreme'
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
   @@map("chat_messages")

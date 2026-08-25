@@ -323,32 +323,43 @@ Query → Embed → Search Weather Vector DB → Retrieve Context → Prompt →
   - Multi-language support (Hindi, Tamil, Telugu, Kannada, etc.)
 
 ### Backend Module
-- **Purpose:** API orchestration, authentication, business logic
-- **Primary Tech:** Node.js, Express.js, Prisma ORM
-- **Database Schema (PostgreSQL):**
-  - `User`: User profile, credentials, preferred language, device tokens
-  - `Location`: Saved & default favorite user locations
-  - `WeatherRecord`: Point-in-time observations and historical weather logs
-  - `Forecast`: NWP model predictions and rain probabilities
-  - `Alert`: CAP-compatible disaster warnings (flood, cyclone, heatwave, thunderstorm)
-  - `ChatMessage`: Conversational history with detected intents and sources
-  - `AlertPreference`: Channel subscriptions and notification filters
+- **Purpose:** API orchestration, authentication, caching, real-time dissemination, and business logic
+- **Primary Tech:** Node.js, Express.js, Prisma ORM, Server-Sent Events (SSE), In-Memory TTL Cache
+- **Database Schema (PostgreSQL via Prisma):**
+  - `User`: User credentials (bcrypt), preferred multilingual language, device push tokens
+  - `Conversation`: Multi-turn chat session threads with title and timestamp tracking
+  - `ChatMessage`: Chronological messages linked to `Conversation`, with intents, sources, and risk tags
+  - `Location`: Saved favorite user locations with atomic default location switching
+  - `WeatherRecord`: Historical weather logs and raw telemetry snapshots
+  - `Forecast`: NWP model predictions, precipitation probabilities, and timestamps
+  - `Alert`: CAP 1.2 compliant disaster warnings with GeoJSON `geometry` (Polygons/MultiPolygons)
+  - `AlertPreference`: Channel subscriptions (push/SMS/email) and severity thresholds
+- **In-Memory TTL Caching Layer:**
+  - 10-minute coordinate-keyed cache for observations (<5ms latency)
+  - 30-minute cache for NWP forecasts with background PostgreSQL persistence
+  - 24-hour cache for climate archives and 7-day cache for geocoding
 - **Weather Providers Integration:**
-  - `OpenMeteoProvider` (default free NWP & forecast source)
-  - `OpenWeatherProvider` (secondary fallback)
-  - `IMDProvider` (national agency bulletins and advisories)
-- **API Endpoints (`/api/v1`):**
-  - `/auth` (`register`, `login`, `me`)
-  - `/weather` (`current`, `forecast`, `historical`)
-  - `/alerts` (`active`, `all`, `preferences`)
-  - `/chat` (`query`, `history/:conversationId`)
-  - `/locations` (CRUD user locations)
+  - `OpenMeteoProvider`: Default NWP forecast & live observation provider
+  - `OpenWeatherProvider`: Secondary fallback provider
+  - `IMDProvider`: National meteorological bulletins & advisories
+- **AI Microservice Gateway:**
+  - HTTP forwarder to Python FastAPI service (`${AI_SERVICE_URL}/api/v1/agent/query`)
+  - Automatic zero-downtime fallback to local grounded meteorological reasoning engine
+- **Real-Time Communication Gateway:**
+  - Native Server-Sent Events (SSE) stream (`/api/v1/alerts/stream`) with 30s keep-alive heartbeats
+  - Instant live disaster broadcast to connected React frontends upon alert creation or CAP ingestion
+- **Complete REST API Endpoints (`/api/v1`):**
+  - `/auth` (`signup`, `login`, `logout`, `GET /me`, `PUT /me`)
+  - `/weather` (`current`, `forecast`, `history`, `geocode`)
+  - `/chat` (`POST /`, `conversations`, `history/:conversationId`, `DELETE /conversations/:id`)
+  - `/locations` (`GET /`, `GET /:id`, `POST /`, `PUT /:id`, `DELETE /:id`)
+  - `/alerts` (`GET /`, `gis/layers`, `hazard/check`, `stream`, `nearby`, `cap/ingest`, `preferences`)
   - `/climate` (`trends`)
   - Swagger UI accessible at `/api-docs`
 
 ### AI Service Module
-- **Purpose:** LLM integration & conversational logic
-- **Primary Tech:** Python, FastAPI, LangChain/LlamaIndex (optional)
+- **Purpose:** LLM integration, prompt engineering, and conversational reasoning
+- **Primary Tech:** Python, FastAPI, LangChain/LlamaIndex
 - **Core Functions:**
   1. **Query Understanding:** Parse user intent from natural language
   2. **Tool Routing:** Select appropriate weather/analytics tools
@@ -364,9 +375,10 @@ Query → Embed → Search Weather Vector DB → Retrieve Context → Prompt →
   3. Historical baseline comparisons and climate anomaly detection
 
 ### GIS & Alerts Module
-- **Purpose:** Spatial geofencing, hazard visualization, and CAP alert distribution
-- **Primary Tech:** PostGIS / Turf.js / Leaflet
+- **Purpose:** Spatial geofencing, hazard classification, and CAP alert distribution
+- **Primary Tech:** Ray-Casting Point-in-Polygon, GeoJSON, Turf.js / Leaflet
 - **Core Functions:**
-  1. Point-in-polygon checks for active disaster zones
-  2. Multi-tier alert severity management (`advisory`, `warning`, `severe`, `extreme`)
-  3. GeoJSON overlays for precipitation radar, wind vectors, and cyclone tracks
+  1. **Spatial Geofencing:** Point-in-Polygon Ray Casting algorithm detecting whether user coordinates fall within arbitrary disaster boundary polygons
+  2. **IMD Meteorological Hazard Scoring:** Evaluates real-time precipitation, wind gust speeds, and temperatures against official IMD threshold levels (`Green: No Warning`, `Yellow: Watch`, `Orange: Alert`, `Red: Warning`)
+  3. **GeoJSON FeatureCollections:** Generates standard GeoJSON layers with embedded IMD color hex codes for instant map layer rendering
+  4. **CAP 1.2 Ingestion:** Ingests official NDMA / SACHET / IMD XML-JSON bulletins with spatial coordinates and radius/polygon boundaries

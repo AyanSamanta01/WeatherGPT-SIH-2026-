@@ -13,7 +13,17 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required')
 });
 
+const updateProfileSchema = z.object({
+  name: z.string().min(2).optional(),
+  preferredLanguage: z.string().optional(),
+  deviceToken: z.string().optional(),
+  currentPassword: z.string().optional(),
+  newPassword: z.string().min(6).optional()
+});
+
 module.exports = {
   signupSchema,
-  loginSchema
+  loginSchema,
+  updateProfileSchema
 };
+
