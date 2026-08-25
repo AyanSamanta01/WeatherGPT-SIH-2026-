@@ -76,8 +76,9 @@ const testSuite = async () => {
     }
   });
 
-  // Test 6: Chat Grounding endpoint
-  await runTest('POST /api/v1/chat returns grounded response with sources and risk', async () => {
+  // Test 6: Chat Grounding endpoint & Conversation generation
+  let createdConversationId;
+  await runTest('POST /api/v1/chat returns grounded response with sources, risk, and conversationId', async () => {
     const res = await request('/api/v1/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -88,8 +89,35 @@ const testSuite = async () => {
         language: 'en'
       })
     });
-    if (res.status !== 200 || !res.data.data.answer || !res.data.data.sources) {
+    if (res.status !== 200 || !res.data.data.answer || !res.data.data.sources || !res.data.data.conversationId) {
       throw new Error(`Invalid chat response: ${JSON.stringify(res)}`);
+    }
+    createdConversationId = res.data.data.conversationId;
+  });
+
+  // Test 6b: Get Conversations
+  await runTest('GET /api/v1/chat/conversations lists conversations', async () => {
+    const res = await request('/api/v1/chat/conversations');
+    if (res.status !== 200 || !Array.isArray(res.data.data) || res.data.data.length === 0) {
+      throw new Error(`Invalid conversations response: ${JSON.stringify(res)}`);
+    }
+  });
+
+  // Test 6c: Get Conversation History
+  await runTest('GET /api/v1/chat/history/:conversationId retrieves message history', async () => {
+    const res = await request(`/api/v1/chat/history/${createdConversationId}`);
+    if (res.status !== 200 || !Array.isArray(res.data.data) || res.data.data.length < 2) {
+      throw new Error(`Invalid history response: ${JSON.stringify(res)}`);
+    }
+  });
+
+  // Test 6d: Delete Conversation
+  await runTest('DELETE /api/v1/chat/conversations/:conversationId removes conversation', async () => {
+    const res = await request(`/api/v1/chat/conversations/${createdConversationId}`, {
+      method: 'DELETE'
+    });
+    if (res.status !== 200 || !res.data.data.success) {
+      throw new Error(`Delete conversation failed: ${JSON.stringify(res)}`);
     }
   });
 
@@ -101,11 +129,88 @@ const testSuite = async () => {
     }
   });
 
-  // Test 8: Nearby Alerts endpoint
-  await runTest('GET /api/v1/alerts/nearby?lat=21.5&lon=87.5 returns nearby alerts', async () => {
+  // Test 7b: GIS GeoJSON FeatureCollection Layer
+  await runTest('GET /api/v1/alerts/gis/layers returns standard GeoJSON FeatureCollection', async () => {
+    const res = await request('/api/v1/alerts/gis/layers');
+    if (
+      res.status !== 200 ||
+      res.data.data.type !== 'FeatureCollection' ||
+      !Array.isArray(res.data.data.features) ||
+      res.data.data.features.length === 0
+    ) {
+      throw new Error(`Invalid GeoJSON response: ${JSON.stringify(res)}`);
+    }
+    const firstFeature = res.data.data.features[0];
+    if (!firstFeature.properties.strokeColor || !firstFeature.properties.imdColorCode) {
+      throw new Error(`Missing IMD styling properties in GeoJSON feature: ${JSON.stringify(firstFeature)}`);
+    }
+  });
+
+  // Test 7c: Live Meteorological Hazard Evaluation & IMD Color Code
+  await runTest('GET /api/v1/alerts/hazard/check returns hazard classification and safety advisories', async () => {
+    const res = await request('/api/v1/alerts/hazard/check?lat=22.57&lon=88.36');
+    if (
+      res.status !== 200 ||
+      !res.data.data.hazardEvaluation ||
+      !res.data.data.hazardEvaluation.colorCode ||
+      !Array.isArray(res.data.data.hazardEvaluation.advisories)
+    ) {
+      throw new Error(`Invalid hazard check response: ${JSON.stringify(res)}`);
+    }
+  });
+
+  // Test 7d: CAP 1.2 Alert Ingestion
+  await runTest('POST /api/v1/alerts/cap/ingest ingests CAP 1.2 disaster alert with Polygon', async () => {
+    const res = await request('/api/v1/alerts/cap/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        headline: 'NDMA Warning: Flash Flood in Mahanadi Basin',
+        event: 'flood',
+        severity: 'severe',
+        areaDesc: 'Mahanadi Delta Catchment',
+        latitude: 20.45,
+        longitude: 85.88,
+        radiusKm: 75,
+        polygon: [
+          [85.0, 20.0],
+          [86.5, 20.0],
+          [86.5, 21.0],
+          [85.0, 21.0],
+          [85.0, 20.0]
+        ],
+        senderName: 'NDMA-IMD-DisasterGateway'
+      })
+    });
+    if (res.status !== 201 || !res.data.data.id || res.data.data.alertType !== 'flood') {
+      throw new Error(`CAP Ingestion failed: ${JSON.stringify(res)}`);
+    }
+  });
+
+  // Test 7e: SSE Real-Time Alert Stream Connection
+  await runTest('GET /api/v1/alerts/stream initiates text/event-stream connection', async () => {
+    const http = require('http');
+    await new Promise((resolve, reject) => {
+      const req = http.get(`http://localhost:${PORT}/api/v1/alerts/stream`, (res) => {
+        if (res.statusCode !== 200) {
+          return reject(new Error(`Expected 200, got ${res.statusCode}`));
+        }
+        if (!res.headers['content-type']?.includes('text/event-stream')) {
+          return reject(new Error(`Expected text/event-stream header, got ${res.headers['content-type']}`));
+        }
+        req.destroy();
+        resolve();
+      });
+      req.on('error', reject);
+    });
+  });
+
+  // Test 8: Nearby Alerts endpoint & Point-in-Polygon containment check
+  await runTest('GET /api/v1/alerts/nearby evaluates spatial Point-in-Polygon containment', async () => {
+    // Point inside the Bay of Bengal cyclone polygon (87.5, 21.5)
     const res = await request('/api/v1/alerts/nearby?lat=21.5&lon=87.5');
-    if (res.status !== 200 || !Array.isArray(res.data.data)) {
-      throw new Error(`Invalid nearby alerts response: ${JSON.stringify(res)}`);
+    if (res.status !== 200 || !Array.isArray(res.data.data) || res.data.data.length === 0) {
+      throw new Error(`Expected nearby alerts inside polygon, got: ${JSON.stringify(res)}`);
     }
   });
 
@@ -139,6 +244,25 @@ const testSuite = async () => {
     }
   });
 
+  // Test 10b: Auth /me profile update
+  await runTest('PUT /api/v1/auth/me updates preferred language and deviceToken', async () => {
+    const res = await request('/api/v1/auth/me', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        name: 'Senior Meteorologist',
+        preferredLanguage: 'bn',
+        deviceToken: 'fcm_token_updated_123'
+      })
+    });
+    if (res.status !== 200 || res.data.data.user.preferredLanguage !== 'bn' || res.data.data.user.name !== 'Senior Meteorologist') {
+      throw new Error(`Profile update failed: ${JSON.stringify(res)}`);
+    }
+  });
+
   // Test 11: Auth /me without token returns 401
   await runTest('GET /api/v1/auth/me without token returns 401', async () => {
     const res = await request('/api/v1/auth/me');
@@ -155,6 +279,16 @@ const testSuite = async () => {
     }
   });
 
+  // Test 12b: Weather Caching Layer
+  await runTest('GET /api/v1/weather/current served from in-memory cache on subsequent requests', async () => {
+    const start = Date.now();
+    const res = await request('/api/v1/weather/current?lat=22.57&lon=88.36');
+    const elapsed = Date.now() - start;
+    if (res.status !== 200 || !res.data.data.cached) {
+      throw new Error(`Expected cached weather response with cached:true, got: ${JSON.stringify(res)}`);
+    }
+  });
+
   // Test 13: Geocoding search
   await runTest('GET /api/v1/weather/geocode?q=Kolkata returns geocoded coordinates', async () => {
     const res = await request('/api/v1/weather/geocode?q=Kolkata');
@@ -163,7 +297,8 @@ const testSuite = async () => {
     }
   });
 
-  // Test 14: User Locations (POST & GET)
+  // Test 14: User Locations (POST, GET, GET by ID, PUT)
+  let createdLocationId;
   await runTest('POST & GET /api/v1/locations creates and retrieves saved locations', async () => {
     const postRes = await request('/api/v1/locations', {
       method: 'POST',
@@ -178,15 +313,44 @@ const testSuite = async () => {
         isDefault: true
       })
     });
-    if (postRes.status !== 201) {
+    if (postRes.status !== 201 || !postRes.data.data.id) {
       throw new Error(`Create location failed: ${JSON.stringify(postRes)}`);
     }
+    createdLocationId = postRes.data.data.id;
 
     const getRes = await request('/api/v1/locations', {
       headers: { 'Authorization': `Bearer ${authToken}` }
     });
-    if (getRes.status !== 200) {
+    if (getRes.status !== 200 || !Array.isArray(getRes.data.data) || getRes.data.data.length === 0) {
       throw new Error(`Get locations failed: ${JSON.stringify(getRes)}`);
+    }
+  });
+
+  // Test 14b: GET /locations/:id
+  await runTest('GET /api/v1/locations/:id retrieves single location', async () => {
+    const res = await request(`/api/v1/locations/${createdLocationId}`, {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    if (res.status !== 200 || res.data.data.name !== 'Salt Lake Sector V') {
+      throw new Error(`Get single location failed: ${JSON.stringify(res)}`);
+    }
+  });
+
+  // Test 14c: PUT /locations/:id
+  await runTest('PUT /api/v1/locations/:id updates location name and default status', async () => {
+    const res = await request(`/api/v1/locations/${createdLocationId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        name: 'Salt Lake Tech Hub',
+        isDefault: false
+      })
+    });
+    if (res.status !== 200 || res.data.data.name !== 'Salt Lake Tech Hub') {
+      throw new Error(`Update location failed: ${JSON.stringify(res)}`);
     }
   });
 

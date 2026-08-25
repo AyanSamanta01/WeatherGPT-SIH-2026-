@@ -8,6 +8,12 @@ const chatQuerySchema = z.object({
   conversationId: z.string().optional()
 });
 
+const conversationIdParamSchema = z.object({
+  conversationId: z.string().min(1, 'conversationId is required')
+});
+
 module.exports = {
-  chatQuerySchema
+  chatQuerySchema,
+  conversationIdParamSchema
 };
+

@@ -21,6 +21,42 @@ const handleChat = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  handleChat
+const getConversations = async (req, res, next) => {
+  try {
+    const userId = req.user?.id || null;
+    const conversations = await chatService.getConversations(userId);
+    return successResponse(res, conversations, 'Conversations retrieved successfully');
+  } catch (err) {
+    next(err);
+  }
 };
+
+const getHistory = async (req, res, next) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user?.id || null;
+    const history = await chatService.getConversationHistory(conversationId, userId);
+    return successResponse(res, history, 'Chat history retrieved successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deleteConversation = async (req, res, next) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user?.id || null;
+    const result = await chatService.deleteConversation(conversationId, userId);
+    return successResponse(res, result, 'Conversation deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  handleChat,
+  getConversations,
+  getHistory,
+  deleteConversation
+};
+

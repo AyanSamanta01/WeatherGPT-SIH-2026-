@@ -4,7 +4,7 @@ const authController = require('../../controllers/authController');
 const validate = require('../../middleware/validate');
 const { authenticateJWT } = require('../../middleware/authMiddleware');
 const { authLimiter } = require('../../middleware/rateLimiter');
-const { signupSchema, loginSchema } = require('../../validation/authValidation');
+const { signupSchema, loginSchema, updateProfileSchema } = require('../../validation/authValidation');
 
 /**
  * @swagger
@@ -86,4 +86,36 @@ router.post('/logout', authController.logout);
  */
 router.get('/me', authenticateJWT, authController.getMe);
 
+/**
+ * @swagger
+ * /api/v1/auth/me:
+ *   put:
+ *     summary: Update user profile, preferred language, or password
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               preferredLanguage:
+ *                 type: string
+ *               deviceToken:
+ *                 type: string
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User profile updated
+ */
+router.put('/me', authenticateJWT, validate(updateProfileSchema, 'body'), authController.updateMe);
+
 module.exports = router;
+
