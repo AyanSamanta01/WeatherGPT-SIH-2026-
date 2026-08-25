@@ -95,6 +95,20 @@ const testSuite = async () => {
     createdConversationId = res.data.data.conversationId;
   });
 
+  // Test 6_alias: AI Chat alias POST /ai/chat with { prompt }
+  await runTest('POST /api/v1/ai/chat accepts { prompt } and returns { replyText, sources }', async () => {
+    const res = await request('/api/v1/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: 'Show cyclone alert advisory for Mumbai'
+      })
+    });
+    if (res.status !== 200 || !res.data.data.replyText || !Array.isArray(res.data.data.sources)) {
+      throw new Error(`Invalid /ai/chat response: ${JSON.stringify(res)}`);
+    }
+  });
+
   // Test 6b: Get Conversations
   await runTest('GET /api/v1/chat/conversations lists conversations', async () => {
     const res = await request('/api/v1/chat/conversations');
@@ -120,6 +134,31 @@ const testSuite = async () => {
       throw new Error(`Delete conversation failed: ${JSON.stringify(res)}`);
     }
   });
+
+  // Test 6e: City Name Query Resolution on Weather
+  await runTest('GET /api/v1/weather/current?city=Mumbai automatically geocodes and returns weather', async () => {
+    const res = await request('/api/v1/weather/current?city=Mumbai');
+    if (res.status !== 200 || !res.data.data.temp || res.data.data.city !== 'Mumbai') {
+      throw new Error(`Invalid city current weather response: ${JSON.stringify(res)}`);
+    }
+  });
+
+  // Test 6f: Hourly Forecast Breakdown
+  await runTest('GET /api/v1/weather/hourly?city=Mumbai returns 3-hourly forecast array', async () => {
+    const res = await request('/api/v1/weather/hourly?city=Mumbai');
+    if (res.status !== 200 || !Array.isArray(res.data.data) || res.data.data.length === 0 || !res.data.data[0].time) {
+      throw new Error(`Invalid hourly forecast response: ${JSON.stringify(res)}`);
+    }
+  });
+
+  // Test 6g: Daily Forecast Summary
+  await runTest('GET /api/v1/weather/daily?city=Mumbai returns 7-day daily forecast array', async () => {
+    const res = await request('/api/v1/weather/daily?city=Mumbai');
+    if (res.status !== 200 || !Array.isArray(res.data.data) || res.data.data.length === 0 || !res.data.data[0].day) {
+      throw new Error(`Invalid daily forecast response: ${JSON.stringify(res)}`);
+    }
+  });
+
 
   // Test 7: Active Weather Alerts
   await runTest('GET /api/v1/alerts returns active alerts', async () => {
@@ -380,6 +419,15 @@ const testSuite = async () => {
       throw new Error(`Invalid climate trends response: ${JSON.stringify(res)}`);
     }
   });
+
+  // Test 16b: Climate Analytics Alias
+  await runTest('GET /api/v1/analytics/climate returns climate trends via alias route', async () => {
+    const res = await request('/api/v1/analytics/climate?lat=22.57&lon=88.36&years=3');
+    if (res.status !== 200 || !Array.isArray(res.data.data.trends)) {
+      throw new Error(`Invalid analytics climate response: ${JSON.stringify(res)}`);
+    }
+  });
+
 
   // Test 17: 404 Route handling
   await runTest('GET /non-existent-route returns 404', async () => {

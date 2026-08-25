@@ -31,5 +31,8 @@ const { climateTrendsSchema } = require('../../validation/climateValidation');
  *         description: Historical climate trends
  */
 router.get('/trends', validate(climateTrendsSchema, 'query'), climateController.getClimateTrends);
+router.get('/climate', validate(climateTrendsSchema, 'query'), climateController.getClimateTrends);
+router.get('/', validate(climateTrendsSchema, 'query'), climateController.getClimateTrends);
 
 module.exports = router;
+

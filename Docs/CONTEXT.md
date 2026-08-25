@@ -350,12 +350,13 @@ Query → Embed → Search Weather Vector DB → Retrieve Context → Prompt →
   - Instant live disaster broadcast to connected React frontends upon alert creation or CAP ingestion
 - **Complete REST API Endpoints (`/api/v1`):**
   - `/auth` (`signup`, `login`, `logout`, `GET /me`, `PUT /me`)
-  - `/weather` (`current`, `forecast`, `history`, `geocode`)
-  - `/chat` (`POST /`, `conversations`, `history/:conversationId`, `DELETE /conversations/:id`)
+  - `/weather` (`current` [supports `?city=` & `?lat=`], `forecast`, `hourly`, `daily`, `history`, `geocode`)
+  - `/chat` & `/ai` (`POST /`, `POST /chat`, `conversations`, `history/:conversationId`, `DELETE /conversations/:id`)
   - `/locations` (`GET /`, `GET /:id`, `POST /`, `PUT /:id`, `DELETE /:id`)
   - `/alerts` (`GET /`, `gis/layers`, `hazard/check`, `stream`, `nearby`, `cap/ingest`, `preferences`)
-  - `/climate` (`trends`)
+  - `/climate` & `/analytics` (`trends`, `climate`)
   - Swagger UI accessible at `/api-docs`
+
 
 ### AI Service Module
 - **Purpose:** LLM integration, prompt engineering, and conversational reasoning

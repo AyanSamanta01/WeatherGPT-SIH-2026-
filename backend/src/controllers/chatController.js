@@ -3,11 +3,12 @@ const { successResponse } = require('../utils/response');
 
 const handleChat = async (req, res, next) => {
   try {
-    const { message, latitude, longitude, language, conversationId } = req.body;
+    const textQuery = req.body.message || req.body.prompt;
+    const { latitude, longitude, language, conversationId } = req.body;
     const userId = req.user?.id || null;
 
     const result = await chatService.processChat({
-      message,
+      message: textQuery,
       latitude,
       longitude,
       language: language || req.user?.preferredLanguage || 'en',
@@ -15,11 +16,18 @@ const handleChat = async (req, res, next) => {
       userId
     });
 
-    return successResponse(res, result, 'Chat query processed successfully');
+    const enriched = {
+      ...result,
+      replyText: result.answer,
+      weatherCard: result.weatherCard || null
+    };
+
+    return successResponse(res, enriched, 'Chat query processed successfully');
   } catch (err) {
     next(err);
   }
 };
+
 
 const getConversations = async (req, res, next) => {
   try {

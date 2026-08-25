@@ -66,6 +66,31 @@ router.get('/forecast', validate(forecastWeatherSchema, 'query'), weatherControl
 
 /**
  * @swagger
+ * /api/v1/weather/hourly:
+ *   get:
+ *     summary: Get 3-hourly forecast breakdown for a city or coordinates
+ *     tags: [Weather]
+ *     responses:
+ *       200:
+ *         description: Hourly forecast list
+ */
+router.get('/hourly', validate(forecastWeatherSchema, 'query'), weatherController.getHourlyForecast);
+
+/**
+ * @swagger
+ * /api/v1/weather/daily:
+ *   get:
+ *     summary: Get 7-day daily forecast summary for a city or coordinates
+ *     tags: [Weather]
+ *     responses:
+ *       200:
+ *         description: 7-day daily forecast list
+ */
+router.get('/daily', validate(forecastWeatherSchema, 'query'), weatherController.getDailyForecast);
+
+
+/**
+ * @swagger
  * /api/v1/weather/history:
  *   get:
  *     summary: Get historical weather data between dates
