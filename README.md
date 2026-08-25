@@ -62,11 +62,14 @@ All endpoints are versioned under `/api/v1`:
 ### 🌤️ Weather & Climate
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/v1/weather/current` | Real-time observation (10m TTL cached) |
+| `GET` | `/api/v1/weather/current` | Real-time observation by coordinates or city name (`?city=Mumbai`) |
 | `GET` | `/api/v1/weather/forecast` | Multi-day NWP forecast & precipitation probability |
+| `GET` | `/api/v1/weather/hourly` | 3-hourly forecast breakdown for graphs/cards |
+| `GET` | `/api/v1/weather/daily` | 7-day daily forecast summary |
 | `GET` | `/api/v1/weather/history` | Historical weather records |
 | `GET` | `/api/v1/weather/geocode` | Geocode city name to coordinates |
 | `GET` | `/api/v1/climate/trends` | Multi-year climate archive aggregation |
+| `GET` | `/api/v1/analytics/climate` | Climate analytics alias for frontend charts |
 
 ### 🚨 Alerts & GIS
 | Method | Endpoint | Description |
@@ -82,7 +85,8 @@ All endpoints are versioned under `/api/v1`:
 ### 💬 Conversational AI
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/v1/chat` | Natural language weather chat query |
+| `POST` | `/api/v1/chat` | Natural language weather chat query (`message` or `prompt`) |
+| `POST` | `/api/v1/ai/chat` | AI chat alias returning `replyText`, `sources`, `weatherCard` |
 | `GET` | `/api/v1/chat/conversations` | List conversation threads |
 | `GET` | `/api/v1/chat/history/:id` | Chronological message history |
 | `DELETE` | `/api/v1/chat/conversations/:id`| Delete conversation thread |
@@ -116,7 +120,8 @@ npx prisma db seed
 ```bash
 npm test
 ```
-*Expected Result:* **29 Passed, 0 Failed.**
+*Expected Result:* **34 Passed, 0 Failed.**
+
 
 ### 4. Start Development Server
 ```bash
