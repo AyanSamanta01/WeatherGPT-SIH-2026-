@@ -74,15 +74,23 @@ weathergpt/
 │   │   ├── middleware/               # Auth (JWT), logging, error handling, validation
 │   │   ├── utils/                    # Common utilities & logger
 │   │   └── config/                   # Environment, database & Swagger config
+│   ├── test/                         # Automated API test suite
 │   └── package.json
 │
-├── ai-service/                        # Python (FastAPI)
+├── ai-service/                        # Python (FastAPI) AI/LLM Microservice
 │   ├── app/
-│   │   ├── agents/                   # LLM orchestration & agents
-│   │   ├── tools/                    # Tool/function definitions for LLM
-│   │   ├── prompts/                  # System & few-shot prompts
-│   │   └── services/                 # LLM calls, RAG, intent detection
-│   └── requirements.txt
+│   │   ├── agents/                   # ReAct Agent orchestrator, NLU Intent classifier, Tool executor
+│   │   ├── tools/                    # Function definitions, Weather, Alerts, Climate, Agri, Geocoding tools
+│   │   ├── prompts/                  # System prompts (Base, Kisan, Emergency, Sports), Multilingual prompts, Few-shots
+│   │   ├── rag/                      # Meteorological knowledge base & Hybrid BM25/Semantic retriever
+│   │   ├── services/                 # Multi-provider LLM client, Grounding service, Multilingual engine, Context manager, Guardrails
+│   │   ├── models/                   # Pydantic schemas (AgentQueryRequest, AgentQueryResponse, WeatherCard) & Enums
+│   │   ├── config.py                 # Configuration & Environment settings
+│   │   └── main.py                   # FastAPI app with REST endpoints
+│   ├── tests/                        # Automated Pytest suite (29 passed)
+│   ├── requirements.txt              # Python dependencies
+│   ├── Dockerfile                    # Containerization Dockerfile
+│   └── README.md                     # Microservice guide
 │
 ├── weather-ml/                        # ML & Data Processing
 │   ├── data/                          # Raw & processed datasets
@@ -97,7 +105,7 @@ weathergpt/
 ├── Docs/                              # Comprehensive documentation
 │   ├── README.md                      # Problem statement & overview
 │   ├── ARCHITECTURE.md                # System architecture
-│   ├── FOLDER_STRUCTURE.md            # This structure explained
+│   ├── FOLDER_STRUCTURE.md            # Structure explained
 │   ├── API.md                         # API endpoint reference
 │   ├── DATABASE.md                    # Schema & data models
 │   ├── AI_DESIGN.md                   # AI/LLM design patterns
@@ -107,7 +115,7 @@ weathergpt/
 │   ├── TEAM_TASKS.md                  # Role-based responsibilities
 │   └── CONTEXT.md                     # THIS FILE
 │
-├── docker-compose.yml                 # Container orchestration
+├── docker-compose.yml                 # Monorepo container orchestration
 └── .gitignore
 ```
 
@@ -297,7 +305,7 @@ CONTEXT:
 
 ### Retrieval-Augmented Generation (RAG) Pipeline
 
-```
+```text
 Query → Embed → Search Weather Vector DB → Retrieve Context → Prompt → LLM → Answer
 ```
 
@@ -358,14 +366,44 @@ Query → Embed → Search Weather Vector DB → Retrieve Context → Prompt →
   - Swagger UI accessible at `/api-docs`
 
 
-### AI Service Module
-- **Purpose:** LLM integration, prompt engineering, and conversational reasoning
-- **Primary Tech:** Python, FastAPI, LangChain/LlamaIndex
-- **Core Functions:**
-  1. **Query Understanding:** Parse user intent from natural language
-  2. **Tool Routing:** Select appropriate weather/analytics tools
-  3. **Response Generation:** LLM-based synthesis of grounded data
-  4. **Multilingual Support:** Translate prompts, responses
+### AI Service Module (`ai-service`) — Fully Implemented
+- **Purpose:** Production agentic natural-language weather intelligence, multi-provider LLM orchestration, RAG retrieval, native multilingual synthesis, and safety guardrails.
+- **Primary Tech:** Python 3.14, FastAPI, Pydantic v2, Uvicorn, HTTPX, Pytest.
+- **Implemented Architecture & Submodules:**
+  1. **NLU & Intent Classifier (`app/agents/intent_classifier.py`):**
+     - Full Intent Taxonomy: `CURRENT_WEATHER`, `FORECAST_SHORT_TERM`, `FORECAST_EXTENDED`, `ALERT_CHECK`, `CLIMATE_TREND`, `AGRI_ADVISORY`, `OUTDOOR_ACTIVITY`, `METEOROLOGICAL_EXPLANATION`, `OUT_OF_DOMAIN`.
+     - Entity & Slot Extraction: Location geocoder (Indian cities, taluks, coordinates), temporal scopes (`current`, `tomorrow`, `multi_day`, `historical`), and target sector personas.
+  2. **Multi-Provider LLM Integration (`app/services/llm_client.py`):**
+     - Supports **Google Gemini** (`gemini-2.0-flash`), **OpenAI / OpenRouter** (`gpt-4o`, `gpt-4o-mini`), **Anthropic Claude** (`claude-3-5-sonnet`), **Ollama / Local LLM** (`llama3:8b`), and a **Deterministic High-Fidelity Fallback Engine** providing 100% operational uptime without requiring external API keys.
+  3. **Autonomous ReAct Agent Loop & 8 Live Tools (`app/tools/` & `app/agents/`):**
+     - `get_current_weather`: Real-time temperature, feels like, humidity, wind, rainfall observations.
+     - `get_weather_forecast`: NWP ensemble multi-day forecasts (highs/lows, rain probabilities, conditions).
+     - `get_active_alerts`: CAP 1.2 & IMD disaster warning feed.
+     - `get_climate_trends`: Historical 30-year climatological normals and anomaly calculations.
+     - `calculate_biometeorology`: Heat Index (NOAA Rothfusz regression) and Stull Wet-Bulb calculation.
+     - `get_agricultural_advisory`: Kisan spraying window suitability and disease risk evaluator.
+     - `geocode_location`: Indian city and global coordinate geocoding resolver.
+     - `search_meteorological_knowledge`: RAG domain search.
+  4. **Factual Grounding & WeatherCard Assembly (`app/services/grounding_service.py`):**
+     - Strictly anchors responses to retrieved tool data with source provenance and risk scoring (`low`, `moderate`, `high`, `extreme`).
+     - Generates structured `WeatherCard` payloads with all meteorological variables.
+  5. **Domain Knowledge RAG Retrieval (`app/rag/`):**
+     - Curated knowledge repository covering IMD 4-Color Warning Codes (Green, Yellow, Orange, Red), IMD 4-Stage Cyclone Warning Protocol, Indian Monsoon dynamics (SW/NE Monsoon, Western Disturbances, El Niño/La Niña/IOD), NDMA Heatwave/Lightning guidelines, and Crop Weather Calendars.
+     - Hybrid BM25/keyword semantic retriever (`knowledge_retriever.py`).
+  6. **Native Multilingual Response Generation (`app/services/multilingual_service.py`):**
+     - Automatic script detection and localized synthesis for **11 Indian languages**: English (`en`), Hindi (`hi`), Bengali (`bn`), Tamil (`ta`), Telugu (`te`), Marathi (`mr`), Gujarati (`gu`), Kannada (`kn`), Malayalam (`ml`), Punjabi (`pa`), and Odia (`or`).
+  7. **Conversation Context & Memory Manager (`app/services/context_manager.py`):**
+     - Multi-turn state tracking with sliding window memory, resolving follow-up queries and location persistence.
+  8. **Hallucination Safeguards & Guardrails (`app/services/guardrails.py`):**
+     - Pre-flight prompt injection / jailbreak filters, domain boundary redirection, post-generation factual consistency verification, and official warning validation.
+  9. **API Endpoints Exposed (`:8000`):**
+     - `POST /api/v1/agent/query`: Gateway conversational query endpoint.
+     - `POST /api/v1/agent/intent`: Standalone NLU intent and slot extraction.
+     - `GET /api/v1/agent/tools`: Registered JSON Schema tool definitions.
+     - `POST /api/v1/rag/search`: RAG domain knowledge search.
+     - `GET /health` & `GET /ready`: Health check & readiness probes.
+  10. **Test Coverage:** 29/29 Pytest unit and integration tests passing (`pytest tests/ -v`).
+
 
 ### Weather-ML Module
 - **Purpose:** Meteorological data ingestion, NWP model post-processing, and risk analytics
@@ -383,3 +421,16 @@ Query → Embed → Search Weather Vector DB → Retrieve Context → Prompt →
   2. **IMD Meteorological Hazard Scoring:** Evaluates real-time precipitation, wind gust speeds, and temperatures against official IMD threshold levels (`Green: No Warning`, `Yellow: Watch`, `Orange: Alert`, `Red: Warning`)
   3. **GeoJSON FeatureCollections:** Generates standard GeoJSON layers with embedded IMD color hex codes for instant map layer rendering
   4. **CAP 1.2 Ingestion:** Ingests official NDMA / SACHET / IMD XML-JSON bulletins with spatial coordinates and radius/polygon boundaries
+
+---
+
+## 👥 Team Task Status Matrix
+
+| Role | Member | Completed Work | Pending Focus |
+| :--- | :--- | :--- | :--- |
+| **Frontend Lead** | Member 1 | React/Vite, Tailwind, UI Pages (Chat, Forecast, Alerts, Climate, Maps) | Web Speech voice integration, live SSE stream hook |
+| **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE, REST APIs (34/34 tests passing) | Maintained & stable |
+| **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 8 Tools, RAG, 11 Indian Languages, Memory, Guardrails (29/29 tests passing) | Maintained & stable |
+| **Weather/ML** | Member 4 | Exploration notebook (`Weather-ml.ipynb`) | `weather-ml/` data pipeline, ML training/inference API |
+| **GIS & Alerts** | Member 5 | Hazard score rules in backend | `gis-alerts/` module, India GeoJSON boundary layers, CAP parser |
+| **DevOps & CI/CD** | Member 6 | Docker compose orchestration, test suites | GitHub Actions CI/CD workflows, Frontend Dockerfile, E2E tests |
