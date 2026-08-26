@@ -1,7 +1,7 @@
 # WeatherGPT 🌦️
 ### Conversational AI for Weather Forecasting, Alerts, and Climate Information
 **SIH 2026 Problem Statement ID:** `26068`  
-**Organization:** Ministry of Earth Sciences (MoES) | **Department:** India Meteorological Department (IMD)  
+**Organization:** Ministry of Earth Sciences (MoES) | **Department:** India Meteorological Department (IMD)   
 **Theme:** Disaster Management
 
 ---
