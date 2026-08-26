@@ -145,6 +145,10 @@ WeatherGPT-SIH-2026-/
 │   ├── API.md                                 # Backend REST API reference
 │   └── ALERTS_GIS.md                          # GIS & hazard design
 │
+├── .github/                                   # GitHub Actions CI/CD Workflows
+│   └── workflows/ci.yml                      # Multi-job automated test pipeline (ML, AI, Backend, Frontend)
+│
+├── requirements.txt                           # Root unified Python dependencies
 ├── docker-compose.yml                         # Monorepo container orchestration
 └── .gitignore
 ```
@@ -307,7 +311,7 @@ python test_api_server.py
 # 5. Test NWP multi-model consensus & anomaly analyzer
 python test_nwp_consensus.py
 
-# 6. Test AI/LLM microservice pytest suite (29 tests)
+# 6. Test AI/LLM microservice pytest suite (34 tests)
 cd ai-service && pytest tests/ -v && cd ..
 
 # 7. Test GIS & Alerts microservice pytest suite (17 tests)
@@ -325,7 +329,9 @@ cd backend && npm test && cd ..
 | :--- | :--- | :--- | :--- |
 | **Frontend Lead** | Member 1 | React/Vite, Tailwind, UI Pages (Chat, Forecast, Alerts, Climate, Maps) | Web Speech voice integration, live SSE stream hook |
 | **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE, REST APIs (34/34 tests passing) | Maintained & stable |
-| **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 8 Tools, RAG, 11 Indian Languages, Memory, Guardrails (29/29 tests passing) | Maintained & stable |
+| **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails (34/34 tests passing) | Maintained & stable |
 | **Weather/ML** | Member 4 | 10-city V3 dataset (1M rows), XGBoost/LightGBM 6h models (MAE 0.96°C, F1 0.67), live 24h lag pipeline, IMD risk engine, NWP consensus analyzer (ECMWF/GFS/ICON), FastAPI microservice (Port 8000) | Production ready & synchronized |
 | **GIS & Alerts** | Member 5 | Dedicated `gis-alerts/` package, Ray-Casting PIP engine, GeoJSON layers (Metros, Cyclone corridors, Flood basins, Heat zones), IMD 4-Color hazard rules, CAP 1.2 XML/JSON generator & parser, Notification dispatcher (17/17 tests passing) | Maintained & stable |
-| **DevOps & CI/CD** | Member 6 | Docker compose orchestration, test suites | GitHub Actions CI/CD workflows, Frontend Dockerfile, E2E tests |
+| **DevOps & CI/CD** | Member 6 | GitHub Actions CI/CD workflows (`.github/workflows/ci.yml`), Docker compose orchestration, multi-stack test automation | Maintained & automated |
+
+
