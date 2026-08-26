@@ -1,0 +1,185 @@
+"""
+Multilingual Prompt Directives & Meteorological Terminology for Indian Languages
+"""
+
+LANGUAGE_INSTRUCTIONS = {
+    "en": "Generate your final response in clear, fluent English.",
+    "hi": "अपना अंतिम उत्तर शुद्ध और सहज हिंदी (Devanagari script) में दें। मौसम के मानक शब्दों का प्रयोग करें।",
+    "bn": "আপনার চূড়ান্ত উত্তর স্পষ্ট এবং স্বাভাবিক বাংলা (Bengali script) ভাষায় প্রদান করুন।",
+    "ta": "உங்கள் இறுதிப் பதிலை தெளிவான மற்றும் இயல்பான தமிழில் (Tamil script) வழங்கவும்.",
+    "te": "మీ తుది సమాధానాన్ని స్పష్టమైన మరియు సహజమైన తెలుగులో (Telugu script) అందించండి.",
+    "mr": "तुमचे अंतिम उत्तर स्पष्ट आणि अस्खलित मराठीत (Devanagari script) द्या.",
+    "gu": "તમારો અંતિમ જવાબ સ્પષ્ટ અને સરળ ગુજરાતીમાં (Gujarati script) આપો.",
+    "kn": "ನಿಮ್ಮ ಅಂತಿಮ ಉತ್ತರವನ್ನು ಸ್ಪಷ್ಟ ಮತ್ತು ನಿರರ್ಗಳವಾದ ಕನ್ನಡದಲ್ಲಿ (Kannada script) ನೀಡಿ.",
+    "ml": "നിങ്ങളുടെ അന്തിമ ഉത്തരം വ്യക്തവും സ്വാഭാവികവുമായ മലയാളത്തിൽ (Malayalam script) നൽകുക.",
+    "pa": "ਆਪਣਾ ਅੰਤਿਮ ਜਵਾਬ ਸਪੱਸ਼ਟ ਅਤੇ ਸਹਿਜ ਪੰਜਾਬੀ (Gurmukhi script) ਵਿੱਚ ਦਿਓ।",
+    "or": "ଆପଣଙ୍କର ଚୂଡ଼ାନ୍ତ ଉତ୍ତର ସ୍ପଷ୍ଟ ଏବଂ ସରଳ ଓଡ଼ିଆ (Odia script) ଭାଷାରେ ପ୍ରଦାନ କରନ୍ତୁ।"
+}
+
+INDIAN_WEATHER_GLOSSARY = {
+    "hi": {
+        "temperature": "तापमान",
+        "rainfall": "वर्षा / बारिश",
+        "heavy_rain": "भारी बारिश",
+        "humidity": "आर्द्रता / नमी",
+        "wind_speed": "हवा की गति",
+        "heatwave": "लू / भीषण गर्मी",
+        "coldwave": "शीतलहर",
+        "cyclone": "चक्रवात / तूफ़ान",
+        "flood": "बाढ़",
+        "thunderstorm": "आंधी-तूफान व बिजली",
+        "forecast": "मौसम पूर्वानुमान",
+        "advisory": "कृषि एवं मौसम सलाह",
+        "warning": "चेतावनी",
+        "umbrella": "छाता"
+    },
+    "bn": {
+        "temperature": "তাপমাত্রা",
+        "rainfall": "বৃষ্টিপাত",
+        "heavy_rain": "ভারী বৃষ্টিপাত",
+        "humidity": "আর্দ্রতা",
+        "wind_speed": "বাতাসের গতিবেগ",
+        "heatwave": "তাপপ্রবাহ",
+        "coldwave": "শৈত্যপ্রবাহ",
+        "cyclone": "ঘূর্ণিঝড়",
+        "flood": "বন্যা",
+        "thunderstorm": "বজ্রবিদ্যুৎসহ ঝড়",
+        "forecast": "আবহাওয়ার পূর্বাভাস",
+        "advisory": "পরামর্শ",
+        "warning": "সতর্কবার্তা",
+        "umbrella": "ছাতা"
+    },
+    "ta": {
+        "temperature": "வெப்பநிலை",
+        "rainfall": "மழைப்பொழிவு",
+        "heavy_rain": "கனமழை",
+        "humidity": "ஈரப்பதம்",
+        "wind_speed": "காற்றின் வேகம்",
+        "heatwave": "வெப்ப அலை",
+        "coldwave": "குளிர் அலை",
+        "cyclone": "புயல்",
+        "flood": "வெள்ளம்",
+        "thunderstorm": "இடி மின்னலுடன் கூடிய மழை",
+        "forecast": "வானிலை முன்னறிவிப்பு",
+        "advisory": "வானிலை ஆலோசனை",
+        "warning": "எச்சரிக்கை",
+        "umbrella": "குடை"
+    },
+    "te": {
+        "temperature": "ఉష్ణోగ్రత",
+        "rainfall": "వర్షపాతం",
+        "heavy_rain": "భారీ వర్షం",
+        "humidity": "తేమ శాతం",
+        "wind_speed": "గాలి వేగం",
+        "heatwave": "వడగాల్పులు",
+        "coldwave": "శీతల గాలులు",
+        "cyclone": "తుఫాను",
+        "flood": "వరదలు",
+        "thunderstorm": "ఉరుములు మెరుపులతో కూడిన వర్షం",
+        "forecast": "వాతావరణ సూచన",
+        "advisory": "వాతావరణ సలహా",
+        "warning": "హెచ్చరిక",
+        "umbrella": "గొడుగు"
+    },
+    "mr": {
+        "temperature": "तापमान",
+        "rainfall": "पाऊस / पर्जन्य",
+        "heavy_rain": "मुसळधार पाऊस",
+        "humidity": "आर्द्रता",
+        "wind_speed": "वाऱ्याचा वेग",
+        "heatwave": "उष्णतेची लाट",
+        "coldwave": "थंडीची लाट",
+        "cyclone": "चक्रीवादळ",
+        "flood": "पूर",
+        "thunderstorm": "वादळी पाऊस व वीज",
+        "forecast": "हवामान अंदाज",
+        "advisory": "हवामान सल्ला",
+        "warning": "इशारा",
+        "umbrella": "छत्री"
+    },
+    "gu": {
+        "temperature": "તાપમાન",
+        "rainfall": "વરસાદ",
+        "heavy_rain": "ભારે વરસાદ",
+        "humidity": "ભેજનું પ્રમાણ",
+        "wind_speed": "પવનની ગતિ",
+        "heatwave": "હીટવેવ / લૂ",
+        "coldwave": "કોલ્ડવેવ / ઠંડીનું મોજું",
+        "cyclone": "વાવાઝોડું",
+        "flood": "પૂર",
+        "thunderstorm": "ગાજવીજ સાથે વરસાદ",
+        "forecast": "હવામાન આગાહી",
+        "advisory": "હવામાન સલાહ",
+        "warning": "ચેતવણી",
+        "umbrella": "છત્રી"
+    },
+    "kn": {
+        "temperature": "ತಾಪಮಾನ",
+        "rainfall": "ಮಳೆ",
+        "heavy_rain": "ಭಾರೀ ಮಳೆ",
+        "humidity": "ಆರ್ದ್ರತೆ",
+        "wind_speed": "ಗಾಳಿಯ ವೇಗ",
+        "heatwave": "ಬಿಸಿಗಾಳಿ",
+        "coldwave": "ಶೀತಗಾಳಿ",
+        "cyclone": "ಚಂಡಮಾರುತ",
+        "flood": "ಪ್ರವಾಹ",
+        "thunderstorm": "ಗುಡುಗು ಸಹಿತ ಮಳೆ",
+        "forecast": "ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ",
+        "advisory": "ಸಲಹೆ",
+        "warning": "ಎಚ್ಚರಿಕೆ",
+        "umbrella": "ಛತ್ರಿ"
+    },
+    "ml": {
+        "temperature": "താപനില",
+        "rainfall": "മഴ",
+        "heavy_rain": "കനത്ത മഴ",
+        "humidity": "ആർദ്രത",
+        "wind_speed": "കാറ്റിന്റെ വേഗത",
+        "heatwave": "ഉഷ്ണതരംഗം",
+        "coldwave": "ശീതതരംഗം",
+        "cyclone": "ചുഴലിക്കാറ്റ്",
+        "flood": "വെള്ളപ്പൊക്കം",
+        "thunderstorm": "ഇടിമിന്നലോടുകൂടിയ മഴ",
+        "forecast": "കാലാവസ്ഥാ പ്രവചനം",
+        "advisory": "കാലാവസ്ഥാ മുന്നറിയിപ്പ്",
+        "warning": "മുന്നറിയിപ്പ്",
+        "umbrella": "കുട"
+    },
+    "pa": {
+        "temperature": "ਤਾਪਮਾਨ",
+        "rainfall": "ਮੀਂਹ / ਬਾਰਿਸ਼",
+        "heavy_rain": "ਭਾਰੀ ਮੀਂਹ",
+        "humidity": "ਨਮੀ",
+        "wind_speed": "ਹਵਾ ਦੀ ਰਫ਼ਤਾਰ",
+        "heatwave": "ਲੂ / ਗਰਮ ਹਵਾਵਾਂ",
+        "coldwave": "ਸੀਤ ਲਹਿਰ",
+        "cyclone": "ਤੂਫ਼ਾਨ",
+        "flood": "ਹੜ੍ਹ",
+        "thunderstorm": "ਗਰਜ ਚਮਕ ਨਾਲ ਮੀਂਹ",
+        "forecast": "ਮੌਸਮ ਪੂਰਵ ਅਨੁਮਾਨ",
+        "advisory": "ਮੌਸਮ ਸਲਾਹ",
+        "warning": "ਚੇਤਾਵਨੀ",
+        "umbrella": "ਛੱਤਰੀ"
+    },
+    "or": {
+        "temperature": "ତାପମାତ୍ରା",
+        "rainfall": "ବର୍ଷା",
+        "heavy_rain": "ପ୍ରବଳ ବର୍ଷା",
+        "humidity": "ଆର୍ଦ୍ରତା",
+        "wind_speed": "ପବନର ବେଗ",
+        "heatwave": "ଅଂଶୁଘାତ / ଗ୍ରୀଷ୍ମ ପ୍ରବାହ",
+        "coldwave": "ଶୀତ ଲହରୀ",
+        "cyclone": "ବାତ୍ୟା",
+        "flood": "ବନ୍ୟା",
+        "thunderstorm": "କାଳବୈଶାଖୀ / ଘଡ଼ଘଡ଼ି ସହ ବର୍ଷା",
+        "forecast": "ପାଣିପାଗ ପୂର୍ବାନୁମାନ",
+        "advisory": "ପରାମର୍ଶ",
+        "warning": "ସତର୍କତା ସୂଚନା",
+        "umbrella": "ଛତା"
+    }
+}
+
+def get_language_guidelines(lang_code: str) -> str:
+    lang = (lang_code or "en").lower()
+    inst = LANGUAGE_INSTRUCTIONS.get(lang, LANGUAGE_INSTRUCTIONS["en"])
+    return f"MULTILINGUAL RESPONSE DIRECTIVE:\n- Target Language: {lang.upper()}\n- {inst}\n- Preserve numeric figures, temperature values, and time representations accurately."

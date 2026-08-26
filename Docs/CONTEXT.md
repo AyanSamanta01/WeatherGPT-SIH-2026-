@@ -6,9 +6,9 @@
 
 ## 🎯 Executive Summary
 
-**WeatherGPT** is an end-to-end meteorological intelligence and conversational platform designed for SIH 2026. It integrates historical meteorological datasets, machine learning forecasting models, extreme hazard detection engines, and disaster warning systems into an accessible, multilingual natural language interface for 10 major Indian cities.
+**WeatherGPT** is an end-to-end meteorological intelligence and conversational platform designed for SIH 2026. It integrates historical meteorological datasets, machine learning forecasting models, extreme hazard detection engines, disaster warning systems, and an agentic multi-lingual LLM microservice into an accessible natural language interface for Indian and global cities.
 
-**10 Supported Metropolitan Regions:**
+**10 Key Metropolitan Reference Regions:**
 1. **Kolkata** (22.5726° N, 88.3639° E)
 2. **Delhi** (28.6139° N, 77.2090° E)
 3. **Mumbai** (19.0760° N, 72.8777° E)
@@ -24,7 +24,7 @@
 
 ## 🏗️ Project Architecture at a Glance
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                       USER INTERFACE LAYER (React + Vite)                   │
 │   • ChatPage, ForecastPage, WeatherMapPage, AlertsPage, AnalyticsPage       │
@@ -38,25 +38,23 @@
 │   • Live Observation Hazard Engine (hazardEngine.js)                        │
 │   • Server-Sent Events (SSE) Live Disaster Stream (/api/v1/alerts/stream)   │
 │   • Accessible via: http://localhost:5000                                   │
-└──────────────────────────────────────┬──────────────────────────────────────┘
-                                       │ (HTTP: http://localhost:8000)
-┌──────────────────────────────────────v──────────────────────────────────────┐
-│              WEATHER-ML & AI MICROSERVICE (Python FastAPI on Port 8000)     │
-│   • 6-Hour Temperature Regressor (XGBoost | Test MAE: 0.96 °C)              │
-│   • 6-Hour Rain / No-Rain Classifier (XGBoost @ 0.65 th | Test F1: 0.67)    │
-│   • 6-Hour Rainfall Amount Regressor (LightGBM on rain > 0 | MAE: 0.79 mm)  │
-│   • Meteorological Risk & IMD Hazard Engine (Heat Index, Discomfort, Wind)  │
-│   • Real-Time Live Open-Meteo Feature Ingestion & Dynamic 24h Lags          │
-│   • Natural Language Reasoning Endpoint (POST /api/v1/agent/query)          │
-│   • Accessible via: http://localhost:8000                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
+└──────────────────┬──────────────────────────────────┬───────────────────────┘
+                   │ (HTTP: http://localhost:8000)    │
+┌──────────────────v──────────────────┐   ┌───────────v───────────────────────┐
+│     AI / LLM MICROSERVICE           │   │    WEATHER-ML & RISK ENGINE       │
+│    (Python FastAPI on Port 8000)    │   │  (Python ML Pipeline / Models)    │
+│  • ReAct Agent Loop & NLU Intent    │   │  • 6h Temperature XGBoost Regressor│
+│  • Multi-Provider LLM & RAG Search  │   │  • 6h Rain Classifier (XGBoost)   │
+│  • 11 Indian Languages Synthesis    │   │  • 6h Rain Amount (LightGBM)      │
+│  • Factual Grounding & Guardrails   │   │  • Real-Time 24h Lag Telemetry    │
+└─────────────────────────────────────┘   └───────────────────────────────────┘
 ```
 
 ---
 
 ## 📁 Repository Monorepo Structure
 
-```
+```text
 WeatherGPT-SIH-2026-/
 │
 ├── dataset/                                   # Historical Meteorological Datasets
@@ -94,26 +92,45 @@ WeatherGPT-SIH-2026-/
 │   │   ├── providers/                        # Open-Meteo, OpenWeather, IMD providers
 │   │   ├── utils/                            # gisUtils.js (Ray-casting PIP, GeoJSON)
 │   │   └── config/                           # env.js (points AI_SERVICE_URL -> port 8000)
-│   └── server.js
+│   ├── test/                                 # Automated API test suite (34 passed)
+│   └── package.json
+│
+├── ai-service/                                # Python (FastAPI) AI/LLM Microservice
+│   ├── app/
+│   │   ├── agents/                           # ReAct Agent orchestrator, NLU Intent classifier, Tool executor
+│   │   ├── tools/                            # Function definitions, Weather, Alerts, Climate, Agri, Geocoding tools
+│   │   ├── prompts/                          # System prompts (Base, Kisan, Emergency, Sports), Multilingual prompts, Few-shots
+│   │   ├── rag/                              # Meteorological knowledge base & Hybrid BM25/Semantic retriever
+│   │   ├── services/                         # Multi-provider LLM client, Grounding service, Multilingual engine, Context manager, Guardrails
+│   │   ├── models/                           # Pydantic schemas (AgentQueryRequest, AgentQueryResponse, WeatherCard) & Enums
+│   │   ├── config.py                         # Configuration & Environment settings
+│   │   └── main.py                           # FastAPI app with REST endpoints
+│   ├── tests/                                # Automated Pytest suite (29 passed)
+│   ├── requirements.txt                      # Python dependencies
+│   ├── Dockerfile                            # Containerization Dockerfile
+│   └── README.md                             # Microservice guide
 │
 ├── frontend/                                  # React + Vite + Tailwind CSS Frontend
 │   ├── src/
 │   │   ├── components/layout/                # Navbar, Sidebar, Weather Cards
-│   │   ├── pages/                            # ChatPage, ForecastPage, AlertsPage, Maps
+│   │   ├── pages/                            # ChatPage, ForecastPage, AlertsPage, Maps, Analytics, Auth, Settings
 │   │   └── services/api.js                   # Client REST API connector
 │   └── vite.config.js
 │
-└── Docs/                                      # Project Documentation & Specifications
-    ├── CONTEXT.md                             # THIS FILE
-    ├── TEAM_TASKS.md                          # Role-based task tracking
-    ├── ARCHITECTURE.md                        # System architecture
-    ├── API.md                                 # Backend REST API reference
-    └── ALERTS_GIS.md                          # GIS & hazard design
+├── Docs/                                      # Project Documentation & Specifications
+│   ├── CONTEXT.md                             # THIS FILE
+│   ├── TEAM_TASKS.md                          # Role-based task tracking
+│   ├── ARCHITECTURE.md                        # System architecture
+│   ├── API.md                                 # Backend REST API reference
+│   └── ALERTS_GIS.md                          # GIS & hazard design
+│
+├── docker-compose.yml                         # Monorepo container orchestration
+└── .gitignore
 ```
 
 ---
 
-## 🤖 Weather-ML & AI Subsystem (Member 4 Deliverables)
+## 🤖 Weather-ML & Subsystem (Member 4 Deliverables)
 
 ### 1. Dataset & Chronological Temporal Split
 - **Dataset**: `WeatherGPT_10_Cities_V3_Master.csv` (1,020,180 rows, 58 raw columns, 10 Indian cities).
@@ -147,72 +164,69 @@ WeatherGPT-SIH-2026-/
 
 ---
 
-## 🔌 API Integration Guide for Teammates
+## 🤖 AI / LLM Subsystem (Member 3 Deliverables)
 
-### For Member 2 (Backend Lead) & Member 3 (AI/LLM Engineer)
+### 1. NLU Intent Classifier & Slot Extraction (`ai-service/app/agents/intent_classifier.py`)
+- **Intent Taxonomy**: `CURRENT_WEATHER`, `FORECAST_SHORT_TERM`, `FORECAST_EXTENDED`, `ALERT_CHECK`, `CLIMATE_TREND`, `AGRI_ADVISORY`, `OUTDOOR_ACTIVITY`, `METEOROLOGICAL_EXPLANATION`, `OUT_OF_DOMAIN`.
+- **Slot Extraction**: Locations (Indian cities, taluks, coordinates), temporal scopes (`current`, `tomorrow`, `multi_day`, `historical`), and target sector personas.
 
-Start the Python AI/ML microservice:
-```bash
-python -m uvicorn src.api:app --host 0.0.0.0 --port 8000
-```
+### 2. Universal Multi-Provider LLM Integration (`ai-service/app/services/llm_client.py`)
+- Supports **Google Gemini** (`gemini-2.0-flash`, `gemini-1.5-pro`), **OpenAI / OpenRouter** (`gpt-4o`, `gpt-4o-mini`), **Anthropic Claude** (`claude-3-5-sonnet`), **Ollama / Local LLM** (`llama3:8b`), and a **Deterministic Grounded Fallback Engine** ensuring 100% operational uptime without requiring external API keys.
 
-#### 1. Natural Language Agent Query (Called by `backend/src/services/chatService.js`)
-- **Route**: `POST http://localhost:8000/api/v1/agent/query`
-- **Request Body**:
-  ```json
-  {
-    "message": "Will it rain in Mumbai in the next 6 hours?",
-    "latitude": 19.0760,
-    "longitude": 72.8777,
-    "city": "Mumbai",
-    "language": "en"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "answer": "In Mumbai over the next 6 hours, our ML models predict a 95.4% probability of rain with an expected accumulation of approximately 0.2 mm. Predicted temperature is 26.0°C. Normal weather conditions expected.",
-    "location": "Mumbai",
-    "sources": [
-      "WeatherGPT 6h XGBoost Temperature Regressor",
-      "WeatherGPT Rain Classifier (F1: 0.67, AUC: 0.90)",
-      "WeatherGPT Rainfall Amount LightGBM Regressor",
-      "Open-Meteo Live Telemetry API",
-      "IMD Risk & Hazard Engine"
-    ],
-    "risk": "low",
-    "forecast": {
-      "temperature_c": 25.99,
-      "rain_probability": 0.954,
-      "rain_predicted": true,
-      "rainfall_mm": 0.24,
-      "target_time": "2026-08-27 05:00:00"
-    },
-    "risk_assessment": {
-      "composite_risk_score": 22,
-      "risk_level": "LOW",
-      "alert_severity": "INFO",
-      "imd_color_code": {
-        "level": "Green",
-        "name": "NO WARNING (Normal)"
-      },
-      "advisories": ["Normal weather conditions expected over the 6-hour forecast horizon."]
-    }
-  }
-  ```
+### 3. Autonomous ReAct Agent Loop & 8 Live Tools (`ai-service/app/tools/`)
+- `get_current_weather`: Real-time temperature, feels like, humidity, wind, rainfall observations.
+- `get_weather_forecast`: NWP ensemble multi-day forecasts (highs/lows, rain probabilities, conditions).
+- `get_active_alerts`: CAP 1.2 & IMD disaster warning feed.
+- `get_climate_trends`: Historical 30-year climatological normals and anomaly calculations.
+- `calculate_biometeorology`: Heat Index (NOAA Rothfusz regression) and Stull Wet-Bulb calculation.
+- `get_agricultural_advisory`: Kisan spraying window suitability and disease risk evaluator.
+- `geocode_location`: Indian city and global coordinate geocoding resolver.
+- `search_meteorological_knowledge`: RAG domain search.
 
-#### 2. Direct Live 6-Hour Forecast & Hazard Endpoint
-- **Route**: `GET http://localhost:8000/api/v1/ml/forecast?city=Kolkata`
-- **Query Params**: `?city=Kolkata` or `?lat=22.57&lon=88.36`
+### 4. RAG Domain Knowledge Retrieval (`ai-service/app/rag/`)
+- Curated domain knowledge covering:
+  - **IMD 4-Color Warning Codes** (Green, Yellow, Orange, Red) and NDMA Action Protocols.
+  - **IMD 4-Stage Cyclone Warning Protocol** & WMO Wind Intensity Scales.
+  - **Indian Monsoon Dynamics** (SW/NE Monsoon, Western Disturbances, El Niño/La Niña/IOD).
+  - **NDMA Safety Guidelines** (Heatwave hydration thresholds, Lightning 30-30 rule).
+  - **Crop Weather Calendars** (Kharif, Rabi, Zaid crop sensitivities & spraying limits).
+- In-memory Hybrid BM25/keyword semantic retriever (`knowledge_retriever.py`).
 
-#### 3. Model Metadata & Benchmarks
-- **Route**: `GET http://localhost:8000/api/v1/ml/metadata`
+### 5. Native Multilingual Response Generation (`ai-service/app/services/multilingual_service.py`)
+- Automatic script detection from Unicode ranges for **11 Indian languages**:
+  - English (`en`), Hindi (`hi`), Bengali (`bn`), Tamil (`ta`), Telugu (`te`), Marathi (`mr`), Gujarati (`gu`), Kannada (`kn`), Malayalam (`ml`), Punjabi (`pa`), Odia (`or`).
+- Contextually preserves exact numerical temperatures, rain probabilities, and wind speeds in native phrasing.
+
+### 6. Conversation Context & Anti-Hallucination Guardrails
+- **Multi-Turn Memory (`context_manager.py`)**: Sliding-window context tracking resolving pronouns and follow-up turns.
+- **Safety Guardrails (`guardrails.py`)**: Pre-flight prompt injection / jailbreak protection, domain boundary verification, post-generation factual consistency checking against tool data, and prohibition against false official warnings.
+
+---
+
+## 🔌 API Integration Guide
+
+### 1. AI Service Endpoints (Port 8000)
+- `POST /api/v1/agent/query`: Gateway conversational query endpoint (called by `backend/src/services/chatService.js`).
+- `POST /api/v1/agent/intent`: Standalone NLU intent and slot extraction.
+- `GET /api/v1/agent/tools`: Registered JSON Schema tool definitions.
+- `POST /api/v1/rag/search`: RAG domain knowledge search.
+- `GET /health` & `GET /ready`: Health check & readiness probes.
+
+### 2. ML Inference & Forecast Endpoints (Port 8000)
+- `GET /api/v1/ml/forecast?city=Kolkata`: Live 6-hour ML prediction (temperature, rain probability, rainfall accumulation, composite hazard score).
+- `GET /api/v1/ml/metadata`: Production model metrics, benchmarks, and feature schemas.
+
+### 3. Backend Gateway Endpoints (Port 5000)
+- `/auth`: `POST /signup`, `POST /login`, `POST /logout`, `GET /me`, `PUT /me`
+- `/weather`: `GET /current`, `GET /forecast`, `GET /hourly`, `GET /daily`, `GET /history`, `GET /geocode`
+- `/chat` & `/ai`: `POST /`, `POST /chat`, `GET /conversations`, `GET /history/:conversationId`, `DELETE /conversations/:id`
+- `/locations`: `GET /`, `POST /`, `GET /:id`, `PUT /:id`, `DELETE /:id`
+- `/alerts`: `GET /`, `GET /gis/layers`, `GET /hazard/check`, `GET /stream` (SSE), `GET /nearby`, `POST /cap/ingest`, `GET/POST /preferences`
+- `/climate` & `/analytics`: `GET /trends`, `GET /climate`
 
 ---
 
 ## 🧪 Testing & Verification Commands
-
-Every component has a dedicated automated test suite:
 
 ```bash
 # 1. Test core ML prediction on historical samples across all 10 cities
@@ -224,16 +238,25 @@ python test_risk_engine.py
 # 3. Test real-time Open-Meteo telemetry fetching & live 24h lag pipeline
 python test_live_pipeline.py
 
-# 4. Test FastAPI microservice endpoints (Port 8000)
+# 4. Test ML FastAPI microservice endpoints
 python test_api_server.py
+
+# 5. Test AI/LLM microservice pytest suite (29 tests)
+cd ai-service && pytest tests/ -v && cd ..
+
+# 6. Test Backend API automated test suite (34 tests)
+cd backend && npm test && cd ..
 ```
 
 ---
 
-## 👥 Team Synchronization Checklist
+## 👥 Team Task Status Matrix
 
-- [x] **Member 4 (Weather/ML)**: Models trained, evaluated, risk engine built, live feature pipeline connected, FastAPI server operational on port 8000.
-- [ ] **Member 2 (Backend)**: Ensure `AI_SERVICE_URL=http://localhost:8000` is set in `.env` so `chatService.js` routes to the Python service.
-- [ ] **Member 3 (AI/LLM)**: Tool definitions in LLM agent can now tool-call `GET /api/v1/ml/forecast` or `POST /api/v1/agent/query`.
-- [ ] **Member 1 (Frontend)**: Test Chat, Forecast, and Hazard Alerts in React UI against backend endpoints.
-- [ ] **Member 5 (GIS/Alerts)**: GeoJSON layers and IMD 4-Color codes ready for Mapbox/Leaflet visualization.
+| Role | Member | Completed Work | Pending Focus |
+| :--- | :--- | :--- | :--- |
+| **Frontend Lead** | Member 1 | React/Vite, Tailwind, UI Pages (Chat, Forecast, Alerts, Climate, Maps) | Web Speech voice integration, live SSE stream hook |
+| **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE, REST APIs (34/34 tests passing) | Maintained & stable |
+| **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 8 Tools, RAG, 11 Indian Languages, Memory, Guardrails (29/29 tests passing) | Maintained & stable |
+| **Weather/ML** | Member 4 | 10-city dataset, XGBoost/LightGBM models, live telemetry lag pipeline, risk engine | Microservice packaging |
+| **GIS & Alerts** | Member 5 | Hazard score rules in backend, ray-casting PIP | India GeoJSON boundary layers, CAP parser |
+| **DevOps & CI/CD** | Member 6 | Docker compose orchestration, test suites | GitHub Actions CI/CD workflows, Frontend Dockerfile, E2E tests |
