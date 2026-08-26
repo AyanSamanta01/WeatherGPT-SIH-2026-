@@ -26,13 +26,25 @@ services:
     container_name: weathergpt_ai_service
     restart: unless-stopped
     environment:
-      - PORT=8000
-      - AI_PROVIDER=fallback
-      - BACKEND_API_URL=http://backend:5000/api/v1
+      PORT: 8000
+      HOST: 0.0.0.0
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+      AI_PROVIDER: fallback
+      BACKEND_API_URL: http://backend:5000/api/v1
+      OPEN_METEO_BASE_URL: https://api.open-meteo.com/v1
     ports:
       - '8000:8000'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - weathergpt_network
 
   backend:
     build:
@@ -41,10 +53,11 @@ services:
     container_name: weathergpt_backend
     restart: unless-stopped
     environment:
-      - PORT=5000
-      - DATABASE_URL=postgresql://weather_user:weather_password@postgres:5432/weathergpt_db
-      - AI_SERVICE_URL=http://ai-service:8000
-      - JWT_SECRET=weathergpt_super_secure_jwt_secret_sih_2026_key
+      PORT: 5000
+      NODE_ENV: production
+      DATABASE_URL: postgresql://weather_user:weather_password@postgres:5432/weathergpt_db
+      AI_SERVICE_URL: http://ai-service:8000
+      JWT_SECRET: weathergpt_super_secure_jwt_secret_sih_2026_key
     ports:
       - '5000:5000'
     depends_on:
@@ -52,7 +65,13 @@ services:
         condition: service_healthy
       ai-service:
         condition: service_started
+    networks:
+      - weathergpt_network
 
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  weathergpt_network:
+    driver: bridge
