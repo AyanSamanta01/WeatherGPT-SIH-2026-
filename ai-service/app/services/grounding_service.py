@@ -93,6 +93,22 @@ class GroundingService:
                 timestamp=tool_data.get("timestamp", datetime.now(timezone.utc).isoformat())
             )
 
+        # WeatherGPT 6-hour ML Forecast Case
+        if "predicted_temperature_c" in tool_data:
+            rain_pred = tool_data.get("rain_predicted", False)
+            prob_pct = int((tool_data.get("rain_probability", 0.0) or 0.0) * 100)
+            return WeatherCard(
+                location=location,
+                temperature=tool_data.get("predicted_temperature_c"),
+                precipitation=tool_data.get("predicted_rainfall_mm", 0.0),
+                precipitation_probability=prob_pct,
+                condition="Rain Expected" if rain_pred or prob_pct > 50 else "Clear / Fair",
+                weather_code=61 if rain_pred else 1,
+                risk_level=risk,
+                source=tool_data.get("source", "WeatherGPT Trained ML Models (XGBoost/LightGBM V3)"),
+                timestamp=datetime.now(timezone.utc).isoformat()
+            )
+
         return None
 
     def extract_sources(self, tool_data: Optional[Dict[str, Any]], rag_sources: Optional[List[str]] = None) -> List[str]:
