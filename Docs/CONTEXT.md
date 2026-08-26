@@ -126,6 +126,10 @@ WeatherGPT-SIH-2026-/
 │   ├── API.md                                 # Backend REST API reference
 │   └── ALERTS_GIS.md                          # GIS & hazard design
 │
+├── .github/                                   # GitHub Actions CI/CD Workflows
+│   └── workflows/ci.yml                      # Multi-job automated test pipeline (ML, AI, Backend, Frontend)
+│
+├── requirements.txt                           # Root unified Python dependencies
 ├── docker-compose.yml                         # Monorepo container orchestration
 └── .gitignore
 ```
