@@ -73,7 +73,36 @@ jobs:
         run: pytest tests/ -v
 
   # =========================================================================
-  # 3. Weather-ML Pipeline, Risk Engine & NWP Consensus Tests
+  # 3. GIS & Spatial Alerts Pytest Suite
+  # =========================================================================
+  gis-alerts-tests:
+    name: GIS Geofencing & Alert Rules Subsystem
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./gis-alerts
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: gis-alerts/requirements.txt
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run GIS & Alerts Pytest Suite (17 Tests)
+        run: pytest tests/ -v
+
+  # =========================================================================
+  # 4. Weather-ML Pipeline, Risk Engine & NWP Consensus Tests
   # =========================================================================
   weather-ml-tests:
     name: ML 6h Forecasting & NWP Consensus Pipeline
@@ -125,7 +154,7 @@ jobs:
         run: python test_api_server.py
 
   # =========================================================================
-  # 4. React / Vite Frontend Production Bundle Build Verification
+  # 5. React / Vite Frontend Production Bundle Build Verification
   # =========================================================================
   frontend-build:
     name: Frontend React/Vite Build Verification

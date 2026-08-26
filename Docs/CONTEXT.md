@@ -38,16 +38,17 @@
 │   • Live Observation Hazard Engine (hazardEngine.js)                        │
 │   • Server-Sent Events (SSE) Live Disaster Stream (/api/v1/alerts/stream)   │
 │   • Accessible via: http://localhost:5000                                   │
-└──────────────────┬──────────────────────────────────┬───────────────────────┘
-                   │ (HTTP: http://localhost:8000)    │
-┌──────────────────v──────────────────┐   ┌───────────v───────────────────────┐
-│     AI / LLM MICROSERVICE           │   │    WEATHER-ML & RISK ENGINE       │
-│    (Python FastAPI on Port 8000)    │   │  (Python ML Pipeline / Models)    │
-│  • ReAct Agent Loop & NLU Intent    │   │  • 6h Temperature XGBoost Regressor│
-│  • Multi-Provider LLM & RAG Search  │   │  • 6h Rain Classifier (XGBoost)   │
-│  • 11 Indian Languages Synthesis    │   │  • 6h Rain Amount (LightGBM)      │
-│  • Factual Grounding & Guardrails   │   │  • Real-Time 24h Lag Telemetry    │
-└─────────────────────────────────────┘   └───────────────────────────────────┘
+└──────────────────┬──────────────────┬──────────────────┬────────────────────┘
+                   │                  │                  │
+┌──────────────────v──────┐  ┌────────v───────────────┐ ┌v───────────────────┐
+│     AI / LLM SERVICE    │  │ WEATHER-ML & RISK      │ │ GIS & ALERTS        │
+│ (Python FastAPI :8000)  │  │ (Python Models / ML)   │ │ (Python FastAPI     │
+│ • ReAct Agent Loop      │  │ • 6h XGBoost Regressor │ │   & GeoJSON Hub)    │
+│ • NLU & 10 Live Tools   │  │ • 6h Rain Classifier   │ │ • Ray-Casting PIP   │
+│ • RAG Knowledge Base    │  │ • 6h Rain LightGBM     │ │ • IMD 4-Color SOP   │
+│ • 11 Indian Languages   │  │ • NWP Consensus Engine │ │ • CAP 1.2 XML/JSON  │
+│ • Safety Guardrails     │  │ • 24h Lag Telemetry    │ │ • Emergency Dispatch│
+└─────────────────────────┘  └────────────────────────┘ └─────────────────────┘
 ```
 
 ---
@@ -111,6 +112,24 @@ WeatherGPT-SIH-2026-/
 │   ├── requirements.txt                      # Python dependencies
 │   ├── Dockerfile                            # Containerization Dockerfile
 │   └── README.md                             # Microservice guide
+│
+├── gis-alerts/                                # Python (FastAPI) GIS & Spatial Alert Subsystem
+│   ├── data/                                 # Curated GeoJSON Boundary & Hazard Polygons
+│   │   ├── india_metropolitan_boundaries.geojson # 10 metropolitan boundary polygons
+│   │   ├── cyclone_hazard_corridors.geojson      # East & West Coast cyclone surge polygons
+│   │   ├── flood_prone_river_basins.geojson      # Major Indian river flood plains
+│   │   └── heatwave_vulnerability_zones.geojson  # Arid & Vidarbha/Telangana heat corridors
+│   ├── src/                                  # Spatial geofencing, IMD rules, CAP 1.2, Dispatcher
+│   │   ├── spatial_geofencing.py             # Ray-Casting Point-in-Polygon & Haversine distance
+│   │   ├── alert_rules_engine.py             # IMD 4-Color SOP severity classification
+│   │   ├── cap_protocol.py                   # WMO / NDMA CAP 1.2 XML & JSON generator/parser
+│   │   ├── geojson_builder.py                # GeoJSON FeatureCollection builder & styler
+│   │   ├── notification_dispatcher.py        # Multi-channel emergency notification hub
+│   │   └── api.py                            # FastAPI Microservice
+│   ├── tests/                                # Automated Pytest suite (17 passed)
+│   ├── requirements.txt                      # Python dependencies
+│   ├── Dockerfile                            # Containerization Dockerfile
+│   └── README.md                             # Subsystem documentation
 │
 ├── frontend/                                  # React + Vite + Tailwind CSS Frontend
 │   ├── src/
@@ -217,6 +236,30 @@ WeatherGPT-SIH-2026-/
 
 ---
 
+## 🛰️ GIS & Alerts Subsystem (Member 5 Deliverables)
+
+### 1. Spatial Geofencing & Point-in-Polygon Engine (`gis-alerts/src/spatial_geofencing.py`)
+- High-precision Ray-Casting 2D Point-in-Polygon (PIP) engine supporting complex Polygons with holes and MultiPolygons.
+- Haversine great-circle distance calculator and proximity radius search.
+
+### 2. Official IMD Alert Rules Engine (`gis-alerts/src/alert_rules_engine.py`)
+- Standard Operating Procedure (SOP) threshold evaluations for Rainfall (Light $\to$ Extremely Heavy $\ge 204.5\text{ mm}$), Wind Gale/Cyclonic Storms ($\ge 89\text{ km/h}$), and Thermal Extremes (Heatwaves $\ge 40^\circ\text{C}$ & Coldwaves $\le 4^\circ\text{C}$).
+- Standard IMD 4-Color Matrix (`Green: No Warning`, `Yellow: Watch`, `Orange: Alert`, `Red: Warning/Emergency`) with sector-specific advisories for citizens, farmers, and fishermen.
+
+### 3. Common Alerting Protocol (CAP 1.2) Generator & Parser (`gis-alerts/src/cap_protocol.py`)
+- Two-way WMO / OASIS / NDMA compliant CAP 1.2 XML and JSON serialization/deserialization with spatial polygons and circles.
+
+### 4. Curated India Boundary & Disaster Hazard Layers (`gis-alerts/data/`)
+- `india_metropolitan_boundaries.geojson`: 10 reference metropolitan boundaries (Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Hyderabad, Ahmedabad, Guwahati, Bhubaneswar, Srinagar).
+- `cyclone_hazard_corridors.geojson`: East Coast (Bay of Bengal) & West Coast (Arabian Sea) storm surge polygons.
+- `flood_prone_river_basins.geojson`: Brahmaputra, Lower Gangetic, and Mahanadi river basins.
+- `heatwave_vulnerability_zones.geojson`: North-West Arid core & Vidarbha/Telangana heat corridors.
+
+### 5. Multi-Channel Emergency Notification Dispatcher (`gis-alerts/src/notification_dispatcher.py`)
+- Targeted disaster alert broadcast simulation across Web Push, SMS, WhatsApp, and Email filtered by spatial geofence containment.
+
+---
+
 ## 🔌 API Integration Guide
 
 ### 1. AI Service Endpoints (Port 8000)
@@ -228,9 +271,19 @@ WeatherGPT-SIH-2026-/
 
 ### 2. ML Inference & Forecast Endpoints (Port 8000)
 - `GET /api/v1/ml/forecast?city=Kolkata`: Live 6-hour ML prediction (temperature, rain probability, rainfall accumulation, composite hazard score).
+- `GET /api/v1/ml/consensus?city=Delhi`: NWP Multi-model consensus comparison (ECMWF, GFS, ICON).
 - `GET /api/v1/ml/metadata`: Production model metrics, benchmarks, and feature schemas.
 
-### 3. Backend Gateway Endpoints (Port 5000)
+### 3. GIS & Alerts Microservice Endpoints (Port 8001)
+- `GET /api/v1/gis/layers`: Returns all registered GeoJSON boundary, cyclone, flood basin, and heatwave layers.
+- `POST /api/v1/gis/geofence/check`: Evaluates if coordinates fall inside active hazard polygons.
+- `POST /api/v1/gis/hazard/evaluate`: Evaluates live meteorological observation metrics against official IMD SOP alert rules.
+- `POST /api/v1/gis/cap/generate`: Generates official WMO / NDMA compliant CAP 1.2 XML or JSON bulletins.
+- `POST /api/v1/gis/cap/parse`: Parses incoming OASIS CAP 1.2 XML strings into structured JSON.
+- `POST /api/v1/gis/notifications/dispatch`: Dispatches multi-channel simulated emergency alerts.
+- `GET /api/v1/gis/notifications/history`: Returns recent emergency notification dispatch history.
+
+### 4. Backend Gateway Endpoints (Port 5000)
 - `/auth`: `POST /signup`, `POST /login`, `POST /logout`, `GET /me`, `PUT /me`
 - `/weather`: `GET /current`, `GET /forecast`, `GET /hourly`, `GET /daily`, `GET /history`, `GET /geocode`
 - `/chat` & `/ai`: `POST /`, `POST /chat`, `GET /conversations`, `GET /history/:conversationId`, `DELETE /conversations/:id`
@@ -261,7 +314,10 @@ python test_nwp_consensus.py
 # 6. Test AI/LLM microservice pytest suite (34 tests)
 cd ai-service && pytest tests/ -v && cd ..
 
-# 7. Test Backend API automated test suite (34 tests)
+# 7. Test GIS & Alerts microservice pytest suite (17 tests)
+cd gis-alerts && pytest tests/ -v && cd ..
+
+# 8. Test Backend API automated test suite (34 tests)
 cd backend && npm test && cd ..
 ```
 
@@ -275,5 +331,7 @@ cd backend && npm test && cd ..
 | **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE, REST APIs (34/34 tests passing) | Maintained & stable |
 | **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails (34/34 tests passing) | Maintained & stable |
 | **Weather/ML** | Member 4 | 10-city V3 dataset (1M rows), XGBoost/LightGBM 6h models (MAE 0.96°C, F1 0.67), live 24h lag pipeline, IMD risk engine, NWP consensus analyzer (ECMWF/GFS/ICON), FastAPI microservice (Port 8000) | Production ready & synchronized |
-| **GIS & Alerts** | Member 5 | Hazard score rules in backend, ray-casting PIP | India GeoJSON boundary layers, CAP parser |
+| **GIS & Alerts** | Member 5 | Dedicated `gis-alerts/` package, Ray-Casting PIP engine, GeoJSON layers (Metros, Cyclone corridors, Flood basins, Heat zones), IMD 4-Color hazard rules, CAP 1.2 XML/JSON generator & parser, Notification dispatcher (17/17 tests passing) | Maintained & stable |
 | **DevOps & CI/CD** | Member 6 | GitHub Actions CI/CD workflows (`.github/workflows/ci.yml`), Docker compose orchestration, multi-stack test automation | Maintained & automated |
+
+
