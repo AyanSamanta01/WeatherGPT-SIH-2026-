@@ -18,6 +18,17 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Large Datasets (>100MB GitHub limit - reconstructed on the fly from 10 city CSVs)
+dataset/WeatherGPT_10_Cities_V3_Master.csv
+
 # IDE / System
 .DS_Store
 Thumbs.db
