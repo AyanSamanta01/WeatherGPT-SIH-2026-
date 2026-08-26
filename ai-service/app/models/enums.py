@@ -4,6 +4,8 @@ class IntentCategory(str, Enum):
     CURRENT_WEATHER = "current_weather"
     FORECAST_SHORT_TERM = "forecast_short_term"
     FORECAST_EXTENDED = "forecast_extended"
+    ML_FORECAST = "ml_forecast"
+    NWP_CONSENSUS = "nwp_consensus"
     ALERT_CHECK = "alert_check"
     CLIMATE_TREND = "climate_trend"
     AGRI_ADVISORY = "agri_advisory"

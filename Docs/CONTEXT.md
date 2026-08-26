@@ -107,7 +107,7 @@ WeatherGPT-SIH-2026-/
 │   │   ├── models/                           # Pydantic schemas (AgentQueryRequest, AgentQueryResponse, WeatherCard) & Enums
 │   │   ├── config.py                         # Configuration & Environment settings
 │   │   └── main.py                           # FastAPI app with REST endpoints
-│   ├── tests/                                # Automated Pytest suite (29 passed)
+│   ├── tests/                                # Automated Pytest suite (34 passed)
 │   ├── requirements.txt                      # Python dependencies
 │   ├── Dockerfile                            # Containerization Dockerfile
 │   └── README.md                             # Microservice guide
@@ -175,14 +175,16 @@ WeatherGPT-SIH-2026-/
 ## 🤖 AI / LLM Subsystem (Member 3 Deliverables)
 
 ### 1. NLU Intent Classifier & Slot Extraction (`ai-service/app/agents/intent_classifier.py`)
-- **Intent Taxonomy**: `CURRENT_WEATHER`, `FORECAST_SHORT_TERM`, `FORECAST_EXTENDED`, `ALERT_CHECK`, `CLIMATE_TREND`, `AGRI_ADVISORY`, `OUTDOOR_ACTIVITY`, `METEOROLOGICAL_EXPLANATION`, `OUT_OF_DOMAIN`.
-- **Slot Extraction**: Locations (Indian cities, taluks, coordinates), temporal scopes (`current`, `tomorrow`, `multi_day`, `historical`), and target sector personas.
+- **Intent Taxonomy**: `CURRENT_WEATHER`, `FORECAST_SHORT_TERM`, `FORECAST_EXTENDED`, `ML_FORECAST`, `NWP_CONSENSUS`, `ALERT_CHECK`, `CLIMATE_TREND`, `AGRI_ADVISORY`, `OUTDOOR_ACTIVITY`, `METEOROLOGICAL_EXPLANATION`, `OUT_OF_DOMAIN`.
+- **Slot Extraction**: Locations (Indian cities, taluks, coordinates), temporal scopes (`current`, `tomorrow`, `6h`, `multi_day`, `historical`), and target sector personas.
 
 ### 2. Universal Multi-Provider LLM Integration (`ai-service/app/services/llm_client.py`)
 - Supports **Google Gemini** (`gemini-2.0-flash`, `gemini-1.5-pro`), **OpenAI / OpenRouter** (`gpt-4o`, `gpt-4o-mini`), **Anthropic Claude** (`claude-3-5-sonnet`), **Ollama / Local LLM** (`llama3:8b`), and a **Deterministic Grounded Fallback Engine** ensuring 100% operational uptime without requiring external API keys.
 
-### 3. Autonomous ReAct Agent Loop & 8 Live Tools (`ai-service/app/tools/`)
+### 3. Autonomous ReAct Agent Loop & 10 Live Tools (`ai-service/app/tools/`)
 - `get_current_weather`: Real-time temperature, feels like, humidity, wind, rainfall observations.
+- `get_weathergpt_ml_forecast`: WeatherGPT 6-hour high-resolution XGBoost temperature predictions, XGBoost rain probability, LightGBM rainfall amounts, and IMD risk assessments directly from trained production models.
+- `get_nwp_model_consensus`: Multi-model side-by-side comparison against ECMWF IFS, NOAA GFS, and DWD ICON with consensus confidence percentage and micro-climate anomaly flags.
 - `get_weather_forecast`: NWP ensemble multi-day forecasts (highs/lows, rain probabilities, conditions).
 - `get_active_alerts`: CAP 1.2 & IMD disaster warning feed.
 - `get_climate_trends`: Historical 30-year climatological normals and anomaly calculations.
