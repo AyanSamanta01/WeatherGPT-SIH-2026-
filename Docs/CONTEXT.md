@@ -131,12 +131,18 @@ WeatherGPT-SIH-2026-/
 │   ├── Dockerfile                            # Containerization Dockerfile
 │   └── README.md                             # Subsystem documentation
 │
-├── frontend/                                  # React + Vite + Tailwind CSS Frontend
-│   ├── src/
-│   │   ├── components/layout/                # Navbar, Sidebar, Weather Cards
-│   │   ├── pages/                            # ChatPage, ForecastPage, AlertsPage, Maps, Analytics, Auth, Settings
-│   │   └── services/api.js                   # Client REST API connector
-│   └── vite.config.js
+├── frontend/                                  # React 18 + Vite 6 + Redux Toolkit + Tailwind Frontend
+│   ├── index.html                            # HTML5 entry with Google Fonts & Leaflet styles
+│   ├── package.json                          # RTK, React-Router 7, Leaflet, Recharts, Lucide, Axios
+│   ├── tailwind.config.js                    # Custom color palettes & dark-mode styling
+│   ├── vite.config.js                        # Vite build & proxy configuration
+│   ├── public/                               # Meteorological assets & authentic imagery
+│   └── src/
+│       ├── components/                       # Reusable UI component modules
+│       │   └── layout/                       # EmergencyBanner (CAP 1.2 siren), FloatingAIChatButton
+│       └── store/                            # Central Redux Toolkit (RTK) state management
+│           ├── index.js                      # Root store combining 6 domain slices
+│           └── slices/                       # authSlice, weatherSlice, alertsSlice, chatSlice, locationsSlice, settingsSlice
 │
 ├── Docs/                                      # Project Documentation & Specifications
 │   ├── CONTEXT.md                             # THIS FILE
@@ -260,6 +266,35 @@ WeatherGPT-SIH-2026-/
 
 ---
 
+## 💻 Frontend Application Subsystem (Member 1 Deliverables)
+
+### 1. High-Performance Modern SPA Stack
+- **Core Technologies**: React 18 (`18.3.1`), Vite 6 (`6.1.0`), Redux Toolkit (`2.6.1`), React Router v7 (`7.2.0`), Tailwind CSS v3 (`3.4.17`), Leaflet & React-Leaflet (`4.2.1`), Recharts (`2.15.1`), Lucide-React (`0.475.0`), Axios (`1.7.9`), Canvas-Confetti (`1.9.4`).
+- **Design & Typography**: Premium glassmorphic dark-mode palette (`#0a0f1d` background, cyan/sky accents) with Google Fonts (*Plus Jakarta Sans* for UI, *Space Grotesk* for meteorological metrics).
+
+### 2. Centralized Redux Toolkit (RTK) State Architecture (`frontend/src/store/`)
+The frontend state is architected into 6 modular Redux slices managed through a single central store (`store/index.js`):
+- **`authSlice.js`**: Manages authenticated user session, persistent JWT tokens in `localStorage` (`weathergpt_token`, `weathergpt_user`), `loginUserThunk`, `signupUserThunk`, `logoutUserThunk`, profile updates, and seamless offline fallback user profiles.
+- **`weatherSlice.js`**: Handles selected metropolitan city (`selectedCity`), real-time weather telemetry fetching (`fetchWeatherThunk`), temperature unit conversions (`°C` / `°F`), and resilient offline fallback mock data across Indian metropolitan areas.
+- **`alertsSlice.js`**: Ingests official IMD and NDMA CAP 1.2 disaster warning bulletins (`fetchAlertsThunk`), tracks high-priority active emergencies (`emergencyAlert`), provides `triggerSimulatedAlert` for live jury siren demonstrations, and handles alert dismissals and live SSE pushes (`addLiveAlert`).
+- **`chatSlice.js`**: Powers the conversational weather assistant interface, managing active conversation IDs (`activeConversationId`), conversation thread lists (`fetchConversationsThunk`), multi-turn chat history (`messages`), message appending (`addMessage`), and thread resets.
+- **`locationsSlice.js`**: Provides user-customized favorite locations CRUD (`fetchLocationsThunk`, `addLocation`, `deleteLocation`, `setDefaultLocation`) synchronized with backend spatial models.
+- **`settingsSlice.js`**: Manages user interface customization including dark/light theme switching with DOM class sync and `localStorage` persistence (`weathergpt_theme`), multilingual language selection (`supportedLanguages`), Web Speech voice synthesis enablement (`voiceEnabled`, `voiceSpeed`), and broadcast notification toggles.
+
+### 3. High-Priority Disaster Broadcast & Conversational UI (`frontend/src/components/layout/`)
+- **`EmergencyBanner.jsx`**: Real-time early warning broadcast siren bar. Features dynamic severity pulsing (Red for Extreme/Cyclone/Flash Flood, Amber for Severe Heatwave), CAP 1.2 official bulletin attribution, affected geographic zone pills, direct quick-jump navigation into GIS danger maps, audio siren mute toggle, and an interactive *"Simulate Emergency Siren"* button tailored for SIH jury evaluation.
+- **`FloatingAIChatButton.jsx`**: 3D liquid animated floating action button with ambient cyan glowing wave, live AI pulse indicators, hover tooltip status badge, route-memory back navigation (remembers previous route like `/current`, `/forecast`, `/map`, `/alerts`, `/analytics`), and fluid morphing transitions between bot icon and return-arrow.
+
+### 4. Interactive GIS Geospatial Mapping & Climate Analytics
+- **Leaflet / React-Leaflet Map Hub**: Interactive visualizer mapping real-time Ray-Casting Point-in-Polygon (PIP) GeoJSON disaster zones (cyclone surge corridors, river flood basins, heatwave vulnerability zones) alongside coordinate hazard inspectors.
+- **Recharts Analytics**: Interactive time-series visualizers rendering decadal climate trends, 3-hourly NWP forecast curves, and rainfall accumulation graphs.
+
+### 5. Multilingual & Rural Voice-First Accessibility (SIH Key Features)
+- Native support for Indian regional languages (Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Odia, English).
+- Integrated Web Speech API support for Speech-to-Text (STT) voice querying and Text-to-Speech (TTS) natural language meteorological advisories.
+
+---
+
 ## 🔌 API Integration Guide
 
 ### 1. AI Service Endpoints (Port 8000)
@@ -319,6 +354,9 @@ cd gis-alerts && pytest tests/ -v && cd ..
 
 # 8. Test Backend API automated test suite (34 tests)
 cd backend && npm test && cd ..
+
+# 9. Test Frontend application production build & dependencies
+cd frontend && npm run build && cd ..
 ```
 
 ---
@@ -327,7 +365,7 @@ cd backend && npm test && cd ..
 
 | Role | Member | Completed Work | Pending Focus |
 | :--- | :--- | :--- | :--- |
-| **Frontend Lead** | Member 1 | React/Vite, Tailwind, UI Pages (Chat, Forecast, Alerts, Climate, Maps) | Web Speech voice integration, live SSE stream hook |
+| **Frontend Lead** | Member 1 | React 18 / Vite 6 SPA, Redux Toolkit (6 slices: auth, weather, alerts, chat, locations, settings), Emergency Siren Banner (CAP 1.2), 3D Liquid Floating AI Bot, Leaflet GIS mapping, Recharts, Voice STT/TTS | Production bundle validated & pushed to `origin/frontend` |
 | **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE, REST APIs (34/34 tests passing) | Maintained & stable |
 | **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails (34/34 tests passing) | Maintained & stable |
 | **Weather/ML** | Member 4 | 10-city V3 dataset (1M rows), XGBoost/LightGBM 6h models (MAE 0.96°C, F1 0.67), live 24h lag pipeline, IMD risk engine, NWP consensus analyzer (ECMWF/GFS/ICON), FastAPI microservice (Port 8000) | Production ready & synchronized |
