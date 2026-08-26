@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "name": "India_Cyclone_Hazard_Corridors",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "corridor_id": "bob_north_east",
+        "name": "Bay of Bengal North-East Corridor (Odisha & West Bengal)",
+        "hazard_category": "Very High Cyclone Surge Risk",
+        "vulnerability_index": 0.92,
+        "affected_states": ["Odisha", "West Bengal"],
+        "historical_storms": ["Cyclone Fani (2019)", "Cyclone Amphan (2020)", "Cyclone Yaas (2021)"],
+        "color": "#ef4444",
+        "stroke": "#b91c1c"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [84.50, 18.80],
+            [86.50, 19.50],
+            [88.80, 21.50],
+            [89.50, 22.20],
+            [88.50, 22.80],
+            [86.00, 21.00],
+            [84.00, 19.20],
+            [84.50, 18.80]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "corridor_id": "bob_south_east",
+        "name": "Bay of Bengal South-East Corridor (Andhra Pradesh & Tamil Nadu)",
+        "hazard_category": "High Cyclone & Surge Risk",
+        "vulnerability_index": 0.85,
+        "affected_states": ["Andhra Pradesh", "Tamil Nadu", "Puducherry"],
+        "historical_storms": ["Cyclone Vardah (2016)", "Cyclone Gaja (2018)", "Cyclone Michaung (2023)"],
+        "color": "#f97316",
+        "stroke": "#c2410c"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [79.80, 10.20],
+            [80.50, 12.50],
+            [82.50, 16.50],
+            [84.00, 18.50],
+            [83.00, 18.50],
+            [81.50, 16.00],
+            [79.50, 12.00],
+            [79.20, 10.20],
+            [79.80, 10.20]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "corridor_id": "arabian_sea_west",
+        "name": "Arabian Sea Coastal Corridor (Gujarat & North Maharashtra)",
+        "hazard_category": "Moderate to High Cyclone & Gale Risk",
+        "vulnerability_index": 0.78,
+        "affected_states": ["Gujarat", "Maharashtra"],
+        "historical_storms": ["Cyclone Nisarga (2020)", "Cyclone Tauktae (2021)", "Cyclone Biparjoy (2023)"],
+        "color": "#f59e0b",
+        "stroke": "#d97706"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [68.50, 23.50],
+            [70.50, 21.00],
+            [72.80, 18.50],
+            [73.50, 18.80],
+            [71.50, 21.50],
+            [69.00, 24.00],
+            [68.50, 23.50]
+          ]
+        ]
+      }
+    }
+  ]
+}
