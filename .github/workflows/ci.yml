@@ -2,21 +2,26 @@ name: WeatherGPT CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, ai-service, feature/**, fix/** ]
+    branches:
+      - main
+      - 'feature/**'
+      - 'Ml-model'
+      - 'ai-service'
+      - 'fix/**'
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  # -----------------------------------------------------------
+  # =========================================================================
   # 1. Backend Node.js / Express / Prisma API Test Suite
-  # -----------------------------------------------------------
+  # =========================================================================
   backend-tests:
-    name: Backend API & Database Tests
+    name: Backend API & Gateway Integration Tests
     runs-on: ubuntu-latest
-
     defaults:
       run:
-        working-directory: backend
+        working-directory: ./backend
 
     steps:
       - name: Checkout Code
@@ -25,29 +30,28 @@ jobs:
       - name: Set up Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '20.x'
           cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: backend/package.json
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: Install Backend Dependencies
+        run: npm install
 
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Run Backend Test Suite (34 Tests)
+      - name: Run Backend API Test Suite (34 Tests)
         run: npm test
 
-  # -----------------------------------------------------------
+  # =========================================================================
   # 2. AI / LLM Microservice Pytest Suite
-  # -----------------------------------------------------------
+  # =========================================================================
   ai-service-tests:
     name: AI/LLM Microservice (FastAPI & ReAct Agent)
     runs-on: ubuntu-latest
-
     defaults:
       run:
-        working-directory: ai-service
+        working-directory: ./ai-service
 
     steps:
       - name: Checkout Code
@@ -63,21 +67,20 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r ../requirements.txt
 
-      - name: Run AI Microservice Pytest Suite (29 Tests)
+      - name: Run AI Microservice Pytest Suite (34 Tests)
         run: pytest tests/ -v
 
-  # -----------------------------------------------------------
+  # =========================================================================
   # 3. GIS & Spatial Alerts Pytest Suite
-  # -----------------------------------------------------------
+  # =========================================================================
   gis-alerts-tests:
     name: GIS Geofencing & Alert Rules Subsystem
     runs-on: ubuntu-latest
-
     defaults:
       run:
-        working-directory: gis-alerts
+        working-directory: ./gis-alerts
 
     steps:
       - name: Checkout Code
@@ -98,9 +101,9 @@ jobs:
       - name: Run GIS & Alerts Pytest Suite (17 Tests)
         run: pytest tests/ -v
 
-  # -----------------------------------------------------------
+  # =========================================================================
   # 4. Weather-ML Pipeline, Risk Engine & NWP Consensus Tests
-  # -----------------------------------------------------------
+  # =========================================================================
   weather-ml-tests:
     name: ML 6h Forecasting & NWP Consensus Pipeline
     runs-on: ubuntu-latest
@@ -113,11 +116,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install ML & API Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas numpy xgboost lightgbm scikit-learn fastapi uvicorn requests httpx pytest
+          pip install -r requirements.txt
 
       - name: Reconstruct Master Dataset from City CSVs (if missing)
         run: |
@@ -154,16 +158,15 @@ jobs:
       - name: Test ML FastAPI Server Endpoints
         run: python test_api_server.py
 
-  # -----------------------------------------------------------
-  # 5. Frontend Production Bundle Build Verification
-  # -----------------------------------------------------------
+  # =========================================================================
+  # 5. React / Vite Frontend Production Bundle Build Verification
+  # =========================================================================
   frontend-build:
     name: Frontend React/Vite Build Verification
     runs-on: ubuntu-latest
-
     defaults:
       run:
-        working-directory: frontend
+        working-directory: ./frontend
 
     steps:
       - name: Checkout Code
@@ -172,12 +175,12 @@ jobs:
       - name: Set up Node.js 20.x
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '20.x'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: frontend/package.json
 
       - name: Install Frontend Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build Production Assets
         run: npm run build

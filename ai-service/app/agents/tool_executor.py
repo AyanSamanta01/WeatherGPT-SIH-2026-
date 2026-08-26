@@ -1,7 +1,12 @@
 import time
 from typing import Dict, Any, List, Optional
 from ..models.schemas import ToolCallRequest, ToolCallResult
-from ..tools.weather_tools import get_current_weather, get_weather_forecast
+from ..tools.weather_tools import (
+    get_current_weather,
+    get_weather_forecast,
+    get_weathergpt_ml_forecast,
+    get_nwp_model_consensus
+)
 from ..tools.alert_tools import get_active_alerts
 from ..tools.climate_tools import get_climate_trends
 from ..tools.agri_tools import calculate_biometeorology, get_agricultural_advisory
@@ -24,6 +29,18 @@ class ToolExecutor:
                     latitude=args.get("latitude"),
                     longitude=args.get("longitude"),
                     units=args.get("units", "metric")
+                )
+            elif name == "get_weathergpt_ml_forecast":
+                data = await get_weathergpt_ml_forecast(
+                    location_name=args.get("location_name"),
+                    latitude=args.get("latitude"),
+                    longitude=args.get("longitude")
+                )
+            elif name == "get_nwp_model_consensus":
+                data = await get_nwp_model_consensus(
+                    location_name=args.get("location_name"),
+                    latitude=args.get("latitude"),
+                    longitude=args.get("longitude")
                 )
             elif name == "get_weather_forecast":
                 data = await get_weather_forecast(

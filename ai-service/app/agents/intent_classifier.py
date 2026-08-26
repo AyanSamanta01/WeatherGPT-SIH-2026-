@@ -79,7 +79,43 @@ class IntentClassifier:
                 requires_tool_call=True
             )
 
-        # 2. Alert / Disaster Check
+        # 2. NWP Multi-Model Consensus & Comparison
+        if any(w in clean for w in [
+            "consensus", "gfs vs ecmwf", "ecmwf vs gfs", "compare models", "model comparison",
+            "nwp spread", "model agreement", "forecast agreement", "confidence score", "icon vs gfs"
+        ]):
+            return IntentResult(
+                intent=IntentCategory.NWP_CONSENSUS,
+                confidence=0.97,
+                location_name=loc_name,
+                latitude=final_lat,
+                longitude=final_lon,
+                temporal_scope="6h",
+                target_sector=TargetSector.GENERAL_PUBLIC,
+                language_detected=lang,
+                suggested_tools=["get_nwp_model_consensus", "get_weathergpt_ml_forecast"],
+                requires_tool_call=True
+            )
+
+        # 3. WeatherGPT High-Resolution 6-Hour ML Forecast
+        if any(w in clean for w in [
+            "6 hour", "6h", "6-hour", "ml model", "ml forecast", "weathergpt predict", "weathergpt forecast",
+            "xgboost", "lightgbm", "machine learning forecast", "regressor"
+        ]):
+            return IntentResult(
+                intent=IntentCategory.ML_FORECAST,
+                confidence=0.96,
+                location_name=loc_name,
+                latitude=final_lat,
+                longitude=final_lon,
+                temporal_scope="6h",
+                target_sector=TargetSector.GENERAL_PUBLIC,
+                language_detected=lang,
+                suggested_tools=["get_weathergpt_ml_forecast", "get_current_weather"],
+                requires_tool_call=True
+            )
+
+        # 4. Alert / Disaster Check
         if any(w in clean for w in [
             "alert", "warning", "cyclone", "flood", "tsunami", "danger", "evacuate",
             "storm warning", "ndma", "hazard", "चक्रवात", "तूफान", "बाढ़", "चेतावनी", "সতর্কবার্তা"

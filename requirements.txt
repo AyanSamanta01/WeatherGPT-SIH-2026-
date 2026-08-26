@@ -1,0 +1,14 @@
+# WeatherGPT Full Python Stack Dependencies (ML Engine & AI-Service)
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+httpx>=0.27.0
+requests>=2.31.0
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+xgboost>=2.0.0
+lightgbm>=4.3.0
+python-dotenv>=1.0.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
