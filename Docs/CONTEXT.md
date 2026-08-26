@@ -162,6 +162,12 @@ WeatherGPT-SIH-2026-/
 - Computes cyclic time encodings (`hour_sin/cos`, `day_sin/cos`), wind direction vectors (`sin/cos`), and all multi-horizon lags (`1h`, `3h`, `6h`, `12h`, `24h`) dynamically on the fly.
 - Feeds live feature vectors into `weathergpt_predict()` for zero-latency 6-hour forecast generation.
 
+### 5. NWP Multi-Model Consensus & Anomaly Analyzer (`src/weathergpt_nwp_consensus.py`)
+- **Multi-Model Benchmark**: Side-by-side comparison of WeatherGPT 6h ML forecasts against global Numerical Weather Prediction models (**ECMWF IFS 9km**, **NOAA GFS 13km**, and **DWD ICON 13km**).
+- **Consensus Confidence Index (0% - 100%)**: Dynamically measures inter-model agreement and atmospheric uncertainty from model standard deviation ($\sigma_T$, $\sigma_P$).
+- **Micro-Climate Anomaly Detector**: Identifies localized convective downpours and urban heat island retention that coarse global grids smooth out.
+- **REST Endpoint**: `GET http://localhost:8000/api/v1/ml/consensus?city={city}`
+
 ---
 
 ## 🤖 AI / LLM Subsystem (Member 3 Deliverables)

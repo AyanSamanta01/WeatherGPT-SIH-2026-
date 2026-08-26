@@ -271,6 +271,32 @@ def get_metadata():
         return json.load(f)
 
 
+from src.weathergpt_nwp_consensus import evaluate_nwp_consensus
+
+
+@app.get("/api/v1/ml/consensus")
+def get_nwp_consensus(
+    city: Optional[str] = Query(None, description="City name (e.g. Kolkata, Mumbai, Delhi)"),
+    lat: Optional[float] = Query(None, description="Latitude"),
+    lon: Optional[float] = Query(None, description="Longitude")
+):
+    """
+    Evaluates WeatherGPT ML forecast against global NWP models (ECMWF, GFS, ICON),
+    computing ensemble spread, consensus confidence score, and detecting micro-climate anomalies.
+    """
+    if city:
+        query_loc = city
+    elif lat is not None and lon is not None:
+        query_loc = (lat, lon)
+    else:
+        query_loc = "Mumbai"
+        
+    try:
+        return evaluate_nwp_consensus(query_loc)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/v1/ml/cities")
 def get_cities():
     """Returns list of supported Indian cities and their coordinates."""
