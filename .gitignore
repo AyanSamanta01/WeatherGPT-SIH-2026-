@@ -5,6 +5,7 @@ node_modules
 # Production Builds
 dist
 build
+.vite
 
 # Logs
 npm-debug.log*
