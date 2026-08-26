@@ -1,0 +1,248 @@
+{
+  "type": "FeatureCollection",
+  "name": "India_Metropolitan_Weather_Boundaries",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "mumbai",
+        "city_name": "Mumbai",
+        "state": "Maharashtra",
+        "zone_type": "coastal_metro",
+        "primary_risk": "monsoon_inundation_cyclone",
+        "center": [72.8777, 19.0760],
+        "color": "#38bdf8"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [72.775, 18.890],
+            [72.990, 18.890],
+            [73.050, 19.180],
+            [72.980, 19.300],
+            [72.780, 19.300],
+            [72.775, 18.890]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "delhi",
+        "city_name": "Delhi NCR",
+        "state": "Delhi",
+        "zone_type": "inland_megacity",
+        "primary_risk": "heatwave_fog_air_quality",
+        "center": [77.2090, 28.6139],
+        "color": "#f59e0b"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [76.850, 28.400],
+            [77.400, 28.400],
+            [77.450, 28.850],
+            [76.900, 28.850],
+            [76.850, 28.400]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "kolkata",
+        "city_name": "Kolkata",
+        "state": "West Bengal",
+        "zone_type": "delta_metro",
+        "primary_risk": "cyclone_surge_norwester",
+        "center": [88.3639, 22.5726],
+        "color": "#3b82f6"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [88.200, 22.400],
+            [88.550, 22.400],
+            [88.580, 22.750],
+            [88.220, 22.750],
+            [88.200, 22.400]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "chennai",
+        "city_name": "Chennai",
+        "state": "Tamil Nadu",
+        "zone_type": "coastal_metro",
+        "primary_risk": "ne_monsoon_flooding_cyclone",
+        "center": [80.2707, 13.0827],
+        "color": "#06b6d4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [80.120, 12.850],
+            [80.350, 12.850],
+            [80.380, 13.250],
+            [80.150, 13.250],
+            [80.120, 12.850]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "bengaluru",
+        "city_name": "Bengaluru",
+        "state": "Karnataka",
+        "zone_type": "plateau_metro",
+        "primary_risk": "urban_flash_flood_thunderstorm",
+        "center": [77.5946, 12.9716],
+        "color": "#10b981"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [77.450, 12.800],
+            [77.780, 12.800],
+            [77.780, 13.150],
+            [77.450, 13.150],
+            [77.450, 12.800]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "hyderabad",
+        "city_name": "Hyderabad",
+        "state": "Telangana",
+        "zone_type": "plateau_metro",
+        "primary_risk": "cloudburst_urban_inundation",
+        "center": [78.4867, 17.3850],
+        "color": "#8b5cf6"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [78.300, 17.200],
+            [78.680, 17.200],
+            [78.680, 17.580],
+            [78.300, 17.580],
+            [78.300, 17.200]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "ahmedabad",
+        "city_name": "Ahmedabad",
+        "state": "Gujarat",
+        "zone_type": "semi_arid_metro",
+        "primary_risk": "extreme_heatwave_gale",
+        "center": [72.5714, 23.0225],
+        "color": "#ef4444"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [72.450, 22.880],
+            [72.750, 22.880],
+            [72.750, 23.180],
+            [72.450, 23.180],
+            [72.450, 22.880]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "guwahati",
+        "city_name": "Guwahati",
+        "state": "Assam",
+        "zone_type": "riverine_valley",
+        "primary_risk": "river_flood_landslide",
+        "center": [91.7362, 26.1445],
+        "color": "#14b8a6"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [91.550, 26.050],
+            [91.900, 26.050],
+            [91.900, 26.250],
+            [91.550, 26.250],
+            [91.550, 26.050]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "bhubaneswar",
+        "city_name": "Bhubaneswar",
+        "state": "Odisha",
+        "zone_type": "coastal_hinterland",
+        "primary_risk": "tropical_cyclone_heatwave",
+        "center": [85.8245, 20.2961],
+        "color": "#f97316"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [85.700, 20.150],
+            [85.950, 20.150],
+            [85.950, 20.420],
+            [85.700, 20.420],
+            [85.700, 20.150]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "city_id": "srinagar",
+        "city_name": "Srinagar",
+        "state": "Jammu and Kashmir",
+        "zone_type": "himalayan_valley",
+        "primary_risk": "coldwave_snow_western_disturbance",
+        "center": [74.7973, 34.0837],
+        "color": "#6366f1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [74.650, 33.950],
+            [74.980, 33.950],
+            [74.980, 34.220],
+            [74.650, 34.220],
+            [74.650, 33.950]
+          ]
+        ]
+      }
+    }
+  ]
+}

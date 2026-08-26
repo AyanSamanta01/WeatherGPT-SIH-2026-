@@ -1,0 +1,80 @@
+{
+  "type": "FeatureCollection",
+  "name": "India_Flood_Prone_River_Basins",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "basin_id": "brahmaputra_valley",
+        "name": "Brahmaputra Flood Plain Basin",
+        "risk_type": "Recurrent Monsoon Flash & Inundation Flood",
+        "vulnerability_level": "Severe",
+        "affected_states": ["Assam", "Arunachal Pradesh"],
+        "critical_monsoon_months": ["June", "July", "August"],
+        "color": "#38bdf8"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [90.00, 26.00],
+            [95.50, 27.50],
+            [96.00, 28.00],
+            [94.00, 28.20],
+            [89.80, 26.50],
+            [90.00, 26.00]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "basin_id": "lower_gangetic_basin",
+        "name": "Lower Gangetic Plain Basin (Bihar & Bengal)",
+        "risk_type": "River Overflow & Waterlogging",
+        "vulnerability_level": "High",
+        "affected_states": ["Bihar", "West Bengal", "Uttar Pradesh"],
+        "critical_monsoon_months": ["July", "August", "September"],
+        "color": "#60a5fa"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [83.50, 25.00],
+            [88.50, 24.50],
+            [89.00, 22.50],
+            [87.50, 22.00],
+            [84.00, 25.50],
+            [83.50, 25.00]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "basin_id": "mahanadi_delta",
+        "name": "Mahanadi Deltaic Basin (Odisha)",
+        "risk_type": "Backwater Flood & Cyclone Inundation",
+        "vulnerability_level": "High",
+        "affected_states": ["Odisha", "Chhattisgarh"],
+        "critical_monsoon_months": ["August", "September"],
+        "color": "#0284c7"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [85.00, 20.00],
+            [87.00, 20.00],
+            [87.00, 21.00],
+            [85.00, 21.00],
+            [85.00, 20.00]
+          ]
+        ]
+      }
+    }
+  ]
+}

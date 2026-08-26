@@ -18,7 +18,21 @@ import pandas as pd
 import os
 
 WORKSPACE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATASET_PATH = os.path.join(WORKSPACE_DIR, "dataset", "WeatherGPT_10_Cities_V3_Master.csv")
+DATASET_DIR = os.path.join(WORKSPACE_DIR, "dataset")
+MASTER_DATASET_PATH = os.path.join(DATASET_DIR, "WeatherGPT_10_Cities_V3_Master.csv")
+
+def load_sample_dataset(nrows=10):
+    """Loads sample data from master CSV if available, or falls back to individual city CSVs."""
+    if os.path.exists(MASTER_DATASET_PATH):
+        return pd.read_csv(MASTER_DATASET_PATH, nrows=nrows)
+    
+    city_files = [f for f in os.listdir(DATASET_DIR) if f.endswith("_V3.csv") and not f.startswith("V3_")]
+    if not city_files:
+        raise FileNotFoundError(f"No city datasets (*_V3.csv) found in {DATASET_DIR}")
+    
+    # Pick first city file
+    cpath = os.path.join(DATASET_DIR, city_files[0])
+    return pd.read_csv(cpath, nrows=nrows)
 
 
 def test_heat_index():
@@ -128,7 +142,7 @@ def test_composite_risk_scenarios():
 
 def test_end_to_end_prediction_with_risk():
     print("\n--- 5. Testing End-to-End Prediction with Risk Integration ---")
-    df = pd.read_csv(DATASET_PATH, nrows=10)
+    df = load_sample_dataset(nrows=10)
     sample = df.iloc[[0]]
     
     prediction = weathergpt_predict(sample, include_risk_assessment=True)

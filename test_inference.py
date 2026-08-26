@@ -10,14 +10,30 @@ import pandas as pd
 from src.weathergpt_predict import weathergpt_predict
 
 WORKSPACE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATASET_PATH = os.path.join(WORKSPACE_DIR, "dataset", "WeatherGPT_10_Cities_V3_Master.csv")
+DATASET_DIR = os.path.join(WORKSPACE_DIR, "dataset")
+MASTER_DATASET_PATH = os.path.join(DATASET_DIR, "WeatherGPT_10_Cities_V3_Master.csv")
+
+def load_test_dataset():
+    """Loads sample data from master CSV if available, or falls back to individual city CSVs."""
+    if os.path.exists(MASTER_DATASET_PATH):
+        return pd.read_csv(MASTER_DATASET_PATH)
+    
+    city_files = [f for f in os.listdir(DATASET_DIR) if f.endswith("_V3.csv") and not f.startswith("V3_")]
+    if not city_files:
+        raise FileNotFoundError(f"No city datasets (*_V3.csv) found in {DATASET_DIR}")
+    
+    dfs = []
+    for cf in city_files:
+        cpath = os.path.join(DATASET_DIR, cf)
+        dfs.append(pd.read_csv(cpath, nrows=50))
+    return pd.concat(dfs, ignore_index=True)
 
 def test_inference_cities():
     print("\n" + "=" * 60)
     print("TESTING WEATHERGPT PRODUCTION PREDICTION FUNCTION")
     print("=" * 60)
     
-    df = pd.read_csv(DATASET_PATH)
+    df = load_test_dataset()
     
     # Select one test sample from each city (from tail to ensure test domain sample)
     cities = df["location"].unique()
