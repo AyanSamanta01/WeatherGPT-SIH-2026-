@@ -23,3 +23,12 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Large Datasets (>100MB GitHub limit - reconstructed on the fly from 10 city CSVs)
+dataset/WeatherGPT_10_Cities_V3_Master.csv
