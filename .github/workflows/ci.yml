@@ -132,7 +132,12 @@ jobs:
               print('Master CSV not present. Combining committed city CSVs...')
               city_csvs = [f for f in glob.glob('dataset/*_V3.csv') if not os.path.basename(f).startswith('V3_')]
               if city_csvs:
-                  dfs = [pd.read_csv(f, nrows=200) for f in city_csvs]
+                  dfs = []
+                  for f in sorted(city_csvs):
+                      city_name = os.path.basename(f).replace('_V3.csv', '')
+                      cdf = pd.read_csv(f, nrows=100)
+                      cdf['location'] = city_name
+                      dfs.append(cdf)
                   combined = pd.concat(dfs, ignore_index=True)
                   combined.to_csv(master_file, index=False)
                   print(f'Reconstructed test master dataset at {master_file} with shape {combined.shape}')
