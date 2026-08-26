@@ -73,6 +73,7 @@ WeatherGPT-SIH-2026-/
 │   ├── weathergpt_predict.py                 # Unified model inference module
 │   ├── weathergpt_risk_engine.py             # IMD Heat Index, Discomfort, Rain/Wind scales
 │   ├── weathergpt_live_features.py           # Live Open-Meteo telemetry & 24h lag engine
+│   ├── weathergpt_nwp_consensus.py           # Multi-model NWP consensus analyzer (ECMWF, GFS, ICON)
 │   └── api.py                                # FastAPI Microservice (Port 8000)
 │
 ├── train_pipeline.py                          # 13-stage reproducible ML training pipeline
@@ -80,6 +81,7 @@ WeatherGPT-SIH-2026-/
 ├── test_risk_engine.py                        # Risk & hazard engine unit tests
 ├── test_live_pipeline.py                      # Live Open-Meteo data pipeline tests
 ├── test_api_server.py                         # FastAPI endpoint integration tests
+├── test_nwp_consensus.py                      # NWP multi-model consensus test suite
 │
 ├── backend/                                   # Node.js / Express Backend
 │   ├── prisma/
@@ -247,10 +249,13 @@ python test_live_pipeline.py
 # 4. Test ML FastAPI microservice endpoints
 python test_api_server.py
 
-# 5. Test AI/LLM microservice pytest suite (29 tests)
+# 5. Test NWP multi-model consensus & anomaly analyzer
+python test_nwp_consensus.py
+
+# 6. Test AI/LLM microservice pytest suite (29 tests)
 cd ai-service && pytest tests/ -v && cd ..
 
-# 6. Test Backend API automated test suite (34 tests)
+# 7. Test Backend API automated test suite (34 tests)
 cd backend && npm test && cd ..
 ```
 
@@ -263,6 +268,6 @@ cd backend && npm test && cd ..
 | **Frontend Lead** | Member 1 | React/Vite, Tailwind, UI Pages (Chat, Forecast, Alerts, Climate, Maps) | Web Speech voice integration, live SSE stream hook |
 | **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE, REST APIs (34/34 tests passing) | Maintained & stable |
 | **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 8 Tools, RAG, 11 Indian Languages, Memory, Guardrails (29/29 tests passing) | Maintained & stable |
-| **Weather/ML** | Member 4 | 10-city dataset, XGBoost/LightGBM models, live telemetry lag pipeline, risk engine | Microservice packaging |
+| **Weather/ML** | Member 4 | 10-city V3 dataset (1M rows), XGBoost/LightGBM 6h models (MAE 0.96°C, F1 0.67), live 24h lag pipeline, IMD risk engine, NWP consensus analyzer (ECMWF/GFS/ICON), FastAPI microservice (Port 8000) | Production ready & synchronized |
 | **GIS & Alerts** | Member 5 | Hazard score rules in backend, ray-casting PIP | India GeoJSON boundary layers, CAP parser |
 | **DevOps & CI/CD** | Member 6 | Docker compose orchestration, test suites | GitHub Actions CI/CD workflows, Frontend Dockerfile, E2E tests |
