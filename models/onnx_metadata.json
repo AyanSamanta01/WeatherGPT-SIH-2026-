@@ -1,0 +1,134 @@
+{
+  "graph_specification": {
+    "format": "WeatherGPT-Edge-Optimized-V1",
+    "opset_target": 15,
+    "input_tensor": {
+      "name": "float_features",
+      "dtype": "float32",
+      "shape": [
+        null,
+        64
+      ]
+    },
+    "output_tensors": [
+      {
+        "name": "temperature_6h_c",
+        "dtype": "float32",
+        "shape": [
+          null,
+          1
+        ]
+      },
+      {
+        "name": "rain_probability",
+        "dtype": "float32",
+        "shape": [
+          null,
+          1
+        ]
+      },
+      {
+        "name": "rainfall_amount_mm",
+        "dtype": "float32",
+        "shape": [
+          null,
+          1
+        ]
+      }
+    ]
+  },
+  "models": {
+    "temperature_regressor": {
+      "source_file": "temperature_xgb.json",
+      "trees_compiled": 991,
+      "base_score": 0.5
+    },
+    "rain_classifier": {
+      "source_file": "rain_classifier_xgb.json",
+      "trees_compiled": 1000,
+      "classification_threshold": 0.65
+    }
+  },
+  "edge_performance": {
+    "iterations": 200,
+    "mean_latency_ms": 12.039,
+    "p50_latency_ms": 11.752,
+    "p95_latency_ms": 15.802,
+    "p99_latency_ms": 26.7,
+    "min_latency_us": 9353.2,
+    "max_latency_us": 30240.9,
+    "throughput_qps": 83.1,
+    "tree_count": {
+      "temperature_regressor": 991,
+      "rain_classifier": 1000
+    }
+  },
+  "feature_count": 64,
+  "features": [
+    "temperature_c",
+    "rainfall_mm",
+    "humidity_percent",
+    "dew_point_c",
+    "pressure_hpa",
+    "wind_speed_kmh",
+    "wind_direction_deg",
+    "cloud_cover_percent",
+    "month",
+    "hour",
+    "day_of_year",
+    "hour_sin",
+    "hour_cos",
+    "day_sin",
+    "day_cos",
+    "wind_direction_sin",
+    "wind_direction_cos",
+    "temperature_c_lag_1h",
+    "temperature_c_lag_3h",
+    "temperature_c_lag_6h",
+    "temperature_c_lag_12h",
+    "temperature_c_lag_24h",
+    "rainfall_mm_lag_1h",
+    "rainfall_mm_lag_3h",
+    "rainfall_mm_lag_6h",
+    "rainfall_mm_lag_12h",
+    "rainfall_mm_lag_24h",
+    "humidity_percent_lag_1h",
+    "humidity_percent_lag_3h",
+    "humidity_percent_lag_6h",
+    "humidity_percent_lag_12h",
+    "humidity_percent_lag_24h",
+    "dew_point_c_lag_1h",
+    "dew_point_c_lag_3h",
+    "dew_point_c_lag_6h",
+    "dew_point_c_lag_12h",
+    "dew_point_c_lag_24h",
+    "pressure_hpa_lag_1h",
+    "pressure_hpa_lag_3h",
+    "pressure_hpa_lag_6h",
+    "pressure_hpa_lag_12h",
+    "pressure_hpa_lag_24h",
+    "wind_speed_kmh_lag_1h",
+    "wind_speed_kmh_lag_3h",
+    "wind_speed_kmh_lag_6h",
+    "wind_speed_kmh_lag_12h",
+    "wind_speed_kmh_lag_24h",
+    "cloud_cover_percent_lag_1h",
+    "cloud_cover_percent_lag_3h",
+    "cloud_cover_percent_lag_6h",
+    "cloud_cover_percent_lag_12h",
+    "cloud_cover_percent_lag_24h",
+    "latitude",
+    "longitude",
+    "location_Ahmedabad",
+    "location_Bengaluru",
+    "location_Bhubaneswar",
+    "location_Chennai",
+    "location_Delhi",
+    "location_Guwahati",
+    "location_Hyderabad",
+    "location_Kolkata",
+    "location_Mumbai",
+    "location_Srinagar"
+  ],
+  "generated_at": "2026-08-27T04:47:27Z"
+}
