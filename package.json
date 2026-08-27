@@ -1,0 +1,23 @@
+{
+  "name": "weathergpt-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WeatherGPT - Conversational AI for Weather Forecasting, Alerts, and Climate Information",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "npm --prefix backend run dev",
+    "ai-service": "python -m uvicorn app.main:app --app-dir ai-service --host 0.0.0.0 --port 8000 --reload",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test"
+  },
+  "keywords": [
+    "weathergpt",
+    "sih2026",
+    "react",
+    "express",
+    "fastapi"
+  ],
+  "author": "WeatherGPT Team"
+}

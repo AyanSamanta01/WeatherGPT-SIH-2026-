@@ -6,6 +6,7 @@ node_modules
 dist
 build
 .vite
+*.zip
 
 # Logs
 npm-debug.log*
