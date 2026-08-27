@@ -1,5 +1,5 @@
 # Multi-stage production build for full-stack WeatherGPT
-# Builds React+Vite frontend and serves it via Express Backend + Prisma
+# Builds React+Vite frontend and serves it via Express Backend + PostgreSQL Database
 
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
@@ -31,4 +31,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
   CMD curl -f http://localhost:5000/api/v1/weather/current?city=Mumbai || exit 1
 
-CMD ["node", "server.js"]
+# Auto-migrate database tables on startup if DATABASE_URL is set, then start server
+CMD sh -c "if [ -n \"$DATABASE_URL\" ]; then npx prisma db push --skip-generate && node prisma/seed.js || true; fi; node server.js"
