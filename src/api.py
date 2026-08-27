@@ -40,9 +40,14 @@ app = FastAPI(
 )
 
 # Enable CORS for backend (port 5000) and frontend (port 5173/3000)
+raw_cors = os.getenv("CORS_ORIGIN", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://localhost:80")
+allowed_origins = [o.strip() for o in raw_cors.split(",") if o.strip()]
+if "*" in allowed_origins:
+    allowed_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

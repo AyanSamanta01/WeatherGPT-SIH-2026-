@@ -33,8 +33,9 @@ class Settings(BaseModel):
     AI_TEMPERATURE: float = Field(default_factory=lambda: float(os.getenv("AI_TEMPERATURE", "0.2")))
     AI_MAX_TOKENS: int = Field(default_factory=lambda: int(os.getenv("AI_MAX_TOKENS", "1024")))
 
-    # Gateways
+    # Gateways & CORS
     BACKEND_API_URL: str = Field(default_factory=lambda: os.getenv("BACKEND_API_URL", "http://localhost:5000/api/v1"))
     OPEN_METEO_BASE_URL: str = Field(default_factory=lambda: os.getenv("OPEN_METEO_BASE_URL", "https://api.open-meteo.com/v1"))
+    CORS_ORIGIN: str = Field(default_factory=lambda: os.getenv("CORS_ORIGIN", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://localhost:80"))
 
 settings = Settings()

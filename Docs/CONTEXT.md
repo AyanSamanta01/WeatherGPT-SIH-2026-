@@ -88,6 +88,19 @@
 ```text
 WeatherGPT-SIH-2026-/
 │
+├── FEATURES_README.md                         # Presentation-Ready PPT Slide Deck & Feature Catalog
+├── requirements.txt                           # Root unified Python dependencies (including pytest-asyncio)
+├── docker-compose.yml                         # 5-Service Monorepo Container Orchestration
+├── train_pipeline.py                          # 13-stage reproducible ML training pipeline
+├── test_inference.py                          # ML model prediction unit tests
+├── test_risk_engine.py                        # Risk & hazard engine unit tests
+├── test_live_pipeline.py                      # Live Open-Meteo data pipeline tests
+├── test_api_server.py                         # FastAPI endpoint integration tests
+├── test_nwp_consensus.py                      # NWP multi-model consensus test suite
+├── test_voice_service.py                      # Native AI Voice STT & TTS test suite
+├── test_multilingual_voice_evaluation.py      # 11-Language reasoning & speech recognition evaluation
+├── test_onnx_inference.py                     # ONNX/Edge parity, latency benchmark & endpoint tests
+│
 ├── dataset/                                   # Curated Master Historical Meteorological Datasets
 │   ├── WeatherGPT_10_Cities_V3_Master.csv    # Master V3 Dataset (1,020,180 rows, 58 columns)
 │   ├── V3_dataset_summary.csv                # Statistical dataset distribution & verification
@@ -110,17 +123,10 @@ WeatherGPT-SIH-2026-/
 │   ├── weathergpt_onnx_converter.py          # ONNX graph exporter & schema generator
 │   └── api.py                                # Root FastAPI Microservice (Port 8000)
 │
-├── train_pipeline.py                          # 13-stage reproducible ML training pipeline
-├── test_inference.py                          # ML model prediction unit tests
-├── test_risk_engine.py                        # Risk & hazard engine unit tests
-├── test_live_pipeline.py                      # Live Open-Meteo data pipeline tests
-├── test_api_server.py                         # FastAPI endpoint integration tests
-├── test_nwp_consensus.py                      # NWP multi-model consensus test suite
-├── test_voice_service.py                      # Native AI Voice STT & TTS test suite
-├── test_multilingual_voice_evaluation.py      # 11-Language reasoning & speech recognition evaluation
-├── test_onnx_inference.py                     # ONNX/Edge parity, latency benchmark & endpoint tests
-│
 ├── backend/                                   # Node.js / Express Backend Gateway
+│   ├── Dockerfile                            # Multi-stage production container with Prisma & non-root user
+│   ├── docker-entrypoint.sh                  # Automated DB connection retry, Prisma push & seed script
+│   ├── .dockerignore                         # Container build context ignore rules
 │   ├── prisma/
 │   │   ├── schema.prisma                     # DB schema (User, Location, Record, Alert, Chat)
 │   │   └── seed.js                           # Seed script with default locations & mock alerts
@@ -130,26 +136,27 @@ WeatherGPT-SIH-2026-/
 │   │   ├── services/                         # hazardEngine.js, alertService.js, chatService.js
 │   │   ├── providers/                        # Open-Meteo, OpenWeather, IMD providers
 │   │   ├── utils/                            # gisUtils.js (Ray-casting PIP, GeoJSON)
-│   │   └── config/                           # env.js (points AI_SERVICE_URL -> port 8000)
+│   │   └── config/                           # env.js & swagger.js (CORS whitelisting & validation)
 │   ├── test/                                 # Automated API test suite (34 passed)
 │   └── package.json
 │
-├── ai-service/                                # Standalone Python AI/LLM Microservice (Port 8001)
+├── ai-service/                                # Standalone Python AI/LLM Microservice (Port 8000/8001)
+│   ├── Dockerfile                            # Python 3.11-slim containerization Dockerfile
 │   ├── app/
 │   │   ├── agents/                           # ReAct Agent orchestrator, NLU Intent classifier, Tool executor
-│   │   ├── tools/                            # Weather, Alerts, Climate, Agri, Geocoding tool implementations
+│   │   ├── tools/                            # Weather, Alerts, Climate, Agri, Geocoding, NWP tools
 │   │   ├── prompts/                          # Persona prompts (Base, Kisan, Emergency), Multilingual prompts
 │   │   ├── rag/                              # Knowledge base retriever (IMD manuals, cyclone SOPs, crop calendars)
-│   │   ├── services/                         # VoiceService, LLMClient, GroundingService, MultilingualService, ContextManager, Guardrails
+│   │   ├── services/                         # VoiceService, LLMClient, GroundingService, MultilingualService, Guardrails
 │   │   ├── models/                           # Pydantic schemas (VoiceRequest, AgentQueryRequest, WeatherCard)
-│   │   ├── config.py                         # Configuration & API keys settings
+│   │   ├── config.py                         # Configuration & CORS settings
 │   │   └── main.py                           # Standalone AI FastAPI application
-│   ├── tests/                                # Automated Pytest suite (34 passed)
+│   ├── tests/                                # Automated Pytest suite (39 passed, async test support)
 │   ├── requirements.txt                      # Python dependencies
-│   ├── Dockerfile                            # Containerization Dockerfile
 │   └── README.md                             # Subsystem documentation
 │
-├── gis-alerts/                                # Python (FastAPI) GIS & Spatial Alert Subsystem
+├── gis-alerts/                                # Python (FastAPI) GIS & Spatial Alert Subsystem (Port 8001)
+│   ├── Dockerfile                            # Python 3.11-slim containerization Dockerfile
 │   ├── data/                                 # Curated GeoJSON Boundary & Hazard Polygons
 │   │   ├── india_metropolitan_boundaries.geojson # 10 metropolitan boundary polygons
 │   │   ├── cyclone_hazard_corridors.geojson      # East & West Coast cyclone surge polygons
@@ -161,38 +168,36 @@ WeatherGPT-SIH-2026-/
 │   │   ├── cap_protocol.py                   # WMO / NDMA CAP 1.2 XML & JSON generator/parser
 │   │   ├── geojson_builder.py                # GeoJSON FeatureCollection builder & styler
 │   │   ├── notification_dispatcher.py        # Multi-channel emergency notification hub
-│   │   └── api.py                            # FastAPI Microservice
+│   │   └── api.py                            # FastAPI Microservice with CORS whitelisting
 │   ├── tests/                                # Automated Pytest suite (17 passed)
 │   ├── requirements.txt                      # Python dependencies
-│   ├── Dockerfile                            # Containerization Dockerfile
 │   └── README.md                             # Subsystem documentation
 │
 ├── frontend/                                  # React 18 + Vite 6 + Redux Toolkit + Tailwind Frontend
+│   ├── Dockerfile                            # Multi-stage production container with Nginx & SPA routing
+│   ├── nginx.conf                            # Nginx SPA fallback routing, security headers & Gzip compression
+│   ├── .dockerignore                         # Container build context ignore rules
 │   ├── index.html                            # HTML5 entry with Google Fonts & Leaflet styles
 │   ├── package.json                          # RTK, React-Router 7, Leaflet, Recharts, Lucide, Axios
 │   ├── tailwind.config.js                    # Glassmorphic dark-mode styling tokens
 │   ├── vite.config.js                        # Vite build & proxy configuration
 │   ├── public/                               # Meteorological assets & authentic imagery
 │   └── src/
-│       ├── components/                       # Reusable UI component modules
-│       │   └── layout/                       # EmergencyBanner (CAP 1.2 siren), FloatingAIChatButton
-│       └── store/                            # Central Redux Toolkit (RTK) state management
-│           ├── index.js                      # Root store combining 6 domain slices
-│           └── slices/                       # authSlice, weatherSlice, alertsSlice, chatSlice, locationsSlice, settingsSlice
+│       ├── components/                       # Reusable UI component modules (EmergencyBanner, FloatingBot)
+│       ├── pages/                            # 8 Dedicated Screens (Current, Forecast, Map, Alerts, Chat, etc.)
+│       └── store/                            # Central Redux Toolkit (RTK) state management (6 domain slices)
 │
 ├── Docs/                                      # Project Documentation & Specifications
 │   ├── CONTEXT.md                             # THIS COMPLETE TECHNICAL GUIDE
+│   ├── FEATURES_README.md                     # PPT Presentation Slide Deck & Feature Catalog
+│   ├── Requirements.md                        # Formal requirement specifications & tracking
 │   ├── TEAM_TASKS.md                          # Role-based task tracking
 │   ├── ARCHITECTURE.md                        # System architecture
 │   ├── API.md                                 # Backend REST API reference
 │   └── ALERTS_GIS.md                          # GIS & hazard design
 │
-├── .github/                                   # GitHub Actions CI/CD Workflows
-│   └── workflows/ci.yml                      # Multi-job automated test pipeline (ML, AI, Backend, Frontend)
-│
-├── requirements.txt                           # Root unified Python dependencies
-├── docker-compose.yml                         # Monorepo container orchestration
-└── .gitignore
+└── .github/                                   # GitHub Actions CI/CD Workflows
+    └── workflows/ci.yml                      # Multi-job automated test pipeline (ML, AI, Backend, Frontend)
 ```
 
 ---
@@ -284,20 +289,26 @@ The WeatherGPT frontend is an enterprise-grade, high-performance React 18 Single
 ### 1. Application View Matrix (8 Interactive Screens)
 | Route | Screen Name | Key Meteorological Capabilities & Visual Components |
 | :--- | :--- | :--- |
-| `/current` | **Current Telemetry** | High-contrast crystal hero card with specular glare, SVG AQI gauge, rotating aerodynamic wind compass, live humidity/pressure meters, and quick telemetry toggles. |
-| `/forecast` | **NWP 7-Day Outlook** | Diurnal timeline cards, Recharts synoptic curves (precipitation probability & temperature), 6h interval ML forecast bands, and synoptic thermal sliders. |
+| `/current` | **Current Telemetry** | High-contrast crystal hero card with specular glare, SVG AQI gauge with neutral backdrop, rotating aerodynamic wind compass, live humidity/pressure meters, and quick telemetry toggles. |
+| `/forecast` | **NWP 7-Day Outlook** | Diurnal 24-hour timeline cards, Recharts synoptic curves (precipitation probability & temperature), 6h interval ML forecast bands, multi-model consensus switcher (`IMD-WRF (3km)`, `ECMWF (9km)`, `GFS (13km)`), and 7-day synoptic matrix. |
 | `/map` | **GIS Disaster Map** | Interactive Leaflet GIS mapping with live GeoJSON layers (10 Metros, Cyclone corridors, River flood plains, Heat corridors), Point-in-Polygon inspector drawer, and 3D legend HUD. |
-| `/alerts` | **Severe Warnings** | IMD 4-Color hazard dispatch cards (`Green`, `Yellow`, `Orange`, `Red`), real-time sirens, CAP 1.2 disaster bulletin feeds, and multi-sector agricultural advisories. |
-| `/chat` | **AI WeatherGPT Chat** | Conversational meteorological intelligence interface, voice speech recognition & synthesis, markdown formatted highlights, quick suggestion pills, and conversation history manager. |
-| `/analytics` | **Climate Diagnostics** | Multi-year climate archive aggregation (+0.85°C anomaly KPI, monsoon surplus indicators), interactive Recharts monthly curves, and AI agro-climatic decision support. |
+| `/alerts` | **Severe Warnings** | IMD 4-Color hazard dispatch cards (`Green`, `Yellow`, `Orange`, `Red`), real-time sirens, CAP 1.2 disaster bulletin feeds, simulation trigger, and multi-sector agricultural advisories. |
+| `/chat` | **AI WeatherGPT Chat** | Conversational meteorological intelligence interface, voice speech recognition & synthesis, markdown formatted highlights, quick suggestion pills, 3D floating bot spatial lock below tab, and conversation history manager. |
+| `/analytics` | **Climate Diagnostics** | Interactive Diagnostic View switchers (**Thermal Profile Anomaly**, **Decadal Monsoon Volume**, **Agro-Climatic Soil Index**), Recharts line/bar/area visualizations, multi-decadal anomaly KPIs, and AI agro-climatic decision support. |
 | `/login` | **3D Slide Auth Portal** | Dual-mode sliding login/signup container with 3D mouse parallax tracking, liquid glare reflection, `react-hook-form` validation, and mountain/field weather backgrounds. |
-| `/settings` | **Settings & Control** | Personal identity manager, default location switcher, regional language selector (8 Indian languages), voice rate adjuster, and theme mode controller. |
+| `/settings` | **Settings & Control** | Personal identity manager, saved farm locations CRUD, regional language selector (8 Indian languages), voice rate adjuster (`0.5x – 1.5x`), and visual theme mode controller. |
 
 ### 2. Layout & Global Interactivity
-- **Dynamic Liquid Navigation (`Navbar.jsx` & `Sidebar.jsx`)**: Sticky frosted navigation with centered telemetry capsule, language dropdown, profile settings modal, and collapsible hamburger drawer.
-- **3D Floating Action Bot (`FloatingAIChatButton.jsx`)**: Fixed `bottom-6 right-6 z-50` floating assistant with live RAG LLM badge, expanded tooltip hover preview, and seamless one-click transition to `/chat`.
-- **Emergency Broadcast Siren Banner (`EmergencyBanner.jsx`)**: Global top notification bar connecting to the backend Server-Sent Events (`/api/v1/alerts/stream`) to instantly broadcast Red/Orange disaster warnings.
-- **Full Dual-Theme Architecture**: Seamless runtime toggle between sleek dark mode (`bg-slate-950`) and crisp high-contrast light mode with complete persistence across all 8 screens.
+- **Dynamic Liquid Navigation (`Navbar.jsx` & `Sidebar.jsx`)**: 
+  - Full-height sticky left sidebar (`h-full min-h-screen lg:h-[calc(100vh-6rem)]`) extending seamlessly to the bottom of the viewport with cross-browser hidden scrollbars (`.no-scrollbar`).
+  - Animated morphing **Hamburger $\leftrightarrow$ Cross (✕)** toggle button with 300ms rotation & scale transition.
+  - Accessible top navigation with live active severe alert count badge, regional language dropdown, °C/°F unit toggle, and user profile capsule.
+- **3D Floating Action Bot with Fluid Spatial Transition (`FloatingAIChatButton.jsx`)**:
+  - Floating 3D action assistant positioned at `bottom-6 right-6` on dashboard views that executes a smooth 700ms cubic-bezier transition to `top: 10.5rem` (positioned directly below the chat header tab) when navigating to `/chat` without size or scale flickering.
+- **Executive Light Mode Theme System**:
+  - Redesigned light mode utilizing a crisp **Azure-Slate canvas** (`#f8fafc` + soft radial sky aura), pure pearl frosted glass panels (`rgba(255, 255, 255, 0.94)`), WCAG AAA high-contrast deep charcoal typography (`#0f172a` / `#1e293b`), and vibrant sapphire-cyan accents without modifying UI element positions.
+  - Dedicated Light Mode presentation for all Recharts charts (tooltips, grids, axes), Leaflet maps, and IMD 4-color disaster cards.
+- **Emergency Broadcast Siren Banner (`EmergencyBanner.jsx`)**: Global top notification bar connecting to backend Server-Sent Events (`/api/v1/alerts/stream`) to instantly broadcast Red/Orange disaster warnings.
 - **Centralized Redux State (`store/`)**: 6 decoupled domain slices (`authSlice`, `weatherSlice`, `alertsSlice`, `chatSlice`, `locationsSlice`, `settingsSlice`) with optimistic offline fallbacks.
 
 ---
@@ -342,7 +353,48 @@ The WeatherGPT frontend is an enterprise-grade, high-performance React 18 Single
 
 ---
 
-## 🧪 10. Verification & Automated Test Commands
+---
+
+## 🐳 10. Containerization, Docker & Production Orchestration
+
+WeatherGPT provides full multi-container orchestration via root [`docker-compose.yml`](file:///c:/Users/ms673/OneDrive/Desktop/github/WeatherGPT-SIH-2026-/docker-compose.yml), running all 5 microservices under a unified isolated bridge network (`weathergpt_network`):
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                              DOCKER COMPOSE TOPOLOGY (5 SERVICES)                      │
+│                                                                                        │
+│   🌐 frontend        🔌 backend         🧠 ai-service      🗺️ gis-alerts     🗄️ postgres│
+│   (Nginx Alpine:80)  (Node 20:5000)     (Py 3.11:8000)     (Py 3.11:8001)    (PG 16:5432│
+│           │                  │                  │                  │               │   │
+│           └──────────────────┴─────────┬────────┴──────────────────┴───────────────┘   │
+│                                        │                                               │
+│                           [ weathergpt_network (Bridge) ]                              │
+│                                        │                                               │
+│                                        ▼                                               │
+│                         [ Persistent Volume: postgres_data ]                           │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1. Multi-Stage Dockerfile Strategy
+* **Backend (`backend/Dockerfile`):**
+  - **Stage 1 (Builder):** `node:20-alpine`, OpenSSL, `npm ci`, and `npx prisma generate` to build Prisma client binaries.
+  - **Stage 2 (Runner):** Minimal Alpine image running as non-root `node` user with explicit healthcheck probe (`http://localhost:5000/`).
+* **Frontend (`frontend/Dockerfile` & `frontend/nginx.conf`):**
+  - **Stage 1 (Builder):** `node:20-alpine` compiling optimized static bundle with configurable `VITE_API_URL` build arg.
+  - **Stage 2 (Runner):** High-performance `nginx:alpine` with SPA fallback routing (`try_files $uri $uri/ /index.html;`), Gzip compression, and strict HTTP security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`).
+* **AI & GIS Services (`ai-service/Dockerfile`, `gis-alerts/Dockerfile`):**
+  - Lightweight `python:3.11-slim` containers running Uvicorn ASGI servers with CORS origin whitelisting.
+
+### 2. Automated Boot & Database Lifecycle (`backend/docker-entrypoint.sh`)
+* **Auto Schema Synchronization:** On container launch, the entrypoint script runs a 10-attempt retry loop against PostgreSQL and executes `npx prisma db push --skip-generate` to ensure database tables are created before the Express server accepts requests.
+* **Auto Demo Seeding:** When `SEED_DATABASE="true"`, executes `prisma/seed.js` to seed the demo user (`demo@weathergpt.ai`), default saved locations, and sample alerts automatically.
+
+### 3. Configurable CORS Whitelisting
+* All microservices enforce strict origin whitelisting via the `CORS_ORIGIN` environment variable (e.g. `http://localhost:5173,http://localhost:3000,http://localhost:80`), blocking unauthorized cross-origin requests in production.
+
+---
+
+## 🧪 11. Verification & Automated Test Commands
 
 Execute the following test commands to verify all modules across the codebase:
 
@@ -386,13 +438,14 @@ cd frontend && npm run build && cd ..
 
 ---
 
-## 👥 11. Team Task Status Matrix
+## 👥 12. Team Task Status Matrix
 
 | Role | Member | Completed Work | Pending Focus |
 | :--- | :--- | :--- | :--- |
-| **Frontend Lead** | Member 1 | React 18 / Vite 6 SPA, Redux Toolkit (6 slices), Emergency Siren Banner (CAP 1.2), 3D Liquid Floating AI Bot, Leaflet GIS mapping, Recharts, Voice STT/TTS UI integration, Quick Action suggestion chips | Production bundle validated on `origin/frontend` |
-| **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE stream `/api/v1/alerts/stream`, REST APIs (34/34 tests passing), Voice router `/api/v1/chat/voice`, AI proxy with `suggestedActions` | Maintained & stable |
+| **Frontend Lead** | Member 1 | React 18 / Vite 6 SPA, Redux Toolkit (6 slices), Nginx SPA config (`nginx.conf`), Emergency Siren Banner (CAP 1.2), 3D Liquid Floating AI Bot, Leaflet GIS mapping, Recharts, Voice STT/TTS UI integration, Quick Action suggestion chips | Production bundle validated on `origin/frontend` |
+| **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE stream `/api/v1/alerts/stream`, REST APIs (34/34 tests passing), Multi-stage Dockerfile, automated `docker-entrypoint.sh` DB migration & seeding, CORS whitelisting | Maintained & stable |
 | **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, Autonomous ReAct Agent with real telemetry chaining, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails, Native Voice Engine (`voice_service.py`), Voice query endpoints, Interactive quick-reply chips (39/39 tests passing) | Maintained & synchronized |
 | **Weather/ML** | Member 4 | 10-city V3 dataset (1M rows), XGBoost/LightGBM 6h models (MAE 0.96°C, F1 0.67), live 24h lag pipeline, IMD risk engine, NWP consensus analyzer (ECMWF/GFS/ICON), ONNX & Sub-5ms Edge Inference Pipeline (`weathergpt_onnx_inference.py`), FastAPI microservice (Port 8000) | Production ready & synchronized |
-| **GIS & Alerts** | Member 5 | Dedicated `gis-alerts/` package, Ray-Casting PIP engine, GeoJSON layers (Metros, Cyclone corridors, Flood basins, Heat zones), IMD 4-Color hazard rules, CAP 1.2 XML/JSON generator & parser, Notification dispatcher (17/17 tests passing) | Maintained & stable |
-| **DevOps & CI/CD** | Member 6 | GitHub Actions CI/CD workflows (`.github/workflows/ci.yml`), Docker compose orchestration, multi-stack test automation | Maintained & automated |
+| **GIS & Alerts** | Member 5 | Dedicated `gis-alerts/` package, Ray-Casting PIP engine, GeoJSON layers (Metros, Cyclone corridors, Flood basins, Heat zones), IMD 4-Color hazard rules, CAP 1.2 XML/JSON generator & parser, Notification dispatcher (17/17 tests passing), Dockerfile & CORS | Maintained & stable |
+| **DevOps & CI/CD** | Member 6 | GitHub Actions CI/CD workflows (`.github/workflows/ci.yml`), 5-service Docker compose orchestration, multi-stack test automation, container healthchecks | Maintained & automated |
+

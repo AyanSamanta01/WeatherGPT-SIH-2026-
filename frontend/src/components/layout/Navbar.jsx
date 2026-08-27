@@ -11,14 +11,18 @@ import {
   LogOut, 
   Settings, 
   Sun, 
+  Moon,
   Menu, 
+  X,
   Wind, 
   Droplets,
   MapPin,
-  Sliders
+  Sliders,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 
-const Navbar = ({ onToggleSidebar }) => {
+const Navbar = ({ onToggleSidebar, isSidebarOpen }) => {
   const { 
     selectedCity, 
     tempUnit, 
@@ -30,7 +34,9 @@ const Navbar = ({ onToggleSidebar }) => {
     SUPPORTED_LANGUAGES,
     language,
     setLanguage,
-    activeAlertsList
+    activeAlertsList,
+    theme,
+    setTheme
   } = useApp();
 
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -63,14 +69,37 @@ const Navbar = ({ onToggleSidebar }) => {
       {/* 1. VERY LEFT: HAMBURGER TOGGLE BUTTON & BRAND LOGO                        */}
       {/* ========================================================================= */}
       <div className="flex items-center space-x-3 sm:space-x-4">
-        {/* 🍔 Very Left Hamburger Icon to Toggle Left Navbar / Sidebar */}
+        {/* 🍔 Very Left Hamburger Icon with Smooth Morph to Cross ✕ */}
         <button 
           onClick={onToggleSidebar}
           type="button"
-          title="Toggle Navigation Menu"
-          className="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-900/90 hover:bg-cyan-500/20 border border-slate-700/80 hover:border-cyan-400/80 focus:outline-none transition-all duration-200 shadow-sm cursor-pointer active:scale-95 flex items-center justify-center group"
+          aria-label={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
+          title={isSidebarOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
+          className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm cursor-pointer active:scale-95 border ${
+            isSidebarOpen 
+              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-cyan-500/20' 
+              : 'text-slate-300 hover:text-white bg-slate-900/90 hover:bg-cyan-500/20 border-slate-700/80 hover:border-cyan-400/80'
+          }`}
         >
-          <Menu className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+          {/* Smooth Icon Morph Animation Container */}
+          <div className="relative w-5 h-5 flex items-center justify-center">
+            {/* Hamburger Icon */}
+            <Menu 
+              className={`w-5 h-5 text-cyan-400 absolute transition-all duration-300 ease-in-out transform-gpu ${
+                isSidebarOpen 
+                  ? 'opacity-0 rotate-90 scale-50 pointer-events-none' 
+                  : 'opacity-100 rotate-0 scale-100'
+              }`} 
+            />
+            {/* Cross (✕) Icon */}
+            <X 
+              className={`w-5 h-5 text-cyan-400 absolute transition-all duration-300 ease-in-out transform-gpu ${
+                isSidebarOpen 
+                  ? 'opacity-100 rotate-0 scale-100' 
+                  : 'opacity-0 -rotate-90 scale-50 pointer-events-none'
+              }`} 
+            />
+          </div>
         </button>
 
         {/* Brand Logo */}
@@ -219,9 +248,11 @@ const Navbar = ({ onToggleSidebar }) => {
         {/* 👤 User Profile Capsule with Interactive Dropdown (Settings & Locations inside) */}
         {user?.isLoggedIn ? (
           <div ref={profileContainerRef} className="relative">
-            <div 
-              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="flex items-center space-x-2 bg-slate-900/90 border border-slate-700/70 hover:border-cyan-400/80 rounded-xl p-1 sm:pr-3 cursor-pointer transition shadow-sm select-none"
+            <button 
+              type="button"
+              onClick={() => setProfileDropdownOpen(prev => !prev)}
+              className="flex items-center space-x-2 bg-slate-900/90 border border-slate-700/70 hover:border-cyan-400/80 rounded-xl p-1 sm:pr-3 cursor-pointer transition shadow-sm select-none active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+              title="User Profile & Quick Settings"
             >
               <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 flex items-center justify-center text-white text-xs font-black shadow-md border border-white/20">
                 {user.name ? user.name.charAt(0) : 'U'}
@@ -231,7 +262,7 @@ const Navbar = ({ onToggleSidebar }) => {
                 <p className="text-[9px] text-cyan-400 font-semibold leading-none">{user.role || 'Scientist'}</p>
               </div>
               <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
-            </div>
+            </button>
 
             {/* Profile Dropdown Menu */}
             {profileDropdownOpen && (
