@@ -4,6 +4,8 @@
 **Organization:** Ministry of Earth Sciences (MoES) | **Department:** India Meteorological Department (IMD)   
 **Theme:** Disaster Management
 
+> 📢 **PPT Presentation Kit:** See [FEATURES_README.md](file:///c:/Users/ms673/OneDrive/Desktop/github/WeatherGPT-SIH-2026-/FEATURES_README.md) for the complete slide-by-slide deck, speaker notes, benchmarks, and demo script for SIH 2026 presentations.
+
 ---
 
 ## 📌 Problem Overview
