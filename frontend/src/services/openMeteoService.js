@@ -70,18 +70,72 @@ const generateAgroAdvisory = (temp, humidity, rainProb, windSpeed) => {
 
 export const openMeteoService = {
   /**
+   * 0. Auto-Detect User Location via IP Geolocation (Instant fallback if GPS is denied/desktop without GPS)
+   */
+  async detectIpLocation() {
+    try {
+      const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(4000) });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.latitude && data.longitude) {
+          return {
+            lat: data.latitude,
+            lon: data.longitude,
+            city: data.city || 'My Location',
+            state: data.region || 'India',
+            country: data.country_name || 'India'
+          };
+        }
+      }
+    } catch (_) {}
+
+    try {
+      const res2 = await fetch('https://api.bigdatacloud.net/data/client-info', { signal: AbortSignal.timeout(4000) });
+      if (res2.ok) {
+        const data2 = await res2.json();
+        if (data2.location?.latitude && data2.location?.longitude) {
+          return {
+            lat: data2.location.latitude,
+            lon: data2.location.longitude,
+            city: data2.location.city || 'My Location',
+            state: data2.location.principalSubdivision || 'India',
+            country: data2.location.countryName || 'India'
+          };
+        }
+      }
+    } catch (_) {}
+
+    return null;
+  },
+
+  /**
    * 1. Reverse Geocode Coordinates to City/State Name
    */
   async reverseGeocode(lat, lon) {
     try {
       const res = await fetch(
-        `${BIGDATACLOUD_REVERSE_URL}?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+        `${BIGDATACLOUD_REVERSE_URL}?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
+        { signal: AbortSignal.timeout(4000) }
       );
       if (res.ok) {
         const data = await res.json();
         const city = data.city || data.locality || data.principalSubdivision || 'My Location';
         const state = data.principalSubdivision || 'India';
         return { city, state, country: data.countryName || 'India' };
+      }
+    } catch (_) {}
+
+    try {
+      const nom = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`,
+        { signal: AbortSignal.timeout(4000) }
+      );
+      if (nom.ok) {
+        const nomData = await nom.json();
+        const addr = nomData.address || {};
+        const city = addr.city || addr.town || addr.village || addr.county || addr.state_district || 'My Location';
+        const state = addr.state || 'India';
+        return { city, state, country: addr.country || 'India' };
       }
     } catch (_) {}
 

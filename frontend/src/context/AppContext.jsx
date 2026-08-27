@@ -58,49 +58,68 @@ export const AppProvider = ({ children }) => {
   const [isLocating, setIsLocating] = useState(false);
   const [locationPermissionAsked, setLocationPermissionAsked] = useState(false);
 
-  // Geolocation auto-detection (Step 1 of Demo Flow - Asks for location permission & fetches from Open-Meteo)
-  const detectCurrentLocation = useCallback((silent = false) => {
-    if (!navigator.geolocation) {
-      if (!silent) alert('Geolocation is not supported by your browser.');
-      return;
-    }
-
+  // Geolocation auto-detection (Fast Browser GPS + Automatic IP Geolocation Fallback)
+  const detectCurrentLocation = useCallback(async (silent = false) => {
     setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        try {
-          // 1. Reverse Geocode via Open-Meteo / BigDataCloud
-          const geo = await openMeteoService.reverseGeocode(latitude, longitude);
-          const detectedCity = geo.city || 'My Location';
-          const detectedState = geo.state || 'India';
 
-          // 2. Fetch live Open-Meteo telemetry for exact coordinates
-          dispatch(fetchWeatherThunk({
-            lat: latitude,
-            lon: longitude,
-            cityName: detectedCity,
-            stateName: detectedState
-          }));
-
-          localStorage.setItem('weathergpt_default_city', detectedCity);
-        } catch (err) {
-          console.warn('Live Open-Meteo location fetch error:', err);
-          dispatch(fetchWeatherThunk('Mumbai'));
-        } finally {
-          setIsLocating(false);
+    const applyLocation = async (lat, lon, cityName, stateName) => {
+      try {
+        let city = cityName;
+        let state = stateName;
+        if (!city) {
+          const geo = await openMeteoService.reverseGeocode(lat, lon);
+          city = geo.city || 'My Location';
+          state = geo.state || 'India';
         }
-      },
-      (err) => {
-        console.info('Geolocation permission dismissed or unavailable:', err.message);
-        setIsLocating(false);
-        // Fallback on permission denied: load saved or default city
-        const defaultSaved = locationsState?.savedLocations?.find(l => l.isDefault)?.city;
-        const initialCity = defaultSaved || localStorage.getItem('weathergpt_default_city') || weatherState.selectedCity || 'Mumbai';
-        dispatch(fetchWeatherThunk(initialCity));
-      },
-      { timeout: 10000, enableHighAccuracy: true, maximumAge: 60000 }
-    );
+
+        dispatch(fetchWeatherThunk({
+          lat,
+          lon,
+          cityName: city,
+          stateName: state
+        }));
+
+        localStorage.setItem('weathergpt_default_city', city);
+        return true;
+      } catch (err) {
+        console.warn('Error applying detected location:', err);
+        return false;
+      }
+    };
+
+    // 1. Try Browser Geolocation API (Fast Network/Wi-Fi Coords)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          await applyLocation(latitude, longitude);
+          setIsLocating(false);
+        },
+        async (err) => {
+          console.info('Browser GPS unavailable, falling back to IP Geolocation:', err.message);
+          // 2. Fallback: Seamless IP-based Geolocation
+          const ipLoc = await openMeteoService.detectIpLocation();
+          if (ipLoc) {
+            await applyLocation(ipLoc.lat, ipLoc.lon, ipLoc.city, ipLoc.state);
+          } else {
+            const defaultSaved = locationsState?.savedLocations?.find(l => l.isDefault)?.city;
+            const initialCity = defaultSaved || localStorage.getItem('weathergpt_default_city') || weatherState.selectedCity || 'Mumbai';
+            dispatch(fetchWeatherThunk(initialCity));
+          }
+          setIsLocating(false);
+        },
+        { timeout: 6000, enableHighAccuracy: false, maximumAge: 300000 }
+      );
+    } else {
+      // If browser has no Geolocation support, use IP location directly
+      const ipLoc = await openMeteoService.detectIpLocation();
+      if (ipLoc) {
+        await applyLocation(ipLoc.lat, ipLoc.lon, ipLoc.city, ipLoc.state);
+      } else {
+        dispatch(fetchWeatherThunk('Mumbai'));
+      }
+      setIsLocating(false);
+    }
   }, [dispatch, locationsState?.savedLocations, weatherState.selectedCity]);
 
   // Initial data loading & Auto-Permission Request
