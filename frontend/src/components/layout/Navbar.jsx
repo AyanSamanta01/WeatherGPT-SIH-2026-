@@ -11,6 +11,7 @@ import {
   LogOut, 
   Settings, 
   Sun, 
+  Moon,
   Menu, 
   X,
   Wind, 
@@ -33,7 +34,9 @@ const Navbar = ({ onToggleSidebar, isSidebarOpen }) => {
     SUPPORTED_LANGUAGES,
     language,
     setLanguage,
-    activeAlertsList
+    activeAlertsList,
+    theme,
+    setTheme
   } = useApp();
 
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -245,9 +248,11 @@ const Navbar = ({ onToggleSidebar, isSidebarOpen }) => {
         {/* 👤 User Profile Capsule with Interactive Dropdown (Settings & Locations inside) */}
         {user?.isLoggedIn ? (
           <div ref={profileContainerRef} className="relative">
-            <div 
-              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="flex items-center space-x-2 bg-slate-900/90 border border-slate-700/70 hover:border-cyan-400/80 rounded-xl p-1 sm:pr-3 cursor-pointer transition shadow-sm select-none"
+            <button 
+              type="button"
+              onClick={() => setProfileDropdownOpen(prev => !prev)}
+              className="flex items-center space-x-2 bg-slate-900/90 border border-slate-700/70 hover:border-cyan-400/80 rounded-xl p-1 sm:pr-3 cursor-pointer transition shadow-sm select-none active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+              title="User Profile & Quick Settings"
             >
               <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 flex items-center justify-center text-white text-xs font-black shadow-md border border-white/20">
                 {user.name ? user.name.charAt(0) : 'U'}
@@ -257,7 +262,7 @@ const Navbar = ({ onToggleSidebar, isSidebarOpen }) => {
                 <p className="text-[9px] text-cyan-400 font-semibold leading-none">{user.role || 'Scientist'}</p>
               </div>
               <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
-            </div>
+            </button>
 
             {/* Profile Dropdown Menu */}
             {profileDropdownOpen && (
