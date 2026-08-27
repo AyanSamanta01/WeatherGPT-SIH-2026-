@@ -44,8 +44,10 @@ class CompiledTreeModel:
             raw_base = learner.get("learner_model_param", {}).get("base_score", "0.5")
             if isinstance(raw_base, str):
                 raw_base = raw_base.strip("[] \t\n")
-            # For XGBoost squarederror, base value is 0.5 when boost_from_average is set
-            self.base_score = 0.5
+            try:
+                self.base_score = float(raw_base)
+            except Exception:
+                self.base_score = 0.5
 
         # Compile flat tree buffers for extreme speed
         self.left_children = []
