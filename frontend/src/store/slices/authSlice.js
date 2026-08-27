@@ -33,16 +33,21 @@ export const loginUserThunk = createAsyncThunk(
   async ({ email, password, name }, { rejectWithValue }) => {
     try {
       const res = await authService.login(email, password);
-      const userObj = res?.user ? { ...res.user, isLoggedIn: true } : {
+      const token = res?.data?.token || res?.token;
+      if (token) {
+        localStorage.setItem('weathergpt_token', token);
+      } else {
+        localStorage.setItem('weathergpt_token', 'demo_session_token_sih_2026');
+      }
+
+      const userFromApi = res?.data?.user || res?.user;
+      const userObj = userFromApi ? { ...userFromApi, isLoggedIn: true } : {
         name: name || 'Ayan Samanta',
         email: email || 'user@weathergpt.gov.in',
         role: 'Meteorology Lead',
         isLoggedIn: true
       };
       localStorage.setItem('weathergpt_user', JSON.stringify(userObj));
-      if (!localStorage.getItem('weathergpt_token')) {
-        localStorage.setItem('weathergpt_token', 'demo_session_token_sih_2026');
-      }
       return userObj;
     } catch (err) {
       const fallbackUser = {
@@ -63,7 +68,15 @@ export const signupUserThunk = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const res = await authService.signup(userData);
-      const userObj = res?.user ? { ...res.user, isLoggedIn: true } : {
+      const token = res?.data?.token || res?.token;
+      if (token) {
+        localStorage.setItem('weathergpt_token', token);
+      } else {
+        localStorage.setItem('weathergpt_token', 'demo_session_token_sih_2026');
+      }
+
+      const userFromApi = res?.data?.user || res?.user;
+      const userObj = userFromApi ? { ...userFromApi, isLoggedIn: true } : {
         name: userData.name,
         email: userData.email,
         role: userData.role || 'Meteorologist',
@@ -81,6 +94,7 @@ export const signupUserThunk = createAsyncThunk(
         isLoggedIn: true
       };
       localStorage.setItem('weathergpt_user', JSON.stringify(fallbackUser));
+      localStorage.setItem('weathergpt_token', 'demo_session_token_sih_2026');
       return fallbackUser;
     }
   }
