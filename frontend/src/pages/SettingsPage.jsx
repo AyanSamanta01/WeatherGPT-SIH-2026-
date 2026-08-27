@@ -462,6 +462,56 @@ const SettingsPage = () => {
           )}
         </div>
       </div>
+
+      {/* Disaster Early Warning & Notification Thresholds (Prisma alertPreferences) */}
+      <div
+        className="p-6 rounded-3xl space-y-5"
+        style={{
+          background: 'rgba(5, 12, 28, 0.95)',
+          border: '1px solid rgba(6, 182, 212, 0.1)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
+        }}
+      >
+        <SectionHeader 
+          icon={Sliders} 
+          title="Disaster Early Warning Thresholds" 
+          sub="Configure personal triggers for IMD CAP 1.2 siren alerts" 
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 rounded-2xl space-y-2 bg-slate-900/60 border border-slate-800">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+              <span>Rainfall Deluge Threshold</span>
+              <span className="text-cyan-400">50 mm / 24h</span>
+            </div>
+            <p className="text-[10px] text-slate-500">Triggers flood watch sirens when radar predicts heavy downpours.</p>
+          </div>
+
+          <div className="p-4 rounded-2xl space-y-2 bg-slate-900/60 border border-slate-800">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+              <span>Squall Wind Speed Threshold</span>
+              <span className="text-cyan-400">45 km/h</span>
+            </div>
+            <p className="text-[10px] text-slate-500">Broadcasts coastal gale alerts and crop lodging hazard advisories.</p>
+          </div>
+
+          <div className="p-4 rounded-2xl space-y-2 bg-slate-900/60 border border-slate-800">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+              <span>Extreme Heatwave Threshold</span>
+              <span className="text-cyan-400">42°C</span>
+            </div>
+            <p className="text-[10px] text-slate-500">Activates thermal comfort precautions and livestock hydration warnings.</p>
+          </div>
+
+          <div className="p-4 rounded-2xl space-y-2 bg-slate-900/60 border border-slate-800">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+              <span>Minimum Alert Severity</span>
+              <span className="text-orange-400 font-extrabold uppercase">Moderate (Yellow+)</span>
+            </div>
+            <p className="text-[10px] text-slate-500">Filter out minor bulletins and focus on actionable meteorological alerts.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
