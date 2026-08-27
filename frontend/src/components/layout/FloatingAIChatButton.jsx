@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bot, Sparkles, ArrowLeft, X, MessageSquare, Compass, Sun, Map, AlertTriangle, LineChart, Settings } from 'lucide-react';
+import { Bot, Sparkles, ArrowLeft, MessageSquare } from 'lucide-react';
 
 const FloatingAIChatButton = () => {
   const navigate = useNavigate();
@@ -17,12 +17,12 @@ const FloatingAIChatButton = () => {
     }
   }, [location.pathname]);
 
-  const handleToggleChat = () => {
+  const handleToggleChat = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (isChatActive) {
-      // Navigate back to the previous workspace screen
       navigate(previousRoute || '/current');
     } else {
-      // Navigate into the AI chat interface
       navigate('/chat');
     }
   };
@@ -41,10 +41,7 @@ const FloatingAIChatButton = () => {
 
   return (
     <div 
-      className="fixed right-6 z-50 select-none flex items-center space-x-2 transition-all duration-700 cubic-bezier(0.34, 1.25, 0.64, 1)"
-      style={{
-        top: isChatActive ? '9.75rem' : 'calc(100vh - 5.5rem)'
-      }}
+      className="fixed bottom-6 right-6 z-50 select-none flex items-center space-x-2"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -81,6 +78,7 @@ const FloatingAIChatButton = () => {
       <button
         onClick={handleToggleChat}
         type="button"
+        aria-label="Open WeatherGPT AI Chatbot"
         title={isChatActive ? `Back to ${getPreviousPageLabel(previousRoute)}` : 'Open WeatherGPT AI Chat'}
         className={`relative w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-2xl group cursor-pointer transform-gpu active:scale-90 ${
           isChatActive
