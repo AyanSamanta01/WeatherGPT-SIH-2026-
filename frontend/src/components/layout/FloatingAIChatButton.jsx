@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bot, Sparkles, ArrowLeft } from 'lucide-react';
 
 const FloatingAIChatButton = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [isHovered, setIsHovered] = useState(false);
   const [previousRoute, setPreviousRoute] = useState('/current');
@@ -18,6 +19,11 @@ const FloatingAIChatButton = () => {
 
   const targetPath = isChatActive ? (previousRoute || '/current') : '/chat';
 
+  const handleClick = (e) => {
+    // Ensure navigation executes reliably across all browsers and events
+    navigate(targetPath);
+  };
+
   const getPreviousPageLabel = (path) => {
     switch (path) {
       case '/current': return 'Telemetry';
@@ -31,8 +37,9 @@ const FloatingAIChatButton = () => {
   };
 
   return (
-    <div 
-      className="fixed bottom-6 right-6 z-50 select-none flex items-center space-x-2"
+    <aside 
+      aria-label="WeatherGPT Floating Chatbot Trigger"
+      className="fixed bottom-6 right-6 z-[9999] pointer-events-auto select-none flex items-center space-x-2"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -68,9 +75,10 @@ const FloatingAIChatButton = () => {
       {/* 🤖 3D Liquid Floating Action Link with Direct React Router Navigation */}
       <Link
         to={targetPath}
+        onClick={handleClick}
         aria-label="Open WeatherGPT AI Chatbot"
         title={isChatActive ? `Back to ${getPreviousPageLabel(previousRoute)}` : 'Open WeatherGPT AI Chat'}
-        className={`relative w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-2xl group cursor-pointer transform-gpu active:scale-90 ${
+        className={`relative w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-2xl group cursor-pointer pointer-events-auto transform-gpu active:scale-90 ${
           isChatActive
             ? 'bg-gradient-to-tr from-cyan-600 via-sky-500 to-blue-700 border-2 border-cyan-300/80 shadow-[0_0_35px_rgba(6,182,212,0.7)] scale-105 ring-4 ring-cyan-500/30'
             : 'bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 border-2 border-white/30 hover:border-cyan-300 hover:shadow-[0_12px_40px_-5px_rgba(6,182,212,0.65)] hover:scale-110'
@@ -107,7 +115,7 @@ const FloatingAIChatButton = () => {
         {/* Live Status Dot */}
         <div className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-slate-900 shadow-sm" />
       </Link>
-    </div>
+    </aside>
   );
 };
 
