@@ -54,7 +54,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* 🌊 3D DYNAMIC LIQUID SIDEBAR CONTAINER (Sticky below Navbar on Scroll)     */}
       {/* ========================================================================= */}
       <aside
-        className={`fixed lg:sticky top-0 lg:top-20 bottom-0 left-0 z-50 lg:z-30 w-72 h-auto max-h-[calc(100vh-5.5rem)] liquid-sidebar rounded-r-3xl lg:rounded-3xl flex flex-col justify-between p-4 sm:p-5 overflow-hidden transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) transform select-none ${
+        className={`fixed lg:sticky top-0 lg:top-20 bottom-0 left-0 z-50 lg:z-30 w-72 h-full lg:h-[calc(100vh-6rem)] min-h-screen lg:min-h-[calc(100vh-6rem)] liquid-sidebar rounded-r-3xl lg:rounded-3xl flex flex-col justify-between p-4 sm:p-5 overflow-y-auto transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) transform select-none ${
           isOpen 
             ? 'translate-x-0 opacity-100 shadow-2xl' 
             : '-translate-x-full lg:w-0 lg:p-0 lg:border-0 lg:overflow-hidden lg:opacity-0 pointer-events-none'
