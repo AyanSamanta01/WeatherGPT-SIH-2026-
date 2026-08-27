@@ -55,7 +55,11 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: AI_PROVIDER
-        value: fallback
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
       - key: OPEN_METEO_BASE_URL
         value: https://api.open-meteo.com/v1
 
