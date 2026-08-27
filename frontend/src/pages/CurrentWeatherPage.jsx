@@ -166,7 +166,7 @@ const CurrentWeatherPage = () => {
 
               <div className="flex items-center space-x-3 text-sm font-extrabold text-cyan-300 pt-1">
                 <CloudRain className="w-5 h-5 text-cyan-400 animate-bounce" />
-                <span>{weatherData?.condition || 'Thunderstorm & Convective Precipitation'}</span>
+                <span>{weatherData?.condition || (weatherLoading ? 'Fetching live atmospheric sensors...' : 'Live Observation')}</span>
               </div>
             </div>
 
@@ -174,11 +174,11 @@ const CurrentWeatherPage = () => {
               <span className="flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1 rounded-xl border border-white/10">
                 <MapPin className="w-3.5 h-3.5 text-cyan-400" />
                 <span className="font-semibold">
-                  {weatherData?.coordinates?.lat || 19.07}°N, {weatherData?.coordinates?.lon || 72.87}°E
+                  {weatherData?.coordinates?.lat ? `${weatherData.coordinates.lat}°N, ${weatherData.coordinates.lon}°E` : 'Live Coordinates'}
                 </span>
               </span>
               <span className="text-slate-500">•</span>
-              <span className="text-slate-400">Telemetry Sync: {weatherData?.lastUpdated || 'Just now'}</span>
+              <span className="text-slate-400">Telemetry Sync: {weatherData?.observedAt ? new Date(weatherData.observedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'Real-Time'}</span>
             </div>
           </div>
 
@@ -186,10 +186,10 @@ const CurrentWeatherPage = () => {
           <div className="flex items-center space-x-6 sm:space-x-8">
             <div className="text-left sm:text-right">
               <div className="text-6xl sm:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-300 tracking-tighter drop-shadow-lg">
-                {formatTemp(weatherData?.temp || 29)}
+                {formatTemp(weatherData?.temp)}
               </div>
               <p className="text-xs font-bold text-slate-300 mt-1">
-                Apparent Feels Like <span className="text-cyan-300 font-extrabold">{formatTemp(weatherData?.feelsLike || 33)}</span>
+                Apparent Feels Like <span className="text-cyan-300 font-extrabold">{formatTemp(weatherData?.feelsLike)}</span>
               </p>
             </div>
 
@@ -198,15 +198,15 @@ const CurrentWeatherPage = () => {
             <div className="space-y-2 text-xs text-slate-300 min-w-[130px]">
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-white/10">
                 <span className="text-slate-400 font-medium">Diurnal High:</span>
-                <span className="font-extrabold text-rose-400">{formatTemp(weatherData?.tempMax || 31)}</span>
+                <span className="font-extrabold text-rose-400">{formatTemp(weatherData?.tempMax)}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-white/10">
                 <span className="text-slate-400 font-medium">Diurnal Low:</span>
-                <span className="font-extrabold text-cyan-400">{formatTemp(weatherData?.tempMin || 26)}</span>
+                <span className="font-extrabold text-cyan-400">{formatTemp(weatherData?.tempMin)}</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-white/10">
                 <span className="text-slate-400 font-medium">Dew Point:</span>
-                <span className="font-bold text-slate-100">{weatherData?.dewPoint || 25}°C</span>
+                <span className="font-bold text-slate-100">{weatherData?.dewPoint != null ? `${weatherData.dewPoint}°C` : '--'}</span>
               </div>
             </div>
           </div>
@@ -216,7 +216,7 @@ const CurrentWeatherPage = () => {
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 relative z-10">
           <div className="flex items-center space-x-2 text-xs text-slate-300">
             <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
-            <span className="font-medium">NWP Numerical GFS Ensemble & WRF Simulation Live Grounding</span>
+            <span className="font-medium">NWP Numerical GFS Ensemble & Open-Meteo Live Grounding</span>
           </div>
 
           <div className="flex items-center space-x-2.5">
@@ -255,7 +255,7 @@ const CurrentWeatherPage = () => {
           </div>
 
           <div className="flex items-baseline space-x-2">
-            <span className="text-4xl font-black text-white tracking-tight">{weatherData?.humidity || 84}%</span>
+            <span className="text-4xl font-black text-white tracking-tight">{weatherData?.humidity != null ? `${weatherData.humidity}%` : '--'}</span>
             <span className="text-xs text-sky-300 font-bold">Vapor Saturation</span>
           </div>
 
@@ -264,7 +264,7 @@ const CurrentWeatherPage = () => {
             <div className="w-full bg-slate-900/90 h-3 rounded-full overflow-hidden border border-white/10 p-0.5">
               <div 
                 className="bg-gradient-to-r from-blue-500 via-sky-400 to-cyan-300 h-full rounded-full transition-all duration-1000 shadow-sm"
-                style={{ width: `${weatherData?.humidity || 84}%` }} 
+                style={{ width: `${weatherData?.humidity ?? 50}%` }} 
               />
             </div>
             <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
@@ -294,7 +294,7 @@ const CurrentWeatherPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-black text-white tracking-tight">{weatherData?.windSpeed || 24}</span>
+                <span className="text-4xl font-black text-white tracking-tight">{weatherData?.windSpeed != null ? weatherData.windSpeed : '--'}</span>
                 <span className="text-xs font-extrabold text-cyan-300">km/h</span>
               </div>
               <p className="text-xs text-slate-300 font-semibold mt-1">
@@ -316,7 +316,7 @@ const CurrentWeatherPage = () => {
           </div>
 
           <p className="text-xs text-slate-300/90 leading-relaxed">
-            South-Westerly monsoon circulation. Moderate squally gusts active over coastal & rural grids.
+            Atmospheric wind velocity recorded from local anemometer and Open-Meteo surface layer grid.
           </p>
         </div>
 
@@ -333,7 +333,7 @@ const CurrentWeatherPage = () => {
           </div>
 
           <div className="flex items-baseline space-x-2">
-            <span className="text-4xl font-black text-white tracking-tight">{weatherData?.pressure || 1008}</span>
+            <span className="text-4xl font-black text-white tracking-tight">{weatherData?.pressure != null ? weatherData.pressure : '--'}</span>
             <span className="text-xs font-bold text-purple-300">hPa (mbar)</span>
           </div>
 
@@ -341,7 +341,7 @@ const CurrentWeatherPage = () => {
             <div className="w-full bg-slate-900/90 h-3 rounded-full overflow-hidden border border-white/10 p-0.5">
               <div 
                 className="bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 h-full rounded-full transition-all duration-1000 shadow-sm" 
-                style={{ width: '68%' }} 
+                style={{ width: `${Math.min(Math.max((((weatherData?.pressure || 1013) - 980) / 55) * 100, 10), 100)}%` }} 
               />
             </div>
             <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
@@ -352,7 +352,7 @@ const CurrentWeatherPage = () => {
           </div>
 
           <p className="text-xs text-slate-300/90 leading-relaxed">
-            Steady surface isobar calibrated against standard sea level pressure. No rapid cyclonic drop detected.
+            Steady surface isobar calibrated against standard sea level pressure.
           </p>
         </div>
 
@@ -371,7 +371,7 @@ const CurrentWeatherPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-black text-white tracking-tight">{weatherData?.aqi || 68}</span>
+                <span className="text-4xl font-black text-white tracking-tight">{weatherData?.aqi != null ? weatherData.aqi : '--'}</span>
                 <span className="text-xs text-slate-400 font-bold">AQI Score</span>
               </div>
               <p className="text-xs text-slate-300 font-semibold mt-1">
@@ -390,7 +390,7 @@ const CurrentWeatherPage = () => {
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
                 <path
-                  strokeDasharray={`${Math.min(((weatherData?.aqi || 68) / 300) * 100, 100)}, 100`}
+                  strokeDasharray={`${Math.min(((weatherData?.aqi || 50) / 300) * 100, 100)}, 100`}
                   stroke={aqiTheme.stroke}
                   strokeWidth="3.5"
                   strokeLinecap="round"
@@ -398,12 +398,12 @@ const CurrentWeatherPage = () => {
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 />
               </svg>
-              <span className="absolute text-xs font-black text-white">{weatherData?.aqi || 68}</span>
+              <span className="absolute text-xs font-black text-white">{weatherData?.aqi != null ? weatherData.aqi : '--'}</span>
             </div>
           </div>
 
           <p className="text-xs text-slate-300/90 leading-relaxed">
-            Air quality within acceptable National Ambient Air Quality Standards. Ideal for rural agricultural activity.
+            Real-time Air Quality derived from Open-Meteo European and US air quality sensors.
           </p>
         </div>
 
@@ -420,7 +420,7 @@ const CurrentWeatherPage = () => {
           </div>
 
           <div className="flex items-baseline space-x-2">
-            <span className="text-4xl font-black text-white tracking-tight">{weatherData?.visibility || 4.5}</span>
+            <span className="text-4xl font-black text-white tracking-tight">{weatherData?.visibility != null ? weatherData.visibility : '--'}</span>
             <span className="text-xs font-bold text-teal-300">Kilometers</span>
           </div>
 
@@ -428,7 +428,7 @@ const CurrentWeatherPage = () => {
             <div className="w-full bg-slate-900/90 h-3 rounded-full overflow-hidden border border-white/10 p-0.5">
               <div 
                 className="bg-gradient-to-r from-amber-500 via-emerald-400 to-teal-300 h-full rounded-full transition-all duration-1000 shadow-sm" 
-                style={{ width: `${Math.min(((weatherData?.visibility || 4.5) / 10) * 100, 100)}%` }} 
+                style={{ width: `${Math.min(((weatherData?.visibility ?? 10) / 10) * 100, 100)}%` }} 
               />
             </div>
             <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
@@ -439,9 +439,9 @@ const CurrentWeatherPage = () => {
           </div>
 
           <p className="text-xs text-slate-300/90 leading-relaxed">
-            {(weatherData?.visibility || 4.5) < 5 
-              ? 'Moderate optical restriction due to active rain curtains and misting.' 
-              : 'Clear horizontal horizon suitable for aviation, highway transit, and navigation.'}
+            {(weatherData?.visibility != null && weatherData.visibility < 5) 
+              ? 'Moderate optical restriction due to active precipitation curtains.' 
+              : 'Clear horizontal horizon suitable for transit and aviation.'}
           </p>
         </div>
 
@@ -462,7 +462,7 @@ const CurrentWeatherPage = () => {
               <Sunrise className="w-5 h-5 text-amber-400 flex-shrink-0" />
               <div>
                 <p className="text-[10px] text-slate-400 font-semibold">Sunrise</p>
-                <p className="font-bold text-xs text-white">{weatherData?.sunrise || '06:14 AM'}</p>
+                <p className="font-bold text-xs text-white">{weatherData?.sunrise || '--'}</p>
               </div>
             </div>
 
@@ -470,14 +470,14 @@ const CurrentWeatherPage = () => {
               <Sunset className="w-5 h-5 text-orange-400 flex-shrink-0" />
               <div>
                 <p className="text-[10px] text-slate-400 font-semibold">Sunset</p>
-                <p className="font-bold text-xs text-white">{weatherData?.sunset || '07:05 PM'}</p>
+                <p className="font-bold text-xs text-white">{weatherData?.sunset || '--'}</p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
             <span className="text-slate-400 font-medium">UV Radiation:</span>
-            <span className="font-black text-amber-300">{weatherData?.uvIndex || 4} / 12 (Moderate)</span>
+            <span className="font-black text-amber-300">{weatherData?.uvIndex != null ? `${weatherData.uvIndex} / 12` : '--'}</span>
           </div>
         </div>
 
