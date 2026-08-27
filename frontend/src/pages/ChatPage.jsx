@@ -225,12 +225,14 @@ const ChatPage = () => {
         speakText(reply);
       }
     } catch (err) {
+      console.error('Chat query failed:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Connection error';
       setMessages(prev => [
         ...prev,
         {
           id: `ai-err-${Date.now()}`,
           sender: 'ai',
-          text: 'I encountered an issue querying the numerical weather prediction models. Please verify your connection or try again.',
+          text: `⚠️ **Unable to process query**: ${errMsg}. Please verify your connection or try again.`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);

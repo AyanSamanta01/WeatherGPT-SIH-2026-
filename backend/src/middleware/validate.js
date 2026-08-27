@@ -17,7 +17,8 @@ const validate = (schema, source = 'body') => {
           field: e.path.join('.'),
           message: e.message
         }));
-        return errorResponse(res, 'Validation Error', 400, formattedErrors);
+        const summary = formattedErrors.map(e => `${e.field}: ${e.message}`).join('; ');
+        return errorResponse(res, `Validation Error (${summary})`, 400, formattedErrors);
       }
       return errorResponse(res, err.message, 400);
     }
