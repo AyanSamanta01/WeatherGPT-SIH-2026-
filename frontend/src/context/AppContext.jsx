@@ -45,7 +45,7 @@ import {
   alertService, 
   authService 
 } from '../services/api';
-import { SUPPORTED_LANGUAGES, INDIAN_CITIES } from '../data/mockData';
+import { SUPPORTED_LANGUAGES, INDIAN_CITIES, DEFAULT_CITY } from '../config/constants';
 
 export const useApp = () => {
   const dispatch = useDispatch();
@@ -329,6 +329,7 @@ export const AppProvider = ({ children }) => {
 
   // Load initial remote state on startup
   useEffect(() => {
+    dispatch(fetchWeatherThunk(DEFAULT_CITY));
     dispatch(fetchAlertsThunk());
     dispatch(fetchConversationsThunk());
     dispatch(fetchLocationsThunk());

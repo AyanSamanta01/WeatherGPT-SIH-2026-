@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { climateService } from '../services/api';
-import { MOCK_CLIMATE_TRENDS } from '../data/mockData';
 import { 
   ResponsiveContainer, 
   LineChart, 
@@ -36,10 +35,49 @@ import {
   Waves
 } from 'lucide-react';
 
+const DEFAULT_CLIMATE_FALLBACK = {
+  monthlyTemperature: [
+    { month: 'Jan', currentYear: 24.5, historicalAvg: 23.8 },
+    { month: 'Feb', currentYear: 26.8, historicalAvg: 25.5 },
+    { month: 'Mar', currentYear: 30.2, historicalAvg: 28.9 },
+    { month: 'Apr', currentYear: 33.5, historicalAvg: 32.1 },
+    { month: 'May', currentYear: 35.8, historicalAvg: 34.2 },
+    { month: 'Jun', currentYear: 32.4, historicalAvg: 31.5 },
+    { month: 'Jul', currentYear: 29.8, historicalAvg: 29.2 },
+    { month: 'Aug', currentYear: 29.2, historicalAvg: 28.8 },
+    { month: 'Sep', currentYear: 29.9, historicalAvg: 29.1 },
+    { month: 'Oct', currentYear: 30.5, historicalAvg: 29.8 },
+    { month: 'Nov', currentYear: 28.1, historicalAvg: 27.2 },
+    { month: 'Dec', currentYear: 25.2, historicalAvg: 24.5 }
+  ],
+  decadalAnomalies: [
+    { decade: '1970s', anomaly: -0.22, baseline: 0 },
+    { decade: '1980s', anomaly: -0.08, baseline: 0 },
+    { decade: '1990s', anomaly: 0.14, baseline: 0 },
+    { decade: '2000s', anomaly: 0.38, baseline: 0 },
+    { decade: '2010s', anomaly: 0.62, baseline: 0 },
+    { decade: '2020s', anomaly: 0.85, baseline: 0 }
+  ],
+  yearlyRainfall: [
+    { year: '2019', rainfall: 2450, normal: 2200 },
+    { year: '2020', rainfall: 2680, normal: 2200 },
+    { year: '2021', rainfall: 2900, normal: 2200 },
+    { year: '2022', rainfall: 2150, normal: 2200 },
+    { year: '2023', rainfall: 2780, normal: 2200 },
+    { year: '2024', rainfall: 2520, normal: 2200 },
+    { year: '2025', rainfall: 3100, normal: 2200 }
+  ],
+  soilMoistureTrends: [
+    { depth: '0-10cm', moisture: 38, capacity: 45, status: 'Optimal' },
+    { depth: '10-40cm', moisture: 42, capacity: 50, status: 'Surplus' },
+    { depth: '40-100cm', moisture: 35, capacity: 48, status: 'Adequate' }
+  ]
+};
+
 const AnalyticsPage = () => {
   const { selectedCity, weatherData, setActiveScreen } = useApp();
 
-  const [climateData, setClimateData] = useState(MOCK_CLIMATE_TRENDS);
+  const [climateData, setClimateData] = useState(DEFAULT_CLIMATE_FALLBACK);
   const [loading, setLoading] = useState(false);
   const [activeDiagnosticTab, setActiveDiagnosticTab] = useState('temp'); // 'temp' | 'rain' | 'soil'
 

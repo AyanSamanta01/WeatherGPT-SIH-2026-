@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { alertService } from '../services/api';
-import { MOCK_ALERTS } from '../data/mockData';
 import { 
   AlertTriangle, 
   ShieldAlert, 
@@ -37,7 +36,7 @@ const AlertsPage = () => {
   } = useApp();
 
   const [severityFilter, setSeverityFilter] = useState('All');
-  const [alerts, setAlerts] = useState(activeAlertsList || MOCK_ALERTS);
+  const [alerts, setAlerts] = useState(activeAlertsList || []);
   const [loading, setLoading] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { chatService } from '../services/api';
-import { INITIAL_CHAT_MESSAGES, CHAT_SUGGESTIONS } from '../data/mockData';
+import { DEFAULT_WELCOME_MESSAGES } from '../store/slices/chatSlice';
 import { 
   Send, 
   Mic, 
@@ -29,6 +29,13 @@ import {
   FileText
 } from 'lucide-react';
 
+const CHAT_SUGGESTIONS = [
+  'Current weather telemetry',
+  'Rain probability for tomorrow',
+  'Agricultural pesticide spraying advisory',
+  'Active severe weather alerts in India'
+];
+
 const ChatPage = () => {
   const { 
     selectedCity, 
@@ -47,7 +54,7 @@ const ChatPage = () => {
     clearAllHistory
   } = useApp();
 
-  const [messages, setMessages] = useState(INITIAL_CHAT_MESSAGES || []);
+  const [messages, setMessages] = useState(DEFAULT_WELCOME_MESSAGES || []);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);

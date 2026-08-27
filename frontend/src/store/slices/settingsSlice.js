@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { SUPPORTED_LANGUAGES } from '../../data/mockData';
+import { SUPPORTED_LANGUAGES } from '../../config/constants';
 
 const getInitialTheme = () => {
   try {
