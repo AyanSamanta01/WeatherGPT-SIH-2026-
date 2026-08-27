@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { weatherService } from '../services/api';
-import { MOCK_HOURLY_FORECAST, MOCK_DAILY_FORECAST } from '../data/mockData';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -39,9 +38,9 @@ import {
 const ForecastPage = () => {
   const { selectedCity, formatTemp, weatherData, setActiveScreen } = useApp();
 
-  const [hourlyData, setHourlyData] = useState(MOCK_HOURLY_FORECAST);
-  const [dailyData, setDailyData] = useState(MOCK_DAILY_FORECAST);
-  const [loading, setLoading] = useState(false);
+  const [hourlyData, setHourlyData] = useState([]);
+  const [dailyData, setDailyData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedModel, setSelectedModel] = useState('IMD-WRF (3km)');
 
   // 3D Parallax Tilt for Hero Card

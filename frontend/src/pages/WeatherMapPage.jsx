@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { alertService } from '../services/api';
-import { MOCK_GIS_GEOJSON } from '../data/mockData';
 import { 
   MapContainer, 
   TileLayer, 
@@ -81,7 +80,7 @@ const WeatherMapPage = () => {
   const { INDIAN_CITIES, selectedCity, setSelectedCity, weatherData, setActiveScreen } = useApp();
 
   const [activeLayer, setActiveLayer] = useState('hazards'); // 'hazards' | 'rain' | 'temp' | 'wind' | 'pressure'
-  const [geoJsonData, setGeoJsonData] = useState(MOCK_GIS_GEOJSON);
+  const [geoJsonData, setGeoJsonData] = useState(null);
   const [inspectorData, setInspectorData] = useState(null);
   const [inspectorLoading, setInspectorLoading] = useState(false);
   const [clickedCoords, setClickedCoords] = useState(null);

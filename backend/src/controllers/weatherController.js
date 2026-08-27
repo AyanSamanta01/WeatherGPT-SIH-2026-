@@ -67,10 +67,21 @@ const getCurrentWeather = async (req, res, next) => {
       ...data,
       city: cityName,
       temp: data.temperature,
-      feelsLike: data.temperature ? data.temperature + 2 : 28,
-      tempMin: data.temperature ? data.temperature - 3 : 24,
-      tempMax: data.temperature ? data.temperature + 3 : 32,
-      condition: getWeatherConditionText(data.weatherCode),
+      feelsLike: data.feelsLike ?? (data.temperature ? data.temperature + 2 : 28),
+      tempMin: data.tempMin ?? (data.temperature ? data.temperature - 3 : 24),
+      tempMax: data.tempMax ?? (data.temperature ? data.temperature + 3 : 32),
+      condition: data.condition || getWeatherConditionText(data.weatherCode),
+      humidity: data.humidity ?? 75,
+      dewPoint: data.dewPoint ?? 22,
+      pressure: data.pressure ?? 1010,
+      windSpeed: data.windSpeed ?? 14,
+      windDirection: data.windDirection ?? 'SW',
+      visibility: data.visibility ?? 10.0,
+      uvIndex: data.uvIndex ?? 6,
+      aqi: data.aqi ?? 55,
+      aqiStatus: data.aqiStatus ?? 'Moderate',
+      sunrise: data.sunrise ?? '06:00 AM',
+      sunset: data.sunset ?? '06:30 PM',
       coordinates: { lat, lon }
     };
 
@@ -89,7 +100,7 @@ const getForecast = async (req, res, next) => {
     const normalizedForecasts = (data.forecasts || []).map(f => ({
       ...f,
       condition: getWeatherConditionText(f.weatherCode),
-      pop: f.rainfallProbability
+      pop: f.pop ?? f.rainfallProbability ?? 0
     }));
 
     return successResponse(res, { ...data, city: cityName, forecasts: normalizedForecasts }, 'Weather forecast fetched successfully');
@@ -103,18 +114,25 @@ const getHourlyForecast = async (req, res, next) => {
     const { lat, lon, cityName } = await resolveCoordinates(req.query);
     const data = await weatherService.getForecast({ lat, lon, days: 2 });
     
-    // Generate 3-hourly time slots
-    const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
-    const hourly = hours.map((time, idx) => {
-      const baseTemp = data.forecasts?.[0]?.temperature || 28;
-      const pop = data.forecasts?.[0]?.rainfallProbability || 30;
-      return {
-        time,
-        temp: Math.round(baseTemp + (idx >= 3 && idx <= 5 ? 3 : -2)),
-        pop: Math.min(100, Math.max(0, pop + (idx % 2 === 0 ? 10 : -10))),
-        condition: pop > 50 ? 'Showers' : 'Partly Cloudy'
-      };
-    });
+    // Return actual Open-Meteo hourly list if available
+    let hourly = (data.hourly || []).map(h => ({
+      ...h,
+      condition: getWeatherConditionText(h.weatherCode)
+    }));
+
+    if (!hourly || hourly.length === 0) {
+      const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
+      hourly = hours.map((time, idx) => {
+        const baseTemp = data.forecasts?.[0]?.temperature || 28;
+        const pop = data.forecasts?.[0]?.rainfallProbability || 30;
+        return {
+          time,
+          temp: Math.round(baseTemp + (idx >= 3 && idx <= 5 ? 3 : -2)),
+          pop: Math.min(100, Math.max(0, pop + (idx % 2 === 0 ? 10 : -10))),
+          condition: pop > 50 ? 'Showers' : 'Partly Cloudy'
+        };
+      });
+    }
 
     return successResponse(res, hourly, 'Hourly forecast fetched successfully');
   } catch (err) {
@@ -130,15 +148,19 @@ const getDailyForecast = async (req, res, next) => {
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const daily = (data.forecasts || []).map((f, idx) => {
       const dateObj = new Date(f.forecastTime);
-      const dayName = idx === 0 ? 'Today' : daysOfWeek[dateObj.getDay()];
+      const dayName = f.day || (idx === 0 ? 'Today' : daysOfWeek[dateObj.getDay()]);
       return {
         day: dayName,
-        date: dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        tempMin: Math.round(f.temperatureMin || 24),
-        tempMax: Math.round(f.temperatureMax || 32),
-        condition: getWeatherConditionText(f.weatherCode),
-        pop: f.rainfallProbability || 40,
-        humidity: 75
+        date: f.date || dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        tempMin: Math.round(f.temperatureMin ?? 24),
+        tempMax: Math.round(f.temperatureMax ?? 32),
+        condition: f.condition || getWeatherConditionText(f.weatherCode),
+        pop: f.pop ?? f.rainfallProbability ?? 30,
+        humidity: f.humidity ?? 75,
+        windSpeed: f.windSpeed ?? 14,
+        sunrise: f.sunrise ?? '06:00 AM',
+        sunset: f.sunset ?? '06:30 PM',
+        uvIndexMax: f.uvIndexMax ?? 6
       };
     });
 

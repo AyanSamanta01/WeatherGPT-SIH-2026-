@@ -1,24 +1,22 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { locationService } from '../../services/api';
-import { MOCK_SAVED_LOCATIONS } from '../../data/mockData';
 
 export const fetchLocationsThunk = createAsyncThunk(
   'locations/fetchLocations',
-  async () => {
+  async (_, { rejectWithValue }) => {
     try {
       const locs = await locationService.getLocations();
-      if (locs && locs.length > 0) return locs;
+      return locs || [];
     } catch (err) {
-      console.warn('Locations fetch error:', err);
+      return rejectWithValue(err.message);
     }
-    return MOCK_SAVED_LOCATIONS;
   }
 );
 
 const locationsSlice = createSlice({
   name: 'locations',
   initialState: {
-    savedLocations: MOCK_SAVED_LOCATIONS,
+    savedLocations: [],
     loading: false
   },
   reducers: {
@@ -37,8 +35,15 @@ const locationsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchLocationsThunk.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchLocationsThunk.fulfilled, (state, action) => {
+        state.loading = false;
         state.savedLocations = action.payload;
+      })
+      .addCase(fetchLocationsThunk.rejected, (state) => {
+        state.loading = false;
       });
   }
 });

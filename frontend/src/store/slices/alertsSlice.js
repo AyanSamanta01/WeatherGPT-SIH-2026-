@@ -1,26 +1,25 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { alertService } from '../../services/api';
-import { MOCK_ALERTS } from '../../data/mockData';
 
 export const fetchAlertsThunk = createAsyncThunk(
   'alerts/fetchAlerts',
-  async () => {
+  async (_, { rejectWithValue }) => {
     try {
       const data = await alertService.getAlerts();
-      if (data && data.length > 0) return data;
+      return data || [];
     } catch (err) {
-      console.warn('Alerts fetch error:', err);
+      return rejectWithValue(err.message);
     }
-    return MOCK_ALERTS;
   }
 );
 
 const alertsSlice = createSlice({
   name: 'alerts',
   initialState: {
-    emergencyAlert: MOCK_ALERTS[0], // Active high-priority alert for demonstration
-    alertsList: MOCK_ALERTS,
-    loading: false
+    emergencyAlert: null,
+    alertsList: [],
+    loading: false,
+    error: null
   },
   reducers: {
     setEmergencyAlert(state, action) {
@@ -32,21 +31,20 @@ const alertsSlice = createSlice({
     triggerSimulatedAlert(state, action) {
       const newAlert = action.payload || {
         id: 'ALT-' + Date.now().toString().slice(-4),
-        title: 'Red Alert: Severe Cyclone Flash Inundation Warning (Bay of Bengal)',
+        title: 'Red Alert: Severe Weather Warning (IMD Live Feed)',
         category: 'cyclone',
         severity: 'extreme',
         issuedBy: 'India Meteorological Department (IMD)',
         issuedAt: 'Just now',
-        affectedRegions: ['Digha', 'Kakdwip', 'Sagar Island', 'Sundarbans'],
-        summary: 'Deep Cyclonic system making coastal landfall. Severe squalls of 100-115 km/h with 4-meter storm surge.',
+        affectedRegions: ['Coastal Corridor'],
+        summary: 'Deep convective weather system actively monitored by satellite radar feeds.',
         advisories: [
-          'Immediate evacuation of low-lying coastal mangrove settlements.',
-          'Total ban on deep-sea and trawler fishing operations.',
-          'Protect stored seeds & livestock in flood-resistant shelters.'
+          'Stay informed with regional meteorological advisories.',
+          'Follow safety precautions for ongoing operations.'
         ]
       };
       state.emergencyAlert = newAlert;
-      state.alertsList = [newAlert, ...state.alertsList];
+      state.alertsList = [newAlert, ...state.alertsList.filter(a => a.id !== newAlert.id)];
     },
     addLiveAlert(state, action) {
       const alertItem = action.payload;
@@ -56,8 +54,20 @@ const alertsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchAlertsThunk.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchAlertsThunk.fulfilled, (state, action) => {
+        state.loading = false;
         state.alertsList = action.payload;
+        if (action.payload && action.payload.length > 0 && !state.emergencyAlert) {
+          const highSeverity = action.payload.find(a => a.severity === 'extreme' || a.severity === 'severe');
+          if (highSeverity) state.emergencyAlert = highSeverity;
+        }
+      })
+      .addCase(fetchAlertsThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   }
 });
