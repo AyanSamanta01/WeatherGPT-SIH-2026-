@@ -158,12 +158,21 @@ export const AppProvider = ({ children }) => {
   };
 
   // Change active city and fetch live data from Open-Meteo
-  const changeCity = (cityName) => {
-    dispatch(setSelectedCity(cityName));
-    dispatch(fetchWeatherThunk(cityName));
-    try {
-      localStorage.setItem('weathergpt_default_city', cityName);
-    } catch (_) {}
+  const changeCity = (cityOrObj) => {
+    if (typeof cityOrObj === 'object' && cityOrObj !== null) {
+      const name = cityOrObj.cityName || cityOrObj.name || 'Selected Location';
+      dispatch(setSelectedCity(name));
+      dispatch(fetchWeatherThunk(cityOrObj));
+      try {
+        localStorage.setItem('weathergpt_default_city', name);
+      } catch (_) {}
+    } else {
+      dispatch(setSelectedCity(cityOrObj));
+      dispatch(fetchWeatherThunk(cityOrObj));
+      try {
+        localStorage.setItem('weathergpt_default_city', cityOrObj);
+      } catch (_) {}
+    }
   };
 
   // Voice Speech-to-Text handler

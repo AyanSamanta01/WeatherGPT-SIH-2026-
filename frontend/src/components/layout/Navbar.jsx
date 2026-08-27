@@ -19,6 +19,8 @@ import {
   Loader
 } from 'lucide-react';
 
+import { openMeteoService } from '../../services/openMeteoService';
+
 const Navbar = ({ onToggleSidebar }) => {
   const { 
     selectedCity, 
@@ -44,9 +46,31 @@ const Navbar = ({ onToggleSidebar }) => {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
+  const [liveResults, setLiveResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const cityRef = useRef(null);
   const langRef = useRef(null);
   const profileRef = useRef(null);
+
+  // Live Open-Meteo Geocoding Search
+  useEffect(() => {
+    if (!searchFilter || searchFilter.trim().length < 2) {
+      setLiveResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await openMeteoService.searchCity(searchFilter);
+        setLiveResults(results || []);
+      } catch (_) {
+        setLiveResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchFilter]);
 
   const filteredCities = (availableCities || []).filter(c => 
     c.toLowerCase().includes(searchFilter.toLowerCase())
@@ -166,7 +190,42 @@ const Navbar = ({ onToggleSidebar }) => {
                 />
               </div>
               <div className="max-h-52 overflow-y-auto space-y-0.5 no-scrollbar">
-                {filteredCities.map((city) => (
+                {isSearching && (
+                  <div className="flex items-center justify-center py-4 text-slate-400 space-x-2 text-xs">
+                    <Loader className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                    <span>Searching locations...</span>
+                  </div>
+                )}
+
+                {/* Live Geocoded City Results from Open-Meteo */}
+                {!isSearching && liveResults.length > 0 && (
+                  <div className="space-y-0.5">
+                    <div className="px-2 py-1 text-[10px] font-bold text-cyan-400/80 uppercase tracking-wider">Live Search Results</div>
+                    {liveResults.map((r, idx) => (
+                      <button
+                        key={`${r.name}-${r.lat}-${idx}`}
+                        onClick={() => {
+                          changeCity({ lat: r.lat, lon: r.lon, cityName: r.name, stateName: r.state });
+                          setCityDropdownOpen(false);
+                          setSearchFilter('');
+                          setLiveResults([]);
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                          <div>
+                            <span className="font-semibold text-white">{r.name}</span>
+                            <span className="text-[10px] text-slate-400 ml-1.5">{r.state ? `${r.state}, ` : ''}{r.country}</span>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Standard Regional Indian Cities */}
+                {!isSearching && liveResults.length === 0 && filteredCities.map((city) => (
                   <button
                     key={city}
                     onClick={() => {
