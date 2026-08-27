@@ -335,6 +335,20 @@ export const MOCK_CLIMATE_TRENDS = {
     { year: '2023', annualRainfall: 2750, normal: 2200 },
     { year: '2024', annualRainfall: 3050, normal: 2200 },
     { year: '2025', annualRainfall: 3200, normal: 2200 }
+  ],
+  soilMoisture: [
+    { month: 'Jan', topSoil: 42, rootZone: 58, pet: 110, retention: 76 },
+    { month: 'Feb', topSoil: 35, rootZone: 52, pet: 125, retention: 70 },
+    { month: 'Mar', topSoil: 28, rootZone: 45, pet: 155, retention: 62 },
+    { month: 'Apr', topSoil: 20, rootZone: 38, pet: 180, retention: 55 },
+    { month: 'May', topSoil: 18, rootZone: 32, pet: 210, retention: 48 },
+    { month: 'Jun', topSoil: 65, rootZone: 72, pet: 160, retention: 82 },
+    { month: 'Jul', topSoil: 92, rootZone: 95, pet: 130, retention: 96 },
+    { month: 'Aug', topSoil: 88, rootZone: 92, pet: 125, retention: 94 },
+    { month: 'Sep', topSoil: 78, rootZone: 85, pet: 135, retention: 88 },
+    { month: 'Oct', topSoil: 60, rootZone: 74, pet: 140, retention: 80 },
+    { month: 'Nov', topSoil: 48, rootZone: 66, pet: 120, retention: 74 },
+    { month: 'Dec', topSoil: 44, rootZone: 62, pet: 105, retention: 78 }
   ]
 };
 

@@ -263,69 +263,225 @@ const AnalyticsPage = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. DYNAMIC RECHARTS VISUALIZATION PANELS                                   */}
+      {/* 3. DYNAMIC RECHARTS VISUALIZATION PANELS (Based on activeDiagnosticTab)     */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* 📈 1. Monthly Temperature Anomaly vs Baseline */}
-        <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-sm font-bold text-white">
-              <TrendingUp className="w-4 h-4 text-orange-400" />
-              <span>Monthly Mean Temperature vs. 50-Year Baseline (°C)</span>
+        {/* ==================== 1. THERMAL PROFILE ANOMALY VIEW ==================== */}
+        {activeDiagnosticTab === 'temp' && (
+          <>
+            {/* 📈 Panel 1: Monthly Temperature vs Baseline */}
+            <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-sm font-bold text-white">
+                  <TrendingUp className="w-4 h-4 text-orange-400" />
+                  <span>Monthly Mean Temperature vs. 50-Year Baseline (°C)</span>
+                </div>
+                <span className="text-[10px] text-orange-300 font-bold bg-orange-500/20 px-2 py-0.5 rounded-md border border-orange-500/30">
+                  2026 vs Normal
+                </span>
+              </div>
+
+              <div className="h-72 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={climateData.monthlyTemperature || []}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={11} domain={[20, 40]} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(249, 115, 22, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
+                      labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Line type="monotone" dataKey="historicalAvg" stroke="#64748b" strokeWidth={2.5} strokeDasharray="5 5" name="50-Yr Historical Mean (°C)" />
+                    <Line type="monotone" dataKey="currentYear" stroke="#f97316" strokeWidth={3.5} dot={{ r: 5, fill: '#f97316' }} name="2026 Observed Temperature (°C)" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <span className="text-[10px] text-orange-300 font-bold bg-orange-500/20 px-2 py-0.5 rounded-md border border-orange-500/30">
-              2026 vs Normal
-            </span>
-          </div>
 
-          <div className="h-72 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={climateData.monthlyTemperature}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={11} domain={[20, 40]} tickLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(249, 115, 22, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
-                  labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
-                />
-                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                <Line type="monotone" dataKey="historicalAvg" stroke="#64748b" strokeWidth={2.5} strokeDasharray="5 5" name="50-Yr Historical Mean (°C)" />
-                <Line type="monotone" dataKey="currentYear" stroke="#f97316" strokeWidth={3.5} dot={{ r: 5, fill: '#f97316' }} name="2026 Observed Temperature (°C)" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+            {/* 🌡️ Panel 2: Monthly Thermal Departure Anomaly Curve */}
+            <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-sm font-bold text-white">
+                  <Flame className="w-4 h-4 text-rose-400" />
+                  <span>Thermal Departure Anomaly Profile (°C Departure)</span>
+                </div>
+                <span className="text-[10px] text-rose-300 font-bold bg-rose-500/20 px-2 py-0.5 rounded-md border border-rose-500/30">
+                  Departure from Baseline
+                </span>
+              </div>
 
-        {/* 📊 2. Decadal Annual Rainfall Bar Distribution */}
-        <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-sm font-bold text-white">
-              <CloudRain className="w-4 h-4 text-sky-400" />
-              <span>10-Year Decadal Rainfall Distribution Pattern (mm)</span>
+              <div className="h-72 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={climateData.monthlyTemperature || []}>
+                    <defs>
+                      <linearGradient id="anomalyGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#f97316" stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={11} domain={[0, 2.5]} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(244, 63, 94, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
+                      labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Area type="monotone" dataKey="anomaly" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#anomalyGrad)" name="Temperature Anomaly (°C Departure)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <span className="text-[10px] text-sky-300 font-bold bg-sky-500/20 px-2 py-0.5 rounded-md border border-sky-500/30">
-              2016 - 2025 Series
-            </span>
-          </div>
+          </>
+        )}
 
-          <div className="h-72 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={climateData.decadalRainfall}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                <XAxis dataKey="year" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(56, 189, 248, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
-                  labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
-                />
-                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                <Bar dataKey="annualRainfall" fill="#0284c7" radius={[8, 8, 0, 0]} name="Annual Observed Rainfall (mm)" />
-                <Bar dataKey="normal" fill="#334155" radius={[8, 8, 0, 0]} name="Climatological Normal (mm)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* ==================== 2. DECADAL MONSOON VOLUME VIEW ==================== */}
+        {activeDiagnosticTab === 'rain' && (
+          <>
+            {/* 📊 Panel 1: Decadal Annual Rainfall Bar Distribution */}
+            <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-sm font-bold text-white">
+                  <CloudRain className="w-4 h-4 text-sky-400" />
+                  <span>10-Year Decadal Rainfall Distribution Pattern (mm)</span>
+                </div>
+                <span className="text-[10px] text-sky-300 font-bold bg-sky-500/20 px-2 py-0.5 rounded-md border border-sky-500/30">
+                  2016 - 2025 Series
+                </span>
+              </div>
+
+              <div className="h-72 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={climateData.decadalRainfall || []}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="year" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(56, 189, 248, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
+                      labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Bar dataKey="annualRainfall" fill="#0284c7" radius={[8, 8, 0, 0]} name="Annual Observed Rainfall (mm)" />
+                    <Bar dataKey="normal" fill="#334155" radius={[8, 8, 0, 0]} name="Climatological Normal (mm)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* 🌧️ Panel 2: Monsoon Surplus & Deficit Inflow Area Profile */}
+            <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-sm font-bold text-white">
+                  <Waves className="w-4 h-4 text-cyan-400" />
+                  <span>Monsoon Cumulative Precipitation Trajectory (mm)</span>
+                </div>
+                <span className="text-[10px] text-cyan-300 font-bold bg-cyan-500/20 px-2 py-0.5 rounded-md border border-cyan-500/30">
+                  Decadal Trajectory
+                </span>
+              </div>
+
+              <div className="h-72 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={climateData.decadalRainfall || []}>
+                    <defs>
+                      <linearGradient id="monsoonGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#0284c7" stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="year" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(6, 182, 212, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
+                      labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Area type="monotone" dataKey="annualRainfall" stroke="#06b6d4" strokeWidth={3.5} fillOpacity={1} fill="url(#monsoonGrad)" name="Total Inflow Volume (mm)" />
+                    <Line type="monotone" dataKey="normal" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" name="Normal (2200 mm)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ==================== 3. AGRO-CLIMATIC SOIL INDEX VIEW ==================== */}
+        {activeDiagnosticTab === 'soil' && (
+          <>
+            {/* 🌾 Panel 1: Soil Moisture Saturation */}
+            <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-sm font-bold text-white">
+                  <TreeDeciduous className="w-4 h-4 text-emerald-400" />
+                  <span>Root-Zone & Top-Soil Moisture Saturation Profile (%)</span>
+                </div>
+                <span className="text-[10px] text-emerald-300 font-bold bg-emerald-500/20 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                  Crop Root Depth (0-100cm)
+                </span>
+              </div>
+
+              <div className="h-72 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={climateData.soilMoisture || []}>
+                    <defs>
+                      <linearGradient id="rootSoilGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#059669" stopOpacity={0.05}/>
+                      </linearGradient>
+                      <linearGradient id="topSoilGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.6}/>
+                        <stop offset="95%" stopColor="#0284c7" stopOpacity={0.05}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={11} domain={[0, 100]} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(16, 185, 129, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
+                      labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Area type="monotone" dataKey="rootZone" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#rootSoilGrad)" name="Root-Zone Saturation (%)" />
+                    <Area type="monotone" dataKey="topSoil" stroke="#06b6d4" strokeWidth={2.5} fillOpacity={1} fill="url(#topSoilGrad)" name="Top-Soil Moisture (%)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* ☀️ Panel 2: Potential Evapotranspiration vs Retention */}
+            <div className="liquid-sidebar rounded-3xl p-6 space-y-4 shadow-2xl relative overflow-hidden animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-sm font-bold text-white">
+                  <Droplets className="w-4 h-4 text-teal-400" />
+                  <span>Potential Evapotranspiration (PET) vs Field Capacity</span>
+                </div>
+                <span className="text-[10px] text-teal-300 font-bold bg-teal-500/20 px-2 py-0.5 rounded-md border border-teal-500/30">
+                  Hydro-Balance Index
+                </span>
+              </div>
+
+              <div className="h-72 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={climateData.soilMoisture || []}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(20, 184, 166, 0.4)', borderRadius: '1.25rem', fontSize: '12px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }} 
+                      labelStyle={{ color: '#ffffff', fontWeight: 'bold' }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Bar dataKey="pet" fill="#f59e0b" radius={[6, 6, 0, 0]} name="Evapotranspiration PET (mm)" />
+                    <Bar dataKey="retention" fill="#10b981" radius={[6, 6, 0, 0]} name="Field Retention Index (%)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
+        )}
 
       </div>
 
