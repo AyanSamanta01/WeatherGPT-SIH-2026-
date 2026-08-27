@@ -22,7 +22,6 @@ const Sidebar = ({ isOpen, onClose }) => {
   const { activeScreen, setActiveScreen, user, logoutUser, activeAlertsList } = useApp();
 
   const navigationItems = [
-    { id: 'chat', label: 'AI WeatherGPT', icon: Bot, badge: 'RAG LLM', tagColor: 'cyan' },
     { id: 'current', label: 'Current Telemetry', icon: SunMedium, tagColor: 'amber' },
     { id: 'forecast', label: 'NWP 7-Day Outlook', icon: CalendarDays, tagColor: 'blue' },
     { id: 'map', label: 'GIS Disaster Map', icon: Map, badge: 'GeoJSON', tagColor: 'emerald' },
