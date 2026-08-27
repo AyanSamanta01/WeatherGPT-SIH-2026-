@@ -38,17 +38,15 @@ app.get('/', (req, res) => {
 // Mount API Routes
 app.use(routes);
 
-// Static frontend serving if built dist is present
+// Static frontend serving if built dist is present in production mode
 const path = require('path');
 const fs = require('fs');
 const frontendDist = path.join(__dirname, '../../frontend/dist');
 
-if (fs.existsSync(frontendDist)) {
+if (fs.existsSync(frontendDist) && process.env.NODE_ENV === 'production') {
   app.use(express.static(frontendDist));
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/api-docs')) {
-      return next();
-    }
+  const spaRoutes = ['/login', '/current', '/forecast', '/map', '/alerts', '/analytics', '/chat', '/settings'];
+  app.get(spaRoutes, (req, res) => {
     res.sendFile(path.join(frontendDist, 'index.html'));
   });
 }
