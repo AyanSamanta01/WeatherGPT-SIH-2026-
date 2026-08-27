@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const routes = require('./routes');
@@ -8,6 +10,7 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 const { errorResponse } = require('./utils/response');
 
 const app = express();
+const frontendDist = path.join(__dirname, '../../frontend/dist');
 
 // Security & Parsing Middleware
 app.use(cors({
@@ -25,9 +28,21 @@ app.use('/api', apiLimiter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Root info route
+// Static frontend asset serving (disable default index.html hijack on root)
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist, { index: false }));
+}
+
+// Root route: Real web browsers get React UI, API clients / test runners get JSON info
 app.get('/', (req, res) => {
-  res.json({
+  const acceptHeader = req.headers['accept'] || '';
+  const isHtmlClient = acceptHeader.includes('text/html');
+
+  if (fs.existsSync(frontendDist) && isHtmlClient) {
+    return res.sendFile(path.join(frontendDist, 'index.html'));
+  }
+
+  return res.json({
     message: 'Welcome to WeatherGPT API Gateway',
     version: '1.0.0',
     documentation: '/api-docs',
@@ -38,20 +53,25 @@ app.get('/', (req, res) => {
 // Mount API Routes
 app.use(routes);
 
-// Static frontend serving if built dist is present in production mode
-const path = require('path');
-const fs = require('fs');
-const frontendDist = path.join(__dirname, '../../frontend/dist');
+// Specific SPA application routes for frontend
+const SPA_ROUTES = [
+  '/login',
+  '/current',
+  '/forecast',
+  '/map',
+  '/alerts',
+  '/analytics',
+  '/chat',
+  '/settings'
+];
 
-if (fs.existsSync(frontendDist) && process.env.NODE_ENV === 'production') {
-  app.use(express.static(frontendDist));
-  const spaRoutes = ['/login', '/current', '/forecast', '/map', '/alerts', '/analytics', '/chat', '/settings'];
-  app.get(spaRoutes, (req, res) => {
+if (fs.existsSync(frontendDist)) {
+  app.get(SPA_ROUTES, (req, res) => {
     res.sendFile(path.join(frontendDist, 'index.html'));
   });
 }
 
-// 404 Catch-all for API
+// 404 Catch-all for non-existent API routes & unknown paths
 app.use((req, res) => {
   return errorResponse(res, `Route not found: ${req.method} ${req.originalUrl}`, 404);
 });
