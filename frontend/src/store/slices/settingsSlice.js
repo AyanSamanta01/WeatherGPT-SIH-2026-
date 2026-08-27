@@ -4,15 +4,26 @@ import { SUPPORTED_LANGUAGES } from '../../data/mockData';
 const getInitialTheme = () => {
   try {
     const saved = localStorage.getItem('weathergpt_theme');
-    if (saved) return saved;
-  } catch (e) {}
+    if (saved) {
+      if (saved === 'light') {
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.remove('light');
+      }
+      return saved;
+    }
+  } catch (e) {
+    // Fallback
+  }
   return 'dark';
 };
+
+const initialTheme = getInitialTheme();
 
 const settingsSlice = createSlice({
   name: 'settings',
   initialState: {
-    theme: getInitialTheme(),
+    theme: initialTheme,
     language: 'English',
     voiceEnabled: true,
     voiceSpeed: 1.0,
@@ -26,23 +37,19 @@ const settingsSlice = createSlice({
         localStorage.setItem('weathergpt_theme', action.payload);
         if (action.payload === 'light') {
           document.documentElement.classList.add('light');
-          document.documentElement.classList.remove('dark');
         } else {
-          document.documentElement.classList.add('dark');
           document.documentElement.classList.remove('light');
         }
       } catch (e) {}
     },
     toggleTheme(state) {
-      const nextTheme = state.theme === 'light' ? 'dark' : 'light';
+      const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
       state.theme = nextTheme;
       try {
         localStorage.setItem('weathergpt_theme', nextTheme);
         if (nextTheme === 'light') {
           document.documentElement.classList.add('light');
-          document.documentElement.classList.remove('dark');
         } else {
-          document.documentElement.classList.add('dark');
           document.documentElement.classList.remove('light');
         }
       } catch (e) {}
