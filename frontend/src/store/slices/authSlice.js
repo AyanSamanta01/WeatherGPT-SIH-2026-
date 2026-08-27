@@ -11,7 +11,12 @@ const getInitialUser = () => {
   } catch (e) {
     console.warn('Error reading saved user:', e);
   }
-  return { isLoggedIn: false };
+  return { 
+    name: 'Meteorology Officer',
+    email: 'officer@weathergpt.gov.in',
+    role: 'Lead Forecaster',
+    isLoggedIn: true 
+  };
 };
 
 export const loginUserThunk = createAsyncThunk(
