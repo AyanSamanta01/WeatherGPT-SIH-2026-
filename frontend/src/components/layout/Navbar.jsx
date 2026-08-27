@@ -242,20 +242,6 @@ const Navbar = ({ onToggleSidebar, isSidebarOpen }) => {
           )}
         </NavLink>
 
-        {/* 🤖 AI WeatherGPT Bot Navigation Pill in Top Bar */}
-        <NavLink
-          to="/chat"
-          className={({ isActive }) => `flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm ${
-            isActive
-              ? 'bg-gradient-to-tr from-cyan-500 to-blue-600 text-white shadow-cyan-500/30 border border-white/20'
-              : 'bg-slate-900/90 border border-slate-700/70 text-cyan-300 hover:text-white hover:border-cyan-400/80 hover:bg-cyan-500/15'
-          }`}
-          title="Open WeatherGPT AI Chatbot"
-        >
-          <Bot className="w-4 h-4 text-cyan-400" />
-          <span className="hidden sm:inline">AI Chat</span>
-        </NavLink>
-
         {/* 👤 User Profile Capsule with Interactive Dropdown (Settings & Locations inside) */}
         {user?.isLoggedIn ? (
           <div ref={profileContainerRef} className="relative">
