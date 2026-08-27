@@ -8,6 +8,7 @@
     "dev:backend": "npm --prefix backend run dev",
     "frontend": "npm --prefix frontend run dev",
     "backend": "npm --prefix backend run dev",
+    "ai-service": "python -m uvicorn app.main:app --app-dir ai-service --host 0.0.0.0 --port 8000 --reload",
     "build": "npm --prefix frontend run build",
     "test": "npm --prefix backend test"
   },
