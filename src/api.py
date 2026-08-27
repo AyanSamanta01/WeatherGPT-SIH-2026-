@@ -595,7 +595,68 @@ def get_cities():
     return {"cities": list(CITY_COORDINATES.values())}
 
 
+# ---------------------------------------------------------
+# ONNX & ULTRA-LOW LATENCY EDGE INFERENCE ENDPOINTS
+# ---------------------------------------------------------
+from src.weathergpt_onnx_inference import get_edge_engine
+
+
+class EdgePredictRequest(BaseModel):
+    features: Optional[List[float]] = Field(None, description="64-dimensional feature vector")
+    city: Optional[str] = Field(None, description="City name to fetch live features on the fly")
+
+
+@app.get("/api/v1/ml/onnx/models")
+def get_onnx_model_metadata():
+    """Returns metadata, opset specifications, and graph shapes for edge models."""
+    meta_path = os.path.join(MODELS_DIR, "onnx_metadata.json")
+    if os.path.exists(meta_path):
+        with open(meta_path, "r") as f:
+            return json.load(f)
+    from src.weathergpt_onnx_converter import generate_onnx_graph_metadata
+    return generate_onnx_graph_metadata()
+
+
+@app.get("/api/v1/ml/onnx/benchmark")
+def run_edge_benchmark(iterations: int = Query(100, ge=10, le=1000, description="Benchmark loop iterations")):
+    """
+    Executes live microsecond-precision latency & throughput benchmarking on the compiled edge engine.
+    """
+    engine = get_edge_engine()
+    return engine.benchmark_latency(iterations=iterations)
+
+
+@app.post("/api/v1/ml/onnx/predict")
+def predict_edge(req: EdgePredictRequest):
+    """
+    Sub-millisecond edge prediction endpoint for embedded, edge gateways, and low-latency microservices.
+    """
+    engine = get_edge_engine()
+    try:
+        if req.features and len(req.features) == engine.num_features:
+            return engine.predict_features(req.features)
+        elif req.city:
+            from src.weathergpt_live_features import build_live_feature_vector
+            features_df, loc_info = build_live_feature_vector(req.city)
+            if "location" in features_df.columns:
+                df_enc = pd.get_dummies(features_df, columns=["location"], dtype=int)
+            else:
+                df_enc = features_df
+            df_aligned = df_enc.reindex(columns=engine.feature_columns, fill_value=0)
+            feat_vec = df_aligned.values[0]
+            res = engine.predict_features(feat_vec)
+            res["location"] = loc_info
+            return res
+        else:
+            # Fallback to zero-vector sample
+            dummy = np.zeros(engine.num_features, dtype=np.float32)
+            return engine.predict_features(dummy)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Edge prediction failed: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     print("Starting WeatherGPT AI & ML Microservice on port 8000...")
     uvicorn.run("src.api:app", host="0.0.0.0", port=8000, reload=False)
+
