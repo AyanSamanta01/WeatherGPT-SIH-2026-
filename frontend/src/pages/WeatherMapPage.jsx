@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polygon, useMapEvents } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polygon, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { useApp } from '../context/AppContext';
 import { 
@@ -16,6 +16,17 @@ import {
   Info
 } from 'lucide-react';
 import { alertService } from '../services/api';
+
+// Smooth Map Centering Sync Controller
+const MapFlyTo = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.flyTo(center, 7, { duration: 1.2 });
+    }
+  }, [center, map]);
+  return null;
+};
 
 // Custom Leaflet Marker Icon
 const createCustomIcon = (color = '#06b6d4') => {
@@ -279,6 +290,7 @@ const WeatherMapPage = () => {
               />
             )}
 
+            <MapFlyTo center={mapCenter} />
             <MapClickInspector onInspectCoordinate={handleInspectCoordinate} />
 
             {/* Red Alert Cyclone Zone */}
