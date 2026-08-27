@@ -80,7 +80,7 @@ class ChatService {
           longitude: lon,
           language,
           conversationId
-        }, { timeout: 10000 });
+        }, { timeout: 25000 });
 
         if (aiResponse.data && (aiResponse.data.answer || aiResponse.data.data?.answer)) {
           const aiData = aiResponse.data.data || aiResponse.data;
