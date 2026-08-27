@@ -1,0 +1,82 @@
+services:
+  # 1. WeatherGPT Express Backend API Gateway
+  - type: web
+    name: weathergpt-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: weathergpt-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: WEATHER_PROVIDER
+        value: open-meteo
+      - key: AI_SERVICE_URL
+        fromService:
+          type: web
+          name: weathergpt-ai-service
+          property: host
+          value: http://${HOST}:8000
+      - key: GIS_SERVICE_URL
+        fromService:
+          type: web
+          name: weathergpt-gis-alerts
+          property: host
+          value: http://${HOST}:8001
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: SEED_DATABASE
+        value: "true"
+
+  # 2. WeatherGPT Python AI Microservice
+  - type: web
+    name: weathergpt-ai-service
+    runtime: docker
+    dockerfilePath: ./ai-service/Dockerfile
+    dockerContext: ./ai-service
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0
+      - key: ENVIRONMENT
+        value: production
+      - key: AI_PROVIDER
+        value: fallback
+      - key: OPEN_METEO_BASE_URL
+        value: https://api.open-meteo.com/v1
+
+  # 3. WeatherGPT Python GIS Alerts Microservice
+  - type: web
+    name: weathergpt-gis-alerts
+    runtime: docker
+    dockerfilePath: ./gis-alerts/Dockerfile
+    dockerContext: ./gis-alerts
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8001
+      - key: HOST
+        value: 0.0.0.0
+
+databases:
+  - name: weathergpt-db
+    plan: free
+    region: oregon
+    databaseName: weathergpt_db
+    user: weather_user
