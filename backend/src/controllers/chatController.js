@@ -18,7 +18,9 @@ const handleChat = async (req, res, next) => {
 
     const enriched = {
       ...result,
-      replyText: result.answer,
+      reply: result.answer,       // primary key the frontend checks
+      replyText: result.answer,   // backward compat alias
+      text: result.answer,        // secondary fallback
       weatherCard: result.weatherCard || null
     };
 

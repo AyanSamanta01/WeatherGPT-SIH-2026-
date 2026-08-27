@@ -35,10 +35,25 @@ app.get('/', (req, res) => {
   });
 });
 
-// Mount Routes
+// Mount API Routes
 app.use(routes);
 
-// 404 Catch-all
+// Static frontend serving if built dist is present
+const path = require('path');
+const fs = require('fs');
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/api-docs')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
+
+// 404 Catch-all for API
 app.use((req, res) => {
   return errorResponse(res, `Route not found: ${req.method} ${req.originalUrl}`, 404);
 });

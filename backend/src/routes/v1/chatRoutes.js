@@ -38,7 +38,6 @@ const { chatQuerySchema, conversationIdParamSchema } = require('../../validation
  *         description: AI grounded weather answer
  */
 router.post('/', optionalAuth, validate(chatQuerySchema, 'body'), chatController.handleChat);
-router.post('/chat', optionalAuth, validate(chatQuerySchema, 'body'), chatController.handleChat);
 
 
 

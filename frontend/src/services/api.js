@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 20000,
+  timeout: 8000, // Fast-fail so offline fallback kicks in quickly
   headers: {
     'Content-Type': 'application/json'
   }
@@ -27,10 +27,22 @@ apiClient.interceptors.request.use(
 );
 
 // Response interceptor: graceful fallback handling
+// Treats 503 (proxy offline sentinel) and 502 as errors so catch blocks fire immediately
 apiClient.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // If proxy returned our offline sentinel JSON, throw so catch fires
+    if (response.data?.offline === true) {
+      return Promise.reject(new Error('Backend offline'));
+    }
+    return response.data;
+  },
   (error) => {
-    console.warn(`API Error [${error.config?.url}]:`, error.response?.data || error.message);
+    const status = error.response?.status;
+    const isOffline = status === 503 || status === 502 || !status;
+    // Only log actual API errors, not expected offline behaviour
+    if (!isOffline) {
+      console.warn(`API Error [${error.config?.url}]:`, error.response?.data || error.message);
+    }
     return Promise.reject(error.response?.data || error);
   }
 );

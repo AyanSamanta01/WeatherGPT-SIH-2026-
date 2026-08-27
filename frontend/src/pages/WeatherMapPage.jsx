@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polygon, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { useApp } from '../context/AppContext';
@@ -9,9 +9,11 @@ import {
   MapPin, 
   Radio, 
   Navigation,
-  Info,
+  CloudRain,
+  Globe,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import { alertService } from '../services/api';
 
@@ -21,14 +23,14 @@ const createCustomIcon = (color = '#06b6d4') => {
     className: 'custom-leaflet-marker',
     html: `<div style="
       background-color: ${color};
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       border: 3px solid #ffffff;
-      box-shadow: 0 0 12px ${color};
+      box-shadow: 0 0 16px ${color};
     "></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7]
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
   });
 };
 
@@ -42,9 +44,32 @@ const MapClickInspector = ({ onInspectCoordinate }) => {
   return null;
 };
 
+// Tile Providers (100% Free, No API Key Required)
+const BASEMAP_PRESETS = {
+  dark: {
+    name: 'Tactical Dark',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    className: 'dark-map-tiles',
+    attribution: '&copy; OpenStreetMap contributors'
+  },
+  satellite: {
+    name: 'Satellite Aerial',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    className: '',
+    attribution: '&copy; Esri &mdash; Earthstar Geographics'
+  },
+  standard: {
+    name: 'Met Basemap',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    className: '',
+    attribution: '&copy; OpenStreetMap contributors'
+  }
+};
+
 const WeatherMapPage = () => {
   const { weatherData, selectedCity, changeCity, availableCities } = useApp();
 
+  const [basemapStyle, setBasemapStyle] = useState('dark');
   const [activeLayers, setActiveLayers] = useState({
     disasterZones: true,
     cities: true,
@@ -54,7 +79,7 @@ const WeatherMapPage = () => {
   const [inspectedHazard, setInspectedHazard] = useState(null);
   const [inspectLoading, setInspectLoading] = useState(false);
 
-  // Default Map center: India or selected city coordinates
+  // Map center: Selected city or default to India center
   const mapCenter = [
     weatherData?.coordinates?.lat || 20.5937, 
     weatherData?.coordinates?.lon || 78.9629
@@ -89,7 +114,7 @@ const WeatherMapPage = () => {
 
     try {
       const res = await alertService.checkHazardCoordinates(lat.toFixed(4), lon.toFixed(4));
-      if (res) {
+      if (res && !res.offline) {
         setInspectedHazard({
           lat: lat.toFixed(4),
           lon: lon.toFixed(4),
@@ -99,66 +124,124 @@ const WeatherMapPage = () => {
         });
         return;
       }
-    } catch (e) {
-      // Fallback coordinate hazard heuristic
-      const isNearCyclone = Math.abs(lat - 21.0) < 1.5 && Math.abs(lon - 87.8) < 1.5;
-      const isNearHeatwave = Math.abs(lat - 28.6) < 1.5 && Math.abs(lon - 77.2) < 1.5;
+    } catch (_) {}
 
-      setInspectedHazard({
-        lat: lat.toFixed(4),
-        lon: lon.toFixed(4),
-        risk: isNearCyclone ? 'Extreme (Red Alert)' : isNearHeatwave ? 'Moderate (Yellow)' : 'Low (Safe Green)',
-        zone: isNearCyclone ? 'Bay of Bengal Cyclonic Inundation Corridor' : isNearHeatwave ? 'NCR Heat Island Zone' : 'Standard Agro-Met Grid',
-        advisory: isNearCyclone 
-          ? 'Mandatory coastal evacuation zone. 100+ km/h squalls expected.' 
-          : isNearHeatwave 
-          ? 'Elevated midday solar radiation. Protect stored crops.' 
-          : 'Normal weather conditions. Ideal for regular fieldwork.'
-      });
-    } finally {
-      setInspectLoading(false);
-    }
+    // Fallback coordinate hazard heuristic
+    const isNearCyclone = Math.abs(lat - 21.0) < 1.8 && Math.abs(lon - 87.8) < 1.8;
+    const isNearHeatwave = Math.abs(lat - 28.6) < 1.5 && Math.abs(lon - 77.2) < 1.5;
+    const isNearSquall = Math.abs(lat - 23.2) < 1.5 && Math.abs(lon - 88.2) < 1.5;
+
+    setInspectedHazard({
+      lat: lat.toFixed(4),
+      lon: lon.toFixed(4),
+      risk: isNearCyclone ? 'Extreme (Red Alert)' : isNearSquall ? 'Severe (Orange Alert)' : isNearHeatwave ? 'Moderate (Yellow Alert)' : 'Low (Safe Green)',
+      zone: isNearCyclone 
+        ? 'Bay of Bengal Cyclonic Inundation Corridor' 
+        : isNearSquall 
+        ? 'Gangetic Thunderstorm Squall Sector'
+        : isNearHeatwave 
+        ? 'NCR Heat Island Zone' 
+        : 'Standard Agro-Met Grid',
+      advisory: isNearCyclone 
+        ? 'Mandatory coastal evacuation zone. 100+ km/h squalls expected.' 
+        : isNearSquall
+        ? 'Suspension of open-field tractor operations. Flash lightning risk.'
+        : isNearHeatwave 
+        ? 'Elevated midday solar radiation. Provide root-zone irrigation.' 
+        : 'Normal meteorological parameters. Ideal for standard fieldwork.'
+    });
+
+    setInspectLoading(false);
   };
 
+  const currentBasemap = BASEMAP_PRESETS[basemapStyle] || BASEMAP_PRESETS.dark;
+
   return (
-    <div className="space-y-4 pb-12">
+    <div className="space-y-4 pb-16 animate-fade-in-up">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          <div className="flex items-center space-x-2.5">
+            <h1
+              className="text-2xl sm:text-3xl font-black text-white tracking-tight"
+              style={{ fontFamily: 'Outfit, Inter, sans-serif' }}
+            >
               Interactive GIS Spatial Hazard Map
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-bold">
-              GeoJSON Point-in-Polygon Engine
-            </span>
+            <span className="badge-info">GeoJSON Point-in-Polygon</span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time geospatial visualization of IMD disaster polygons, AWS telemetry nodes, and agricultural micro-zones. Click anywhere on the map to inspect hazard ratings.
+            Real-time geospatial visualization of IMD disaster polygons, AWS telemetry nodes, and Doppler precipitation radar. Click anywhere on the map to inspect hazard ratings.
           </p>
         </div>
 
-        {/* Layer Toggles */}
-        <div className="flex items-center space-x-2 bg-slate-900/90 border border-slate-800 p-1 rounded-2xl">
-          <button
-            onClick={() => setActiveLayers(prev => ({ ...prev, disasterZones: !prev.disasterZones }))}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
-              activeLayers.disasterZones ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'text-slate-400 hover:text-white'
-            }`}
+        {/* Controls & Basemap Switcher */}
+        <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+          {/* Basemap Switcher */}
+          <div
+            className="flex items-center p-1 rounded-2xl"
+            style={{ background: 'rgba(10, 20, 40, 0.8)', border: '1px solid rgba(51, 65, 85, 0.6)' }}
           >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Danger Zones</span>
-          </button>
+            {Object.entries(BASEMAP_PRESETS).map(([key, item]) => (
+              <button
+                key={key}
+                onClick={() => setBasemapStyle(key)}
+                className="px-2.5 py-1 rounded-xl text-xs font-bold transition-all duration-200"
+                style={basemapStyle === key ? {
+                  background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+                  color: '#ffffff',
+                  boxShadow: '0 2px 8px rgba(6, 182, 212, 0.4)'
+                } : { color: '#64748b' }}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
 
-          <button
-            onClick={() => setActiveLayers(prev => ({ ...prev, cities: !prev.cities }))}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
-              activeLayers.cities ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-slate-400 hover:text-white'
-            }`}
+          {/* Layer Toggles */}
+          <div
+            className="flex items-center space-x-1.5 p-1 rounded-2xl"
+            style={{ background: 'rgba(10, 20, 40, 0.8)', border: '1px solid rgba(51, 65, 85, 0.6)' }}
           >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>Observatories</span>
-          </button>
+            <button
+              onClick={() => setActiveLayers(prev => ({ ...prev, disasterZones: !prev.disasterZones }))}
+              className="px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5"
+              style={activeLayers.disasterZones ? {
+                background: 'rgba(239, 68, 68, 0.2)',
+                color: '#f87171',
+                border: '1px solid rgba(239, 68, 68, 0.35)'
+              } : { color: '#64748b' }}
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Danger Zones</span>
+            </button>
+
+            <button
+              onClick={() => setActiveLayers(prev => ({ ...prev, rainRadar: !prev.rainRadar }))}
+              className="px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5"
+              style={activeLayers.rainRadar ? {
+                background: 'rgba(59, 130, 246, 0.2)',
+                color: '#93c5fd',
+                border: '1px solid rgba(59, 130, 246, 0.35)'
+              } : { color: '#64748b' }}
+            >
+              <CloudRain className="w-3.5 h-3.5" />
+              <span>Live Radar</span>
+            </button>
+
+            <button
+              onClick={() => setActiveLayers(prev => ({ ...prev, cities: !prev.cities }))}
+              className="px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5"
+              style={activeLayers.cities ? {
+                background: 'rgba(6, 182, 212, 0.2)',
+                color: '#67e8f9',
+                border: '1px solid rgba(6, 182, 212, 0.35)'
+              } : { color: '#64748b' }}
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Observatories</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -166,18 +249,35 @@ const WeatherMapPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         
         {/* Leaflet Map Canvas */}
-        <div className="lg:col-span-3 h-[600px] rounded-3xl overflow-hidden border border-slate-800 shadow-2xl relative">
+        <div
+          className="lg:col-span-3 h-[620px] rounded-3xl overflow-hidden relative shadow-2xl"
+          style={{
+            border: '1px solid rgba(6, 182, 212, 0.15)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+          }}
+        >
           <MapContainer
+            key={basemapStyle}
             center={mapCenter}
             zoom={5}
             scrollWheelZoom={true}
             className="w-full h-full"
           >
-            {/* Dark Map Tiles */}
+            {/* Free, 100% No-API-Key Basemap Tiles */}
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              attribution={currentBasemap.attribution}
+              url={currentBasemap.url}
+              className={currentBasemap.className}
             />
+
+            {/* Live RainViewer Doppler Radar Layer (Free, No Key) */}
+            {activeLayers.rainRadar && (
+              <TileLayer
+                url="https://tilecache.rainviewer.com/v2/radar/nowcast_0/256/{z}/{x}/{y}/2/1_1.png"
+                opacity={0.65}
+                zIndex={20}
+              />
+            )}
 
             <MapClickInspector onInspectCoordinate={handleInspectCoordinate} />
 
@@ -189,14 +289,14 @@ const WeatherMapPage = () => {
                   color: '#ef4444',
                   fillColor: '#ef4444',
                   fillOpacity: 0.35,
-                  weight: 2
+                  weight: 2.5
                 }}
               >
-                <Popup className="custom-popup">
-                  <div className="p-2 space-y-1 text-slate-900">
-                    <div className="font-extrabold text-xs text-red-600 uppercase">Red Alert: Cyclone Landfall Zone</div>
+                <Popup>
+                  <div className="p-2 space-y-1 text-slate-100">
+                    <div className="font-extrabold text-xs text-red-400 uppercase">Red Alert: Cyclone Landfall Zone</div>
                     <div className="text-[11px] font-semibold">Bay of Bengal Sector (IMD-CAP 1.2)</div>
-                    <div className="text-[10px] text-slate-600">Squalls: 110-125 km/h • Storm Surge: 3.5m</div>
+                    <div className="text-[10px] text-slate-400">Squalls: 110-125 km/h • Storm Surge: 3.5m</div>
                   </div>
                 </Popup>
               </Polygon>
@@ -214,8 +314,8 @@ const WeatherMapPage = () => {
                 }}
               >
                 <Popup>
-                  <div className="p-2 space-y-1 text-slate-900">
-                    <div className="font-extrabold text-xs text-orange-600 uppercase">Orange Alert: Severe Squall</div>
+                  <div className="p-2 space-y-1 text-slate-100">
+                    <div className="font-extrabold text-xs text-orange-400 uppercase">Orange Alert: Severe Squall</div>
                     <div className="text-[11px] font-semibold">Lower Gangetic Plains</div>
                   </div>
                 </Popup>
@@ -234,8 +334,8 @@ const WeatherMapPage = () => {
                 }}
               >
                 <Popup>
-                  <div className="p-2 space-y-1 text-slate-900">
-                    <div className="font-extrabold text-xs text-yellow-600 uppercase">Yellow Alert: Heatwave</div>
+                  <div className="p-2 space-y-1 text-slate-100">
+                    <div className="font-extrabold text-xs text-yellow-400 uppercase">Yellow Alert: Heatwave Watch</div>
                     <div className="text-[11px] font-semibold">Delhi NCR & Western UP</div>
                   </div>
                 </Popup>
@@ -249,9 +349,10 @@ const WeatherMapPage = () => {
                 icon={createCustomIcon('#06b6d4')}
               >
                 <Popup>
-                  <div className="p-2 space-y-1 text-slate-900">
-                    <div className="font-extrabold text-xs text-cyan-600">{weatherData.city} IMD AWS</div>
+                  <div className="p-2 space-y-1 text-slate-100">
+                    <div className="font-extrabold text-xs text-cyan-400">{weatherData.city} IMD AWS</div>
                     <div className="text-sm font-bold">{weatherData.temperature}°C • {weatherData.condition}</div>
+                    <div className="text-[10px] text-slate-400">{weatherData.description}</div>
                   </div>
                 </Popup>
               </Marker>
@@ -259,11 +360,21 @@ const WeatherMapPage = () => {
           </MapContainer>
 
           {/* Floating Map Legend Overlay */}
-          <div className="absolute bottom-4 left-4 z-[500] p-3 rounded-2xl bg-slate-900/90 backdrop-blur-md border border-slate-800 text-[11px] space-y-1.5 shadow-2xl">
-            <div className="font-bold text-slate-300">IMD Hazard Polygon Legend</div>
+          <div
+            className="absolute bottom-4 left-4 z-[500] p-3 rounded-2xl text-[11px] space-y-1.5 shadow-2xl"
+            style={{
+              background: 'rgba(5, 12, 28, 0.92)',
+              border: '1px solid rgba(6, 182, 212, 0.15)',
+              backdropFilter: 'blur(16px)'
+            }}
+          >
+            <div className="font-bold text-white flex items-center space-x-1.5">
+              <Info className="w-3.5 h-3.5 text-cyan-400" />
+              <span>IMD Hazard Spatial Legend</span>
+            </div>
             <div className="flex items-center space-x-2">
               <span className="w-3 h-3 rounded bg-red-500/80 border border-red-400" />
-              <span className="text-slate-300">Red: Cyclone / Flash Flood Inundation</span>
+              <span className="text-slate-300">Red: Cyclone / Inundation Corridor</span>
             </div>
             <div className="flex items-center space-x-2">
               <span className="w-3 h-3 rounded bg-orange-500/80 border border-orange-400" />
@@ -273,12 +384,23 @@ const WeatherMapPage = () => {
               <span className="w-3 h-3 rounded bg-yellow-500/80 border border-yellow-400" />
               <span className="text-slate-300">Yellow: Heatwave & High PM2.5 Watch</span>
             </div>
+            <div className="flex items-center space-x-2">
+              <span className="w-3 h-3 rounded bg-blue-500/80 border border-blue-400" />
+              <span className="text-slate-300">Blue Radar: Live Precipitation Velocity</span>
+            </div>
           </div>
         </div>
 
         {/* Coordinate Inspector Sidebar */}
         <div className="space-y-4">
-          <div className="rounded-3xl p-5 bg-slate-900/80 border border-slate-800 backdrop-blur-xl shadow-xl space-y-3">
+          <div
+            className="rounded-3xl p-5 shadow-xl space-y-3"
+            style={{
+              background: 'rgba(5, 12, 28, 0.95)',
+              border: '1px solid rgba(6, 182, 212, 0.12)',
+              backdropFilter: 'blur(20px)'
+            }}
+          >
             <div className="flex items-center space-x-2 text-xs font-bold text-cyan-400">
               <Navigation className="w-4 h-4" />
               <span>Spatial Hazard Inspector</span>
@@ -289,20 +411,26 @@ const WeatherMapPage = () => {
             </p>
 
             {inspectLoading ? (
-              <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700 text-center space-y-2 animate-pulse">
+              <div
+                className="p-4 rounded-2xl text-center space-y-2 animate-pulse"
+                style={{ background: 'rgba(10, 22, 42, 0.7)', border: '1px solid rgba(6, 182, 212, 0.2)' }}
+              >
                 <Radio className="w-5 h-5 text-cyan-400 mx-auto animate-spin" />
                 <div className="text-xs font-semibold text-slate-300">Querying GIS Polygon Index...</div>
               </div>
             ) : inspectedHazard ? (
-              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-2 animate-in fade-in">
+              <div
+                className="p-4 rounded-2xl space-y-2.5 animate-fade-in-up"
+                style={{ background: 'rgba(10, 22, 42, 0.9)', border: '1px solid rgba(6, 182, 212, 0.2)' }}
+              >
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Target Coordinates</span>
-                  <span className="text-xs font-mono font-bold text-white">{inspectedHazard.lat}°N, {inspectedHazard.lon}°E</span>
+                  <span className="text-xs font-mono font-bold text-cyan-400">{inspectedHazard.lat}°N, {inspectedHazard.lon}°E</span>
                 </div>
 
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-bold">Hazard Level</span>
-                  <div className="text-xs font-extrabold text-cyan-300 mt-0.5">{inspectedHazard.risk}</div>
+                  <div className="text-xs font-extrabold text-white mt-0.5">{inspectedHazard.risk}</div>
                 </div>
 
                 <div>
@@ -316,25 +444,42 @@ const WeatherMapPage = () => {
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-2xl bg-slate-800/40 border border-dashed border-slate-700 text-center text-xs text-slate-500">
+              <div
+                className="p-4 rounded-2xl text-center text-xs text-slate-500"
+                style={{ background: 'rgba(4, 10, 24, 0.6)', border: '1px dashed rgba(51, 65, 85, 0.6)' }}
+              >
                 Tap or click any region on the map above to inspect meteorological risk.
               </div>
             )}
           </div>
 
           {/* Quick Hub Focus */}
-          <div className="rounded-3xl p-5 bg-slate-900/80 border border-slate-800 backdrop-blur-xl shadow-xl space-y-2">
+          <div
+            className="rounded-3xl p-5 shadow-xl space-y-2"
+            style={{
+              background: 'rgba(5, 12, 28, 0.95)',
+              border: '1px solid rgba(6, 182, 212, 0.12)',
+              backdropFilter: 'blur(20px)'
+            }}
+          >
             <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">Quick Met Observatories</div>
             <div className="grid grid-cols-2 gap-2 pt-1">
-              {(availableCities || []).slice(0, 6).map((city) => (
+              {(availableCities || []).slice(0, 8).map((city) => (
                 <button
                   key={city}
                   onClick={() => changeCity(city)}
-                  className={`p-2 rounded-xl text-xs font-semibold text-left transition ${
-                    city === selectedCity
-                      ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30'
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
-                  }`}
+                  className="p-2 rounded-xl text-xs font-semibold text-left transition-all duration-150"
+                  style={city === selectedCity ? {
+                    background: 'rgba(6, 182, 212, 0.2)',
+                    border: '1px solid rgba(6, 182, 212, 0.35)',
+                    color: '#67e8f9'
+                  } : {
+                    background: 'rgba(10, 22, 42, 0.7)',
+                    border: '1px solid rgba(30, 41, 59, 0.8)',
+                    color: '#94a3b8'
+                  }}
+                  onMouseEnter={e => { if (city !== selectedCity) e.currentTarget.style.color = '#e2e8f0'; }}
+                  onMouseLeave={e => { if (city !== selectedCity) e.currentTarget.style.color = '#94a3b8'; }}
                 >
                   {city}
                 </button>
