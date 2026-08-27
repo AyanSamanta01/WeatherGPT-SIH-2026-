@@ -89,6 +89,8 @@ class AgentQueryResponseData(BaseModel):
     weatherCard: Optional[WeatherCard] = None
     tools_used: List[str] = Field(default_factory=list)
     rag_sources: List[str] = Field(default_factory=list)
+    suggested_actions: List[str] = Field(default_factory=list)
+    conversation_mode: Optional[str] = "direct_answer"
     confidence: float = 0.95
     guardrail_status: str = "passed"
     processing_time_ms: float = 0.0
@@ -102,6 +104,8 @@ class AgentQueryResponse(BaseModel):
     sources: List[str]
     risk: str
     conversationId: Optional[str] = None
+    suggested_actions: Optional[List[str]] = Field(default_factory=list)
+    suggestedActions: Optional[List[str]] = Field(default_factory=list)
 
 
 # -------------------------------------------------------------
@@ -159,4 +163,3 @@ class SynthesizeResponse(BaseModel):
     audio_base64: str
     audio_format: str = "audio/mp3"
     language: str = "en"
-
