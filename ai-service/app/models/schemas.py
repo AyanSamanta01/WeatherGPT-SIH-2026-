@@ -102,3 +102,61 @@ class AgentQueryResponse(BaseModel):
     sources: List[str]
     risk: str
     conversationId: Optional[str] = None
+
+
+# -------------------------------------------------------------
+# Voice STT & TTS Schemas
+# -------------------------------------------------------------
+class VoiceQueryRequest(BaseModel):
+    audio_base64: Optional[str] = Field(default=None, description="Base64 encoded audio payload (WAV, MP3, WebM, OGG)")
+    audio_format: Optional[str] = Field(default="wav", description="Audio container format: wav, mp3, ogg, webm, m4a")
+    language: Optional[str] = Field(default="en", description="Spoken language code (e.g. en, hi, bn, ta, te, mr)")
+    latitude: Optional[float] = Field(default=None, ge=-90.0, le=90.0)
+    longitude: Optional[float] = Field(default=None, ge=-180.0, le=180.0)
+    city: Optional[str] = Field(default=None, description="Optional city name hint")
+    conversationId: Optional[str] = Field(default=None, description="Conversation session ID")
+    sector: Optional[TargetSector] = Field(default=TargetSector.GENERAL_PUBLIC)
+    synthesize_audio: Optional[bool] = Field(default=True, description="Whether to generate TTS audio response")
+    voice_speed: Optional[float] = Field(default=1.0, description="Speech rate for audio synthesis")
+
+
+class VoiceQueryResponse(BaseModel):
+    status: str = "success"
+    transcript: str = Field(description="Transcribed user speech query")
+    answer: str = Field(description="Grounded AI response text")
+    location: str
+    risk: str
+    sources: List[str] = Field(default_factory=list)
+    conversationId: Optional[str] = None
+    weatherCard: Optional[WeatherCard] = None
+    audio_base64: Optional[str] = Field(default=None, description="Base64 encoded synthesized audio response")
+    audio_format: Optional[str] = Field(default="audio/mp3", description="Audio MIME type")
+    language: str = "en"
+    processing_time_ms: float = 0.0
+
+
+class TranscribeRequest(BaseModel):
+    audio_base64: str = Field(description="Base64 encoded audio payload")
+    audio_format: Optional[str] = Field(default="wav")
+    language: Optional[str] = Field(default="en")
+
+
+class TranscribeResponse(BaseModel):
+    status: str = "success"
+    transcript: str
+    confidence: float = 0.95
+    language: str = "en"
+
+
+class SynthesizeRequest(BaseModel):
+    text: str = Field(description="Text to convert to spoken audio")
+    language: Optional[str] = Field(default="en", description="Target regional language code")
+    speed: Optional[float] = Field(default=1.0, description="Speech rate multiplier")
+
+
+class SynthesizeResponse(BaseModel):
+    status: str = "success"
+    audio_base64: str
+    audio_format: str = "audio/mp3"
+    language: str = "en"
+

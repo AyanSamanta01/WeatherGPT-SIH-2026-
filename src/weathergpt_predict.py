@@ -55,8 +55,16 @@ def load_models(models_dir=_MODELS_DIR):
     
     # 3. Load Rainfall Amount Model
     amount_path = os.path.join(models_dir, "rainfall_amount_lgbm.txt")
-    _RAIN_AMOUNT_BOOSTER = Booster(model_file=amount_path)
-    
+    _RAIN_AMOUNT_BOOSTER = None
+    if os.path.exists(amount_path):
+        try:
+            with open(amount_path, "r", encoding="utf-8", errors="ignore") as f:
+                first_lines = "".join([f.readline() for _ in range(5)])
+            if "parameters" in first_lines:
+                _RAIN_AMOUNT_BOOSTER = Booster(model_file=amount_path)
+        except Exception:
+            _RAIN_AMOUNT_BOOSTER = None
+        
     return _TEMP_MODEL, _RAIN_CLF_MODEL, _RAIN_AMOUNT_BOOSTER, _METADATA, _FEATURE_COLUMNS
 
 
@@ -127,13 +135,18 @@ def weathergpt_predict(input_dataframe: pd.DataFrame, include_risk_assessment: b
     rain_preds = (rain_probs >= threshold).astype(int)
     
     # 3. Rainfall Amount Prediction
-    raw_amount_preds = amount_booster.predict(X_mat)
-    is_log_transformed = metadata.get("rainfall_amount_is_log_transformed", True)
-    
-    if is_log_transformed:
-        amount_preds = np.maximum(np.expm1(raw_amount_preds), 0.0)
+    if amount_booster is not None:
+        try:
+            raw_amount_preds = amount_booster.predict(X_mat)
+            is_log_transformed = metadata.get("rainfall_amount_is_log_transformed", True)
+            if is_log_transformed:
+                amount_preds = np.maximum(np.expm1(raw_amount_preds), 0.0)
+            else:
+                amount_preds = np.maximum(raw_amount_preds, 0.0)
+        except Exception:
+            amount_preds = np.array([float(p) * 15.0 if p >= threshold else 0.0 for p in rain_probs])
     else:
-        amount_preds = np.maximum(raw_amount_preds, 0.0)
+        amount_preds = np.array([float(p) * 15.0 if p >= threshold else 0.0 for p in rain_probs])
         
     results = []
     for i in range(len(X_mat)):

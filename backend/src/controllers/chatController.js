@@ -31,6 +31,27 @@ const handleChat = async (req, res, next) => {
 };
 
 
+const handleVoiceChat = async (req, res, next) => {
+  try {
+    const { audio_base64, audio_format, latitude, longitude, language, conversationId } = req.body;
+    const userId = req.user?.id || null;
+
+    const result = await chatService.processVoiceChat({
+      audio_base64,
+      audio_format: audio_format || 'wav',
+      latitude,
+      longitude,
+      language: language || req.user?.preferredLanguage || 'en',
+      conversationId,
+      userId
+    });
+
+    return successResponse(res, result, 'Voice query processed successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getConversations = async (req, res, next) => {
   try {
     const userId = req.user?.id || null;
@@ -65,8 +86,10 @@ const deleteConversation = async (req, res, next) => {
 
 module.exports = {
   handleChat,
+  handleVoiceChat,
   getConversations,
   getHistory,
   deleteConversation
 };
+
 
