@@ -22,7 +22,9 @@ import {
   Phone,
   Briefcase,
   Building,
-  CheckCircle2
+  CheckCircle2,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 const SettingsPage = () => {
@@ -48,7 +50,9 @@ const SettingsPage = () => {
     addSavedLocation,
     removeSavedLocation,
     setDefaultSavedLocation,
-    setActiveScreen
+    setActiveScreen,
+    theme,
+    setTheme
   } = useApp();
 
   // User Profile Form State
