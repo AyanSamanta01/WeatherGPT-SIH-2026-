@@ -11,6 +11,9 @@ const env = require('./config/env');
 
 const app = express();
 
+// Trust reverse proxy headers (required for Render, Cloudflare, Heroku to correctly identify client IPs for rate-limiting)
+app.set('trust proxy', 1);
+
 // Parse and configure CORS Origin Whitelist
 const allowedOrigins = (env.CORS_ORIGIN || '*')
   .split(',')
