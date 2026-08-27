@@ -28,15 +28,22 @@ MASTER_DATASET_PATH = os.path.join(DATASET_DIR, "WeatherGPT_10_Cities_V3_Master.
 def load_sample_dataset(nrows=10):
     """Loads sample data from master CSV if available, or falls back to individual city CSVs."""
     if os.path.exists(MASTER_DATASET_PATH):
-        return pd.read_csv(MASTER_DATASET_PATH, nrows=nrows)
+        df = pd.read_csv(MASTER_DATASET_PATH, nrows=nrows)
+        if "location" not in df.columns:
+            df["location"] = df["city"] if "city" in df.columns else "Mumbai"
+        return df
     
     city_files = [f for f in os.listdir(DATASET_DIR) if f.endswith("_V3.csv") and not f.startswith("V3_")]
     if not city_files:
         raise FileNotFoundError(f"No city datasets (*_V3.csv) found in {DATASET_DIR}")
     
     # Pick first city file
-    cpath = os.path.join(DATASET_DIR, city_files[0])
-    return pd.read_csv(cpath, nrows=nrows)
+    cf = city_files[0]
+    city_name = cf.replace("_V3.csv", "")
+    cpath = os.path.join(DATASET_DIR, cf)
+    df = pd.read_csv(cpath, nrows=nrows)
+    df["location"] = city_name
+    return df
 
 
 def test_heat_index():

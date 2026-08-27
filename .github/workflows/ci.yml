@@ -123,6 +123,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Reconstruct Master Dataset from City CSVs (if missing)
+        run: |
+          python -c "
+          import os, glob, pandas as pd
+          master_file = 'dataset/WeatherGPT_10_Cities_V3_Master.csv'
+          if not os.path.exists(master_file):
+              print('Master CSV not present. Combining committed city CSVs...')
+              city_csvs = [f for f in glob.glob('dataset/*_V3.csv') if not os.path.basename(f).startswith('V3_')]
+              if city_csvs:
+                  dfs = []
+                  for f in sorted(city_csvs):
+                      city_name = os.path.basename(f).replace('_V3.csv', '')
+                      cdf = pd.read_csv(f, nrows=100)
+                      cdf['location'] = city_name
+                      dfs.append(cdf)
+                  combined = pd.concat(dfs, ignore_index=True)
+                  combined.to_csv(master_file, index=False)
+                  print(f'Reconstructed test master dataset at {master_file} with shape {combined.shape}')
+          "
+
       - name: Test Production ML Prediction Across 10 Cities
         run: python test_inference.py
 

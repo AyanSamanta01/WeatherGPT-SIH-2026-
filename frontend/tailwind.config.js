@@ -8,28 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        weather: {
-          dark: '#0B132B',
-          navy: '#1C2541',
-          blue: '#3A506B',
-          cyan: '#5BC0BE',
-          sky: '#00B4D8',
-          accent: '#6FFFE9',
-          alert: '#FF4D4D',
-          warning: '#FFA500',
-          advisory: '#FFD700',
-          success: '#10B981'
-        }
+        background: '#0a0f1d',
+        surface: '#111827',
       },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'float': 'float 4s ease-in-out infinite',
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-8px)' },
-        }
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif']
       }
     },
   },

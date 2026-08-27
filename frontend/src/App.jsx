@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
+import EmergencyBanner from './components/layout/EmergencyBanner';
+import FloatingAIChatButton from './components/layout/FloatingAIChatButton';
 
 // Pages
 import AuthPage from './pages/AuthPage';
@@ -13,59 +16,75 @@ import AlertsPage from './pages/AlertsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 
-const MainContent = () => {
-  const { activeScreen } = useApp();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+// Protected Dashboard Layout with React Router Outlet
+const DashboardLayout = () => {
+  const { user } = useApp();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const renderScreen = () => {
-    switch (activeScreen) {
-      case 'auth':
-        return <AuthPage />;
-      case 'chat':
-        return <ChatPage />;
-      case 'current':
-        return <CurrentWeatherPage />;
-      case 'forecast':
-        return <ForecastPage />;
-      case 'map':
-        return <WeatherMapPage />;
-      case 'alerts':
-        return <AlertsPage />;
-      case 'analytics':
-        return <AnalyticsPage />;
-      case 'settings':
-        return <SettingsPage />;
-      default:
-        return <ChatPage />;
-    }
-  };
+  // If unauthenticated, redirect to /login
+  if (!user || !user.isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 relative">
-      {/* Top Navbar */}
-      <Navbar onOpenMobileMenu={() => setIsMobileOpen(true)} />
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 relative selection:bg-cyan-500 selection:text-white">
+      {/* Top Emergency Dissemination Banner */}
+      <EmergencyBanner />
 
-      {/* Main Body Layout */}
-      <div className="flex-1 flex max-w-[1600px] w-full mx-auto p-4 lg:p-6 gap-6">
-        {/* Sidebar */}
+      {/* Top Navbar with Hamburger Sidebar Toggle */}
+      <Navbar onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
+
+      {/* Main Body Layout with items-start for Sticky Sidebar */}
+      <div className="flex-1 flex items-start max-w-[1600px] w-full mx-auto p-4 lg:p-6 gap-6">
+        {/* Left Sidebar Navigation */}
         <Sidebar 
-          isMobileOpen={isMobileOpen} 
-          onCloseMobile={() => setIsMobileOpen(false)} 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
         />
 
-        {/* Dynamic Screen Workspace */}
+        {/* Dynamic Screen Workspace via React Router */}
         <main className="flex-1 min-w-0">
-          {renderScreen()}
+          <Outlet />
         </main>
       </div>
+
+      {/* 🤖 Floating Action Button for WeatherGPT AI Chat in Right Bottom Corner */}
+      <FloatingAIChatButton />
     </div>
   );
+};
+
+// Auth Guard Route for /login
+const AuthRoute = () => {
+  const { user } = useApp();
+  if (user && user.isLoggedIn) {
+    return <Navigate to="/current" replace />;
+  }
+  return <AuthPage />;
 };
 
 export default function App() {
   return (
     <AppProvider>
-      <MainContent />
+      <Routes>
+        {/* Auth Gateway */}
+        <Route path="/login" element={<AuthRoute />} />
+
+        {/* Authenticated Dashboard Routes */}
+        <Route element={<DashboardLayout />}>
+          <Route path="/" element={<Navigate to="/current" replace />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/current" element={<CurrentWeatherPage />} />
+          <Route path="/forecast" element={<ForecastPage />} />
+          <Route path="/map" element={<WeatherMapPage />} />
+          <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+
+        {/* Catch-all fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AppProvider>
   );
 }
