@@ -8,11 +8,12 @@ import {
   User, 
   Volume2, 
   VolumeX, 
-  Sparkles,
-  Globe,
-  Loader,
-  ChevronRight
+  Sparkles, 
+  Globe, 
+  Loader, 
+  ChevronRight 
 } from 'lucide-react';
+import VoiceQueryModal from '../components/voice/VoiceQueryModal';
 
 const SUGGESTED_QUERIES = [
   '🌧️ Will it rain tomorrow in Mumbai?',
@@ -160,6 +161,7 @@ const ChatPage = () => {
   } = useApp();
 
   const [inputText, setInputText] = useState('');
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -348,34 +350,18 @@ const ChatPage = () => {
         }}
       >
         <div className="flex items-end gap-2.5">
-          {/* Voice Button */}
+          {/* Voice Assistant Button */}
           <button
-            onClick={() => {
-              if (isListening) {
-                stopVoiceInput();
-              } else {
-                startVoiceInput((transcript) => {
-                  setInputText(transcript);
-                  if (inputRef.current) {
-                    inputRef.current.focus();
-                  }
-                });
-              }
-            }}
+            onClick={() => setVoiceModalOpen(true)}
             className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200"
-            style={isListening ? {
-              background: 'linear-gradient(135deg, #dc2626, #ef4444)',
-              boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)'
-            } : {
+            style={{
               background: 'rgba(10, 22, 42, 0.9)',
-              border: '1px solid rgba(51, 65, 85, 0.7)'
+              border: '1px solid rgba(6, 182, 212, 0.25)',
+              boxShadow: '0 2px 12px rgba(6, 182, 212, 0.15)'
             }}
-            title={isListening ? 'Stop Listening' : 'Voice Input (Click to speak)'}
+            title="Launch Voice Query Assistant"
           >
-            {isListening
-              ? <MicOff className="w-5 h-5 text-white animate-pulse" />
-              : <Mic className="w-5 h-5 text-cyan-400" />
-            }
+            <Mic className="w-5 h-5 text-cyan-400" />
           </button>
 
           {/* Text Input */}
@@ -442,6 +428,17 @@ const ChatPage = () => {
           </button>
         </div>
       </div>
+
+      {/* Interactive Voice Assistant Modal */}
+      <VoiceQueryModal
+        isOpen={voiceModalOpen}
+        onClose={() => setVoiceModalOpen(false)}
+        onSelectQuery={(spokenText) => {
+          setInputText(spokenText);
+          handleSendMessage(spokenText);
+        }}
+        currentLanguage={language}
+      />
     </div>
   );
 };
