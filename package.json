@@ -1,0 +1,22 @@
+{
+  "name": "weathergpt-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WeatherGPT - Conversational AI for Weather Forecasting, Alerts, and Climate Information",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test"
+  },
+  "keywords": [
+    "weathergpt",
+    "sih2026",
+    "react",
+    "express",
+    "fastapi"
+  ],
+  "author": "WeatherGPT Team"
+}
