@@ -32,7 +32,10 @@ const DashboardLayout = () => {
       <EmergencyBanner />
 
       {/* Top Navbar with Hamburger Sidebar Toggle */}
-      <Navbar onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} />
+      <Navbar 
+        isSidebarOpen={isSidebarOpen} 
+        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)} 
+      />
 
       {/* Main Body Layout with items-start for Sticky Sidebar */}
       <div className="flex-1 flex items-start max-w-[1600px] w-full mx-auto p-4 lg:p-6 gap-6">
