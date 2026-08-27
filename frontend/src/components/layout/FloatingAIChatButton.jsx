@@ -44,8 +44,8 @@ const FloatingAIChatButton = () => {
       aria-label="WeatherGPT Floating Chatbot Trigger"
       className="fixed z-[9999] pointer-events-auto select-none flex items-center space-x-2 transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) transform-gpu"
       style={{
-        top: isChatActive ? '5.25rem' : 'calc(100vh - 5.5rem)',
-        right: isChatActive ? '1.25rem' : '1.5rem'
+        top: isChatActive ? '10.5rem' : 'calc(100vh - 5.5rem)',
+        right: isChatActive ? '1.5rem' : '1.5rem'
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -79,15 +79,15 @@ const FloatingAIChatButton = () => {
         )}
       </div>
 
-      {/* 🤖 3D Liquid Floating Action Button with Animated Top Transition */}
+      {/* 🤖 3D Liquid Floating Action Button with Animated Transition Below Tab */}
       <button
         type="button"
         onClick={handleToggleChat}
         aria-label={isChatActive ? `Return to ${getPreviousPageLabel(previousRoute)}` : 'Open WeatherGPT AI Chat'}
         title={isChatActive ? `Back to ${getPreviousPageLabel(previousRoute)}` : 'Open WeatherGPT AI Chat'}
-        className={`relative w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-2xl group cursor-pointer pointer-events-auto transform-gpu active:scale-90 ${
+        className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-2xl group cursor-pointer pointer-events-auto transform-gpu active:scale-90 ${
           isChatActive
-            ? 'bg-gradient-to-tr from-cyan-600 via-sky-500 to-blue-700 border-2 border-cyan-300/80 shadow-[0_0_30px_rgba(6,182,212,0.6)] scale-95 hover:scale-105 ring-2 ring-cyan-400/30'
+            ? 'bg-gradient-to-tr from-cyan-600 via-sky-500 to-blue-700 border-2 border-cyan-300/80 shadow-[0_0_25px_rgba(6,182,212,0.6)] scale-90 hover:scale-100 ring-2 ring-cyan-400/30'
             : 'bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 border-2 border-white/30 hover:border-cyan-300 hover:shadow-[0_12px_40px_-5px_rgba(6,182,212,0.65)] hover:scale-110'
         }`}
         style={{ transformStyle: 'preserve-3d' }}
@@ -101,17 +101,17 @@ const FloatingAIChatButton = () => {
         {/* Main Icon with Smooth Morph on Hover */}
         {isChatActive ? (
           <div className="flex items-center justify-center relative">
-            <Bot className="w-6 h-6 text-white drop-shadow-md group-hover:opacity-20 transition-all duration-300" />
-            <X className="w-5 h-5 text-white absolute opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
+            <Bot className="w-5 h-5 text-white drop-shadow-md group-hover:opacity-20 transition-all duration-300" />
+            <X className="w-4 h-4 text-white absolute opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
           </div>
         ) : (
-          <Bot className="w-7 h-7 text-white drop-shadow-md group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300" />
+          <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-white drop-shadow-md group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300" />
         )}
 
         {/* Top-Right Badge */}
         {isChatActive ? (
-          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-cyan-500 flex items-center justify-center shadow-md shadow-cyan-500/50 border border-white/40 animate-pulse">
-            <ArrowLeft className="w-3 h-3 text-white" />
+          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-500 flex items-center justify-center shadow-md shadow-cyan-500/50 border border-white/40 animate-pulse">
+            <ArrowLeft className="w-2.5 h-2.5 text-white" />
           </div>
         ) : (
           <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 flex items-center justify-center shadow-md shadow-amber-500/40 border border-white/40 animate-bounce">
@@ -120,7 +120,7 @@ const FloatingAIChatButton = () => {
         )}
 
         {/* Live Status Dot */}
-        <div className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-slate-900 shadow-sm" />
+        <div className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-emerald-400 border border-slate-900 shadow-sm" />
       </button>
     </aside>
   );

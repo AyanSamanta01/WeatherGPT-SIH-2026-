@@ -384,7 +384,7 @@ const ChatPage = () => {
       {/* 2. Main Chat Conversation Panel */}
       <div className="flex-1 flex flex-col min-w-0 bg-slate-950/40">
         {/* Chat Header Bar */}
-        <div className="px-4 sm:px-6 py-3.5 pr-20 sm:pr-24 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/70">
+        <div className="px-4 sm:px-6 py-3.5 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/70">
           <div className="flex items-center space-x-3">
             {/* Toggle Drawer Button */}
             <button
