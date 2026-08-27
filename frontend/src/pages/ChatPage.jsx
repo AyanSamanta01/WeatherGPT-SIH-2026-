@@ -43,10 +43,11 @@ const ChatPage = () => {
     activeConversationId,
     setActiveConversationId,
     conversationsList,
-    setConversationsList
+    setConversationsList,
+    clearAllHistory
   } = useApp();
 
-  const [messages, setMessages] = useState(INITIAL_CHAT_MESSAGES);
+  const [messages, setMessages] = useState(INITIAL_CHAT_MESSAGES || []);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
