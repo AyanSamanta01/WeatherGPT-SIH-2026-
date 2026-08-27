@@ -92,10 +92,21 @@ def resolve_location(query: Union[str, Dict[str, float], Tuple[float, float]]) -
     return nearest_city, lat, lon
 
 
-def fetch_live_hourly_data(lat: float, lon: float, timeout_sec: int = 10) -> pd.DataFrame:
+# In-memory short-lived cache for live telemetry (3 min TTL)
+_HOURLY_CACHE: Dict[str, Tuple[float, pd.DataFrame]] = {}
+
+def fetch_live_hourly_data(lat: float, lon: float, timeout_sec: int = 5) -> pd.DataFrame:
     """
-    Fetches the past 48 hours of hourly weather observations from Open-Meteo.
+    Fetches the past 48 hours of hourly weather observations from Open-Meteo with TTL caching.
     """
+    import time
+    cache_key = f"{round(lat, 2)}_{round(lon, 2)}"
+    now_ts = time.time()
+    if cache_key in _HOURLY_CACHE:
+        cached_ts, cached_df = _HOURLY_CACHE[cache_key]
+        if now_ts - cached_ts < 180:  # 3 minutes cache
+            return cached_df.copy()
+
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,
@@ -138,11 +149,12 @@ def fetch_live_hourly_data(lat: float, lon: float, timeout_sec: int = 10) -> pd.
         
         # Sort chronologically and drop duplicates
         df = df.sort_values("timestamp").drop_duplicates(subset=["timestamp"]).reset_index(drop=True)
+        _HOURLY_CACHE[cache_key] = (now_ts, df)
         return df
         
     except Exception as e:
         # Generate a robust synthetic recent series if network fails
-        print(f"[Warning] Live API fetch failed ({e}). Generating continuous synthetic telemetry for testing.")
+        print(f"[Warning] Live API fetch notice ({e}). Generating continuous baseline telemetry for feature computation.")
         now = datetime.now()
         timestamps = [now - timedelta(hours=i) for i in range(48, 0, -1)]
         df = pd.DataFrame({

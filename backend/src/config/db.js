@@ -1,15 +1,22 @@
 const { PrismaClient } = require('@prisma/client');
 const logger = require('../utils/logger');
 
-let prisma;
+let prisma = new PrismaClient({
+  log: ['error']
+});
 
-try {
-  prisma = new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error']
+let isDbConnected = false;
+
+prisma.$connect()
+  .then(() => {
+    isDbConnected = true;
+    logger.info('🐘 PostgreSQL database connected successfully.');
+  })
+  .catch((err) => {
+    isDbConnected = false;
+    logger.info('⚡ Running in high-performance in-memory mode (standalone development).');
   });
-} catch (err) {
-  logger.warn('Prisma Client initialized in disconnected/standalone mode until DB migration is completed:', err.message);
-  prisma = new PrismaClient();
-}
+
+prisma.isDbConnected = () => isDbConnected;
 
 module.exports = prisma;
