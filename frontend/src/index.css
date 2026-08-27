@@ -516,7 +516,42 @@ html.light svg text {
   fill: #0f172a !important;
 }
 
-/* Leaflet Overlays & Popups */
+/* 📊 Recharts Charts (NWP Outlook & Climate Diagnostics) */
+html.light .recharts-cartesian-grid line {
+  stroke: #e2e8f0 !important;
+}
+
+html.light .recharts-text,
+html.light .recharts-label {
+  fill: #475569 !important;
+}
+
+html.light .recharts-legend-item-text {
+  color: #334155 !important;
+}
+
+html.light .recharts-default-tooltip {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+html.light .recharts-tooltip-label {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+html.light .recharts-tooltip-item {
+  color: #334155 !important;
+}
+
+/* 🗺️ Leaflet Overlays & Popups (GIS Disaster Map) */
+html.light .leaflet-container {
+  background-color: #f1f5f9 !important;
+}
+
 html.light .custom-leaflet-marker > div {
   background-color: #ffffff !important;
   color: #0f172a !important;
@@ -529,10 +564,34 @@ html.light .leaflet-popup-content-wrapper {
   color: #0f172a !important;
   border: 1px solid #cbd5e1 !important;
   box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12) !important;
+  border-radius: 1rem !important;
 }
 
 html.light .leaflet-popup-tip {
   background: #ffffff !important;
+}
+
+/* 🚨 Severe Warnings Page Light Theme Refinements */
+html.light .border-red-500\/60 {
+  border-color: rgba(239, 68, 68, 0.7) !important;
+  box-shadow: 0 10px 30px -5px rgba(239, 68, 68, 0.12) !important;
+}
+
+html.light .border-orange-500\/60 {
+  border-color: rgba(249, 115, 22, 0.7) !important;
+  box-shadow: 0 10px 30px -5px rgba(249, 115, 22, 0.12) !important;
+}
+
+html.light .border-amber-500\/40 {
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  box-shadow: 0 10px 30px -5px rgba(245, 158, 11, 0.1) !important;
+}
+
+/* 📈 NWP 24-Hour Timeline Hourly Card in Light Mode */
+html.light .bg-gradient-to-b.from-sky-500\/25.via-blue-600\/15.to-slate-900\/80 {
+  background-image: linear-gradient(to bottom, rgba(224, 242, 254, 0.95), rgba(240, 249, 255, 0.9), #ffffff) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.15) !important;
 }
 
 /* 🚫 Hide Scrollbars Completely while keeping scrollability */
@@ -546,4 +605,5 @@ html.light .leaflet-popup-tip {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
 
