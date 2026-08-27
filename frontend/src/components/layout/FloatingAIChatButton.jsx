@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Bot, Sparkles, ArrowLeft, X, MessageSquare, Compass, Sun, Map, AlertTriangle, LineChart, Settings } from 'lucide-react';
+import { Bot, Sparkles, ArrowLeft, MessageSquare } from 'lucide-react';
 
 const FloatingAIChatButton = () => {
   const navigate = useNavigate();
@@ -10,114 +10,128 @@ const FloatingAIChatButton = () => {
 
   const isChatActive = location.pathname === '/chat';
 
-  // Keep track of the last non-chat route to return back to
-  useEffect(() => {
+  // Track last non-chat route
+  React.useEffect(() => {
     if (location.pathname !== '/chat' && location.pathname !== '/login') {
       setPreviousRoute(location.pathname);
     }
   }, [location.pathname]);
 
   const handleToggleChat = () => {
-    if (isChatActive) {
-      // Navigate back to the previous workspace screen
-      navigate(previousRoute || '/current');
-    } else {
-      // Navigate into the AI chat interface
-      navigate('/chat');
-    }
+    navigate(isChatActive ? (previousRoute || '/current') : '/chat');
   };
 
-  const getPreviousPageLabel = (path) => {
-    switch (path) {
-      case '/current': return 'Telemetry';
-      case '/forecast': return 'Forecast';
-      case '/map': return 'Disaster Map';
-      case '/alerts': return 'Warnings';
-      case '/analytics': return 'Climate';
-      case '/settings': return 'Settings';
-      default: return 'Dashboard';
-    }
+  const getPageLabel = (path) => {
+    const labels = {
+      '/current': 'Telemetry', '/forecast': 'Forecast',
+      '/map': 'GIS Map', '/alerts': 'Warnings',
+      '/analytics': 'Analytics', '/settings': 'Settings'
+    };
+    return labels[path] || 'Dashboard';
   };
+
+  // Don't render on login page
+  if (location.pathname === '/login') return null;
 
   return (
-    <div 
-      className="fixed right-6 z-50 select-none flex items-center space-x-2 transition-all duration-700 cubic-bezier(0.34, 1.25, 0.64, 1)"
-      style={{
-        top: isChatActive ? '9.75rem' : 'calc(100vh - 5.5rem)'
-      }}
+    <div
+      className="fixed right-5 bottom-6 z-50 select-none flex items-center space-x-3"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 💬 Expanding Interactive Tooltip Pill on Hover */}
-      <div 
-        className={`hidden sm:flex items-center space-x-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/40 shadow-2xl transition-all duration-300 pointer-events-none transform ${
-          isHovered 
-            ? 'opacity-100 translate-x-0 scale-100' 
-            : 'opacity-0 translate-x-4 scale-95'
-        }`}
+      {/* Tooltip Label */}
+      <div
+        className="hidden sm:flex items-center space-x-2 px-3.5 py-2 rounded-2xl text-xs font-semibold text-white pointer-events-none transition-all duration-300"
+        style={{
+          background: 'rgba(5, 12, 28, 0.95)',
+          border: '1px solid rgba(6, 182, 212, 0.25)',
+          backdropFilter: 'blur(24px)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          opacity: isHovered ? 1 : 0,
+          transform: isHovered ? 'translateX(0) scale(1)' : 'translateX(8px) scale(0.95)',
+        }}
       >
         {isChatActive ? (
-          <div className="flex items-center space-x-1.5">
-            <ArrowLeft className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span className="text-xs font-bold text-white">
-              Return to {getPreviousPageLabel(previousRoute)}
-            </span>
-          </div>
+          <>
+            <ArrowLeft className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Back to {getPageLabel(previousRoute)}</span>
+          </>
         ) : (
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span className="w-2 h-2 rounded-full bg-emerald-400 -ml-3.5" />
-              <span className="text-xs font-bold text-white">WeatherGPT AI</span>
-            </div>
-            <span className="text-[10px] text-cyan-300 font-semibold px-1.5 py-0.5 bg-cyan-500/20 rounded-md border border-cyan-500/30">
+          <>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping flex-shrink-0" />
+            <span>WeatherGPT AI</span>
+            <span
+              className="text-[9px] font-black px-1.5 py-0.5 rounded-md"
+              style={{ background: 'rgba(6, 182, 212, 0.2)', color: '#67e8f9', border: '1px solid rgba(6, 182, 212, 0.3)' }}
+            >
               RAG LLM
             </span>
-          </div>
+          </>
         )}
       </div>
 
-      {/* 🤖 3D Liquid Floating Action Button with Dynamic Orbit & Full Fluid Movement */}
+      {/* Main FAB */}
       <button
         onClick={handleToggleChat}
         type="button"
-        title={isChatActive ? `Back to ${getPreviousPageLabel(previousRoute)}` : 'Open WeatherGPT AI Chat'}
-        className={`relative w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-2xl group cursor-pointer transform-gpu active:scale-90 ${
-          isChatActive
-            ? 'bg-gradient-to-tr from-cyan-600 via-sky-500 to-blue-700 border-2 border-cyan-300/80 shadow-[0_0_35px_rgba(6,182,212,0.7)] scale-105 ring-4 ring-cyan-500/30'
-            : 'bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 border-2 border-white/30 hover:border-cyan-300 hover:shadow-[0_12px_40px_-5px_rgba(6,182,212,0.65)] hover:scale-110'
-        }`}
-        style={{ transformStyle: 'preserve-3d' }}
+        title={isChatActive ? `Back to ${getPageLabel(previousRoute)}` : 'Open WeatherGPT AI'}
+        className="relative w-14 h-14 rounded-2xl flex items-center justify-center group cursor-pointer transition-all duration-500"
+        style={{
+          background: isChatActive
+            ? 'linear-gradient(135deg, #06b6d4, #3b82f6, #6366f1)'
+            : 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+          boxShadow: isChatActive
+            ? '0 8px 32px rgba(6, 182, 212, 0.6), 0 0 60px rgba(6, 182, 212, 0.2)'
+            : isHovered
+            ? '0 12px 40px rgba(6, 182, 212, 0.5), 0 0 40px rgba(6, 182, 212, 0.15)'
+            : '0 6px 24px rgba(6, 182, 212, 0.35)',
+          transform: isHovered ? 'scale(1.1) translateY(-2px)' : isChatActive ? 'scale(1.05)' : 'scale(1)',
+          border: '2px solid rgba(255,255,255,0.15)'
+        }}
       >
-        {/* Animated Liquid Glare Glow */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/35 via-transparent to-transparent opacity-80 pointer-events-none" />
+        {/* Inner glow layer */}
+        <div
+          className="absolute inset-0 rounded-2xl"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, transparent 60%)',
+            pointerEvents: 'none'
+          }}
+        />
 
-        {/* Ambient Ring Wave */}
-        <div className="absolute -inset-1.5 rounded-2xl bg-cyan-400/30 blur-sm group-hover:blur-md transition-all duration-300 -z-10 animate-pulse" />
+        {/* Ambient glow ring */}
+        <div
+          className="absolute -inset-2 rounded-3xl -z-10 animate-pulse-glow"
+          style={{
+            background: 'radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, transparent 70%)',
+            filter: 'blur(8px)'
+          }}
+        />
 
-        {/* Main Icon: Bot or Back Transition */}
+        {/* Icon */}
         {isChatActive ? (
-          <div className="flex items-center justify-center relative">
-            <Bot className="w-6 h-6 text-white drop-shadow-md group-hover:scale-90 group-hover:opacity-40 transition-all duration-300" />
-            <ArrowLeft className="w-4 h-4 text-white absolute opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300" />
+          <div className="relative">
+            <Bot className="w-6 h-6 text-white transition-all duration-300 group-hover:opacity-0 group-hover:scale-75" />
+            <ArrowLeft className="w-5 h-5 text-white absolute inset-0 m-auto transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:scale-110" />
           </div>
         ) : (
-          <Bot className="w-7 h-7 text-white drop-shadow-md group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300" />
+          <Bot className="w-7 h-7 text-white group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300" />
         )}
 
-        {/* Top-Right Badge: Sparkles on bottom / Return Arrow on top */}
-        {isChatActive ? (
-          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-cyan-500 flex items-center justify-center shadow-md shadow-cyan-500/50 border border-white/40 animate-pulse">
-            <ArrowLeft className="w-3 h-3 text-white" />
-          </div>
-        ) : (
-          <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 flex items-center justify-center shadow-md shadow-amber-500/40 border border-white/40 animate-bounce">
-            <Sparkles className="w-3 h-3 text-slate-950 fill-current" />
+        {/* Sparkle badge */}
+        {!isChatActive && (
+          <div
+            className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center animate-bounce border-2 border-slate-950"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}
+          >
+            <Sparkles className="w-3 h-3 text-white fill-current" />
           </div>
         )}
 
-        {/* Live Status Dot */}
-        <div className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-slate-900 shadow-sm" />
+        {/* Live status dot */}
+        <div
+          className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950"
+          style={{ background: '#34d399' }}
+        />
       </button>
     </div>
   );

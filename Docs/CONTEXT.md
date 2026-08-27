@@ -8,6 +8,19 @@
 
 ## 🎯 1. Executive Summary
 
+**WeatherGPT** is an end-to-end meteorological intelligence, disaster warning, and conversational AI platform designed for SIH 2026 (`Problem Statement ID: 26068`, MoES / IMD). It integrates historical meteorological datasets, local offline machine learning forecasting models (XGBoost / LightGBM), extreme hazard detection engines, Common Alerting Protocol (CAP 1.2) disaster warning systems, GIS Point-in-Polygon spatial geofencing, real-time Open-Meteo numerical weather prediction (NWP) models (ECMWF, GFS, WRF), and an agentic multi-lingual voice-enabled interface for Indian and global cities.
+
+**10 Key Metropolitan Reference Regions:**
+1. **Kolkata** (22.5726° N, 88.3639° E) — Gangetic Delta & Cyclone Inundation Watch
+2. **Delhi NCR** (28.6139° N, 77.2090° E) — Northern Plains Heatwave & Western Disturbance
+3. **Mumbai** (19.0760° N, 72.8777° E) — Konkan Coast & Urban Cloudburst Deluge
+4. **Chennai** (13.0827° N, 80.2707° E) — Coromandel Coast & Northeast Monsoon
+5. **Bengaluru** (12.9716° N, 77.5946° E) — Deccan Plateau Convective Storms
+6. **Hyderabad** (17.3850° N, 78.4867° E) — Telangana Agro-Climatic Basin
+7. **Ahmedabad** (23.0225° N, 72.5714° E) — Western Arid & Heat Stress Zone
+8. **Guwahati** (26.1445° N, 91.7362° E) — Brahmaputra River Basin Flood Corridor
+9. **Bhubaneswar** (20.2961° N, 85.8245° E) — Odisha Cyclone Landfall Corridor
+10. **Srinagar** (34.0837° N, 74.7973° E) — Himalayan Snowfall & Western Disturbance
 **WeatherGPT** is an end-to-end meteorological intelligence, disaster early-warning, and multimodal conversational AI platform engineered for SIH 2026. It unifies:
 1. **High-Resolution Machine Learning**: 6-hour predictive models (XGBoost, LightGBM) trained on 10+ years of meteorological data across Indian metropolises.
 2. **Extreme Hazard & Risk Engine**: Real-time NOAA Heat Index, Thom's Discomfort Index, IMD 4-Color hazard scales, and WMO-compliant emergency advisories.
@@ -39,6 +52,32 @@
 ## 🏗️ 2. High-Level System Architecture
 
 ```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 USER INTERFACE LAYER (React 18 + Vite 6 + Nginx)            │
+│   • Pages: CurrentWeather, Forecast, WeatherMap, Alerts, Analytics, Chat    │
+│   • Web Speech STT/TTS (VoiceQueryModal), Live SSE Stream, RTK Slices       │
+│   • Accessible via: http://localhost:3000 (Docker) / http://localhost:5173  │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ (REST / SSE)
+┌──────────────────────────────────────v──────────────────────────────────────┐
+│                    API GATEWAY / BACKEND (Node.js / Express)                │
+│   • Auth, User Locations, Weather Routes (/api/v1/weather)                  │
+│   • GIS & Spatial Point-in-Polygon Geofencing (gisUtils.js)                 │
+│   • Live Observation Hazard Engine (hazardEngine.js)                        │
+│   • Server-Sent Events (SSE) Live Disaster Stream (/api/v1/alerts/stream)   │
+│   • Disaster Early Warning Alert Preferences (/api/v1/alerts/preferences)   │
+│   • Accessible via: http://localhost:5000                                   │
+└──────────────────┬──────────────────┬──────────────────┬────────────────────┘
+                   │                  │                  │
+┌──────────────────v──────┐  ┌────────v───────────────┐ ┌v───────────────────┐
+│     AI / LLM SERVICE    │  │ WEATHER-ML & RISK      │ │ GIS & ALERTS        │
+│ (Python FastAPI :8000)  │  │ (Python Models / ML)   │ │ (Python FastAPI     │
+│ • ReAct Agent Loop      │  │ • 6h XGBoost Regressor │ │   & GeoJSON Hub)    │
+│ • NLU & 10 Live Tools   │  │ • 6h Rain Classifier   │ │ • Ray-Casting PIP   │
+│ • RAG Knowledge Base    │  │ • 6h Rain LightGBM     │ │ • IMD 4-Color SOP   │
+│ • 11 Indian Languages   │  │ • NWP Consensus Engine │ │ • CAP 1.2 XML/JSON  │
+│ • Offline Deterministic │  │ • 24h Lag Telemetry    │ │ • Emergency Dispatch│
+└─────────────────────────┘  └────────────────────────┘ └─────────────────────┘
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │                           USER INTERFACE LAYER (React 18 + Vite 6)                      │
 │   • Pages: CurrentWeather, 6h/7d Forecast, Leaflet GIS Map, Disaster Alerts, Analytics │
@@ -89,6 +128,9 @@ WeatherGPT-SIH-2026-/
 │
 ├── dataset/                                   # Curated Master Historical Meteorological Datasets
 │   ├── WeatherGPT_10_Cities_V3_Master.csv    # Master V3 Dataset (1,020,180 rows, 58 columns)
+│   ├── V3_dataset_summary.csv                # Dataset verification metadata
+│   ├── Copy of Weather-ml.ipynb              # Exploratory data analysis & feature engineering notebook
+│   └── [City]_V3.csv                         # Individual city CSVs (102,018 rows/city)
 │   ├── V3_dataset_summary.csv                # Statistical dataset distribution & verification
 │   └── [City]_V3.csv                         # Individual city CSVs (102,018 rows per city)
 │
@@ -125,12 +167,16 @@ WeatherGPT-SIH-2026-/
 │   │   └── seed.js                           # Seed script with default locations & mock alerts
 │   ├── src/
 │   │   ├── controllers/                      # Route handlers (auth, weather, alert, chat)
+│   │   ├── routes/v1/                        # REST API routes
+│   │   ├── services/                         # hazardEngine.js, alertService.js, chatService.js, sseService.js
 │   │   ├── routes/v1/                        # REST API routes (including /chat/voice)
 │   │   ├── services/                         # hazardEngine.js, alertService.js, chatService.js
 │   │   ├── providers/                        # Open-Meteo, OpenWeather, IMD providers
 │   │   ├── utils/                            # gisUtils.js (Ray-casting PIP, GeoJSON)
 │   │   └── config/                           # env.js (points AI_SERVICE_URL -> port 8000)
-│   ├── test/                                 # Automated API test suite (34 passed)
+│   ├── test/                                 # Automated API test suite (34 passed, 0 failed)
+│   ├── Dockerfile                            # Multi-stage Node 20 Alpine container
+│   ├── .dockerignore                         # Container build context exclusion
 │   └── package.json
 │
 ├── ai-service/                                # Standalone Python AI/LLM Microservice (Port 8001)
@@ -169,17 +215,50 @@ WeatherGPT-SIH-2026-/
 ├── frontend/                                  # React 18 + Vite 6 + Redux Toolkit + Tailwind Frontend
 │   ├── index.html                            # HTML5 entry with Google Fonts & Leaflet styles
 │   ├── package.json                          # RTK, React-Router 7, Leaflet, Recharts, Lucide, Axios
+│   ├── tailwind.config.js                    # Custom color palettes & dark-mode styling
+│   ├── vite.config.js                        # Vite build & backend proxy (/api -> :5000)
+│   ├── nginx.conf                            # Production Nginx reverse proxy configuration
+│   ├── Dockerfile                            # Multi-stage production container
 │   ├── tailwind.config.js                    # Glassmorphic dark-mode styling tokens
 │   ├── vite.config.js                        # Vite build & proxy configuration
 │   ├── public/                               # Meteorological assets & authentic imagery
 │   └── src/
-│       ├── components/                       # Reusable UI component modules
-│       │   └── layout/                       # EmergencyBanner (CAP 1.2 siren), FloatingAIChatButton
+│       ├── main.jsx                          # App entry point mounting Provider & Router
+│       ├── App.jsx                           # Main layout shell, router & emergency banner
+│       ├── index.css                         # Tailwind tokens, dark mode gradients & glassmorphism
+│       ├── context/
+│       │   └── AppContext.jsx                # Global state provider bridging Redux, Voice & SSE
+│       ├── services/
+│       │   ├── openMeteoService.js           # Live Open-Meteo gateway & geocoding search
+│       │   ├── api.js                        # Axios API gateway client with interceptors
+│       │   ├── voiceService.js               # Web Speech STT (microphone) and TTS (audio)
+│       │   └── sseAlertService.js            # Server-Sent Events client for /api/v1/alerts/stream
+│       ├── data/
+│       │   └── mockData.js                   # Comprehensive fallback telemetry & 10 Indian cities
+│       ├── components/
+│       │   ├── layout/
+│       │   │   ├── Navbar.jsx                # City switcher, language picker, temp toggle, profile
+│       │   │   ├── Sidebar.jsx               # Navigation drawer with local ML status indicator
+│       │   │   ├── EmergencyBanner.jsx       # CAP 1.2 high-priority alert siren & simulation
+│       │   │   └── FloatingAIChatButton.jsx  # 3D liquid animated floating action button
+│       │   └── voice/
+│       │       └── VoiceQueryModal.jsx       # Interactive voice assistant with soundwaves & regional prompts
+│       ├── pages/
+│       │       ├── CurrentWeatherPage.jsx    # Real-time telemetry, 3h forecast, risk & agri advisory
+│       │       ├── ForecastPage.jsx          # 7-Day NWP synoptic forecast & Recharts curves
+│       │       ├── WeatherMapPage.jsx        # React-Leaflet GIS map with MapFlyTo auto-panning
+│       │       ├── AlertsPage.jsx            # CAP 1.2 disaster bulletin feed & safety SOPs
+│       │       ├── AnalyticsPage.jsx         # 2015-2026 decadal climate trends & dataset export
+│       │       ├── ChatPage.jsx              # Conversational AI with VoiceQueryModal & weather cards
+│       │       ├── SettingsPage.jsx          # User preferences, early warning thresholds & saved zones
+│       │       └── AuthPage.jsx              # Sign-in & registration portal with role choices
 │       └── store/                            # Central Redux Toolkit (RTK) state management
 │           ├── index.js                      # Root store combining 6 domain slices
 │           └── slices/                       # authSlice, weatherSlice, alertsSlice, chatSlice, locationsSlice, settingsSlice
 │
 ├── Docs/                                      # Project Documentation & Specifications
+│   ├── CONTEXT.md                             # THIS FILE
+│   ├── FRONTEND_PLAN.md                       # Complete frontend engineering roadmap
 │   ├── CONTEXT.md                             # THIS COMPLETE TECHNICAL GUIDE
 │   ├── TEAM_TASKS.md                          # Role-based task tracking
 │   ├── ARCHITECTURE.md                        # System architecture
@@ -187,11 +266,13 @@ WeatherGPT-SIH-2026-/
 │   └── ALERTS_GIS.md                          # GIS & hazard design
 │
 ├── .github/                                   # GitHub Actions CI/CD Workflows
-│   └── workflows/ci.yml                      # Multi-job automated test pipeline (ML, AI, Backend, Frontend)
+│   └── workflows/ci.yml                      # Multi-job automated test pipeline (ML, AI, Backend, Frontend, Docker)
 │
-├── requirements.txt                           # Root unified Python dependencies
-├── docker-compose.yml                         # Monorepo container orchestration
-└── .gitignore
+├── Dockerfile                                 # Multi-stage production container for Railway / Full-Stack
+├── Dockerfile.ml                              # Python 3.11 ML Microservice container
+├── docker-compose.yml                         # Full 5-service orchestration (postgres, ml, gis, backend, frontend)
+├── TODAY_WORK_SUMMARY.md                      # Comprehensive work report for August 26, 2026
+└── requirements.txt                           # Root unified Python dependencies
 ```
 
 ---
@@ -214,6 +295,40 @@ WeatherGPT-SIH-2026-/
 | **Rain / No-Rain Classifier** | XGBoost Classifier (`rain_classifier_xgb.json`) | `target_rainfall_6h > 0` | Test Accuracy: **84.18%** \| Precision: **0.6333** \| Recall: **0.7053** \| F1: **0.6674** \| ROC-AUC: **0.9004** (Threshold: `0.65`) |
 | **Rainfall Amount Regressor** | LightGBM Booster (`rainfall_amount_lgbm.txt`) | `target_rainfall_6h > 0` | Test MAE: **0.7916 mm** \| RMSE: **1.7665 mm** (Evaluated on 22,959 ground-truth rain events) |
 
+## 🤖 AI / LLM Subsystem (Member 3 Deliverables)
+
+### 1. NLU Intent Classifier & Slot Extraction (`ai-service/app/agents/intent_classifier.py`)
+- **Intent Taxonomy**: `CURRENT_WEATHER`, `FORECAST_SHORT_TERM`, `FORECAST_EXTENDED`, `ML_FORECAST`, `NWP_CONSENSUS`, `ALERT_CHECK`, `CLIMATE_TREND`, `AGRI_ADVISORY`, `OUTDOOR_ACTIVITY`, `METEOROLOGICAL_EXPLANATION`, `OUT_OF_DOMAIN`.
+- **Slot Extraction**: Locations (Indian cities, taluks, coordinates), temporal scopes (`current`, `tomorrow`, `6h`, `multi_day`, `historical`), and target sector personas.
+
+### 2. Universal Multi-Provider LLM Integration (`ai-service/app/services/llm_client.py`)
+- Supports **Google Gemini** (`gemini-2.0-flash`, `gemini-1.5-pro`), **OpenAI / OpenRouter** (`gpt-4o`, `gpt-4o-mini`), **Anthropic Claude** (`claude-3-5-sonnet`), **Ollama / Local LLM** (`llama3:8b`), and a **Deterministic Grounded Fallback Engine** ensuring 100% operational uptime without requiring external API keys.
+
+### 3. Autonomous ReAct Agent Loop & 10 Live Tools (`ai-service/app/tools/`)
+- `get_current_weather`: Real-time temperature, feels like, humidity, wind, rainfall observations.
+- `get_weathergpt_ml_forecast`: WeatherGPT 6-hour high-resolution XGBoost temperature predictions, XGBoost rain probability, LightGBM rainfall amounts, and IMD risk assessments directly from trained production models.
+- `get_nwp_model_consensus`: Multi-model side-by-side comparison against ECMWF IFS, NOAA GFS, and DWD ICON with consensus confidence percentage and micro-climate anomaly flags.
+- `get_weather_forecast`: NWP ensemble multi-day forecasts (highs/lows, rain probabilities, conditions).
+- `get_active_alerts`: CAP 1.2 & IMD disaster warning feed.
+- `get_climate_trends`: Historical 30-year climatological normals and anomaly calculations.
+- `calculate_biometeorology`: Heat Index (NOAA Rothfusz regression) and Stull Wet-Bulb calculation.
+- `get_agricultural_advisory`: Kisan spraying window suitability and disease risk evaluator.
+- `geocode_location`: Indian city and global coordinate geocoding resolver.
+- `search_meteorological_knowledge`: RAG domain search.
+
+### 4. RAG Domain Knowledge Retrieval (`ai-service/app/rag/`)
+- Curated domain knowledge covering:
+  - **IMD 4-Color Warning Codes** (Green, Yellow, Orange, Red) and NDMA Action Protocols.
+  - **IMD 4-Stage Cyclone Warning Protocol** & WMO Wind Intensity Scales.
+  - **Indian Monsoon Dynamics** (SW/NE Monsoon, Western Disturbances, El Niño/La Niña/IOD).
+  - **NDMA Safety Guidelines** (Heatwave hydration thresholds, Lightning 30-30 rule).
+  - **Crop Weather Calendars** (Kharif, Rabi, Zaid crop sensitivities & spraying limits).
+- In-memory Hybrid BM25/keyword semantic retriever (`knowledge_retriever.py`).
+
+### 5. Native Multilingual Response Generation (`ai-service/app/services/multilingual_service.py`)
+- Automatic script detection from Unicode ranges for **11 Indian languages**:
+  - English (`en`), Hindi (`hi`), Bengali (`bn`), Tamil (`ta`), Telugu (`te`), Marathi (`mr`), Gujarati (`gu`), Kannada (`kn`), Malayalam (`ml`), Punjabi (`pa`), Odia (`or`).
+- Contextually preserves exact numerical temperatures, rain probabilities, and wind speeds in native phrasing.
 ### 3. Extreme-Weather & Hazard Risk Assessment Engine (`src/weathergpt_risk_engine.py`)
 * **NOAA / IMD Heat Index**: Full Rothfusz polynomial regression equation calculating apparent thermal stress with humidity adjustments and physiological hazard categories (`Normal`, `Caution`, `Extreme Caution`, `Danger`, `Extreme Danger`).
 * **Thom's Discomfort Index (DI)**: $DI = T - 0.55 \times (1 - 0.01 \times RH) \times (T - 14.5)$ for worker thermal comfort advisories.
@@ -242,6 +357,75 @@ WeatherGPT-SIH-2026-/
 
 ## 🎙️ 6. Native Server-Side AI Voice & Multilingual Architecture
 
+### 1. High-Performance Modern SPA Stack
+- **Core Technologies**: React 18 (`18.3.1`), Vite 6 (`6.1.0`), Redux Toolkit (`2.6.1`), React Router v7 (`7.2.0`), Tailwind CSS v3 (`3.4.17`), Leaflet & React-Leaflet (`4.2.1`), Recharts (`2.15.1`), Lucide-React (`0.475.0`), Axios (`1.7.9`), Canvas-Confetti (`1.9.4`).
+- **Design & Typography**: Premium glassmorphic dark-mode palette (`#0a0f1d` background, cyan/sky accents) with Google Fonts (*Outfit* and *Inter* for modern typography).
+
+### 2. Centralized Redux Toolkit (RTK) State Architecture (`frontend/src/store/`)
+- **`authSlice.js`**: Manages authenticated user session, persistent JWT tokens in `localStorage` (`weathergpt_token`, `weathergpt_user`), `loginUserThunk`, `signupUserThunk`, `logoutUserThunk`, profile updates, and seamless offline fallback user profiles.
+- **`weatherSlice.js`**: Handles selected metropolitan city (`selectedCity`), real-time weather telemetry fetching (`fetchWeatherThunk`), temperature unit conversions (`°C` / `°F`), and resilient offline fallback mock data across Indian metropolitan areas.
+- **`alertsSlice.js`**: Ingests official IMD and NDMA CAP 1.2 disaster warning bulletins (`fetchAlertsThunk`), tracks high-priority active emergencies (`emergencyAlert`), provides `triggerSimulatedAlert` for live jury siren demonstrations, and handles alert dismissals and live SSE pushes (`addLiveAlert`).
+- **`chatSlice.js`**: Powers conversational weather assistant interface, managing active conversation IDs (`activeConversationId`), conversation thread lists (`fetchConversationsThunk`), multi-turn chat history (`messages`), message appending (`addMessage`), and thread resets.
+- **`locationsSlice.js`**: Provides user-customized favorite locations CRUD (`fetchLocationsThunk`, `addLocation`, `deleteLocation`, `setDefaultLocation`) synchronized with backend spatial models.
+- **`settingsSlice.js`**: Manages user interface customization including dark/light theme switching with DOM class sync and `localStorage` persistence (`weathergpt_theme`), multilingual language selection (`supportedLanguages`), Web Speech voice synthesis enablement (`voiceEnabled`, `voiceSpeed`), and broadcast notification toggles.
+
+### 3. Integrated Application Pages (`frontend/src/pages/`)
+1. **`CurrentWeatherPage.jsx`**: Live Open-Meteo synoptic observations, 3-hourly forecast strip, risk index badges, UV/AQI biometeorology cards, and voice query triggers.
+2. **`ForecastPage.jsx`**: 7-Day NWP synoptic forecast with Recharts temperature curve, precipitation risk badges, and sunrise/sunset times.
+3. **`WeatherMapPage.jsx`**: React-Leaflet GIS hazard map with Tactical Dark / Satellite basemaps, RainViewer Doppler radar, GeoJSON danger polygons, `MapFlyTo` smooth auto-panning, and click-to-inspect coordinate engine.
+4. **`AlertsPage.jsx`**: Official CAP 1.2 disaster bulletin feed with category filtering, safety SOPs, and emergency broadcast simulation.
+5. **`AnalyticsPage.jsx`**: 2015–2026 decadal climate anomaly charts with JSON research dataset export.
+6. **`ChatPage.jsx`**: Conversational AI with `VoiceQueryModal` interactive voice assistant, soundwaves, TTS audio speaker, quick suggestion pills, and interactive weather cards.
+7. **`SettingsPage.jsx`**: User profile editor, regional dialects, voice speed slider (0.7x to 1.4x), saved farm location manager, and disaster early warning alert threshold sliders.
+8. **`AuthPage.jsx`**: Sign In / Sign Up portal with role selection (Meteorology Lead, Disaster Officer, Agricultural Officer, Farmer, Researcher) persisting directly to PostgreSQL.
+
+---
+
+## 🗄️ PostgreSQL Database Schema (`prisma/schema.prisma`)
+
+| Table Name | Managed Entity | Primary Function |
+| :--- | :--- | :--- |
+| **`users`** | User Account | Bcrypt hashed passwords, preferred language, role, and JWT auth. |
+| **`locations`** | Saved Watchpoint | User monitoring zones (farms, ports, disaster relief bases). |
+| **`alerts`** | CAP 1.2 Alert | Disaster bulletins with GeoJSON polygon spatial geometries. |
+| **`conversations`** | Chat Session | AI conversation threads linked to user accounts. |
+| **`chat_messages`** | Chat Record | Individual query logs, NLP intent tags, risk levels, and citations. |
+| **`weather_records`**| Telemetry Cache | High-speed cache for historical surface telemetry observations. |
+| **`forecasts`** | NWP Prediction | Caches numerical weather prediction model runs. |
+| **`alert_preferences`**| Alert Setting | Notification thresholds and emergency siren preferences. |
+
+---
+
+## 🔌 API Integration Guide
+
+### 1. AI Service Endpoints (Port 8000)
+- `POST /api/v1/agent/query`: Gateway conversational query endpoint (called by `backend/src/services/chatService.js`).
+- `POST /api/v1/agent/intent`: Standalone NLU intent and slot extraction.
+- `GET /api/v1/agent/tools`: Registered JSON Schema tool definitions.
+- `POST /api/v1/rag/search`: RAG domain knowledge search.
+- `GET /health` & `GET /ready`: Health check & readiness probes.
+
+### 2. ML Inference & Forecast Endpoints (Port 8000)
+- `GET /api/v1/ml/forecast?city=Kolkata`: Live 6-hour ML prediction (temperature, rain probability, rainfall accumulation, composite hazard score).
+- `GET /api/v1/ml/consensus?city=Delhi`: NWP Multi-model consensus comparison (ECMWF, GFS, ICON).
+- `GET /api/v1/ml/metadata`: Production model metrics, benchmarks, and feature schemas.
+
+### 3. GIS & Alerts Microservice Endpoints (Port 8001 / 8002)
+- `GET /api/v1/gis/layers`: Returns all registered GeoJSON boundary, cyclone, flood basin, and heatwave layers.
+- `POST /api/v1/gis/geofence/check`: Evaluates if coordinates fall inside active hazard polygons.
+- `POST /api/v1/gis/hazard/evaluate`: Evaluates live meteorological observation metrics against official IMD SOP alert rules.
+- `POST /api/v1/gis/cap/generate`: Generates official WMO / NDMA compliant CAP 1.2 XML or JSON bulletins.
+- `POST /api/v1/gis/cap/parse`: Parses incoming OASIS CAP 1.2 XML strings into structured JSON.
+- `POST /api/v1/gis/notifications/dispatch`: Dispatches multi-channel simulated emergency alerts.
+- `GET /api/v1/gis/notifications/history`: Returns recent emergency notification dispatch history.
+
+### 4. Backend Gateway Endpoints (Port 5000)
+- `/auth`: `POST /signup`, `POST /login`, `POST /logout`, `GET /me`, `PUT /me`
+- `/weather`: `GET /current`, `GET /forecast`, `GET /hourly`, `GET /daily`, `GET /history`, `GET /geocode`
+- `/chat` & `/ai`: `POST /`, `POST /chat`, `GET /conversations`, `GET /history/:conversationId`, `DELETE /conversations/:id`
+- `/locations`: `GET /`, `POST /`, `GET /:id`, `PUT /:id`, `DELETE /:id`
+- `/alerts`: `GET /`, `GET /gis/layers`, `GET /hazard/check`, `GET /stream` (SSE), `GET /nearby`, `POST /cap/ingest`, `GET/POST /preferences`
+- `/climate` & `/analytics`: `GET /trends`, `GET /climate`
 ### 1. Multi-Provider Voice Engine (`ai-service/app/services/voice_service.py`)
 * **Speech-to-Text (STT)**:
   * Transcribes base64 PCM WAV / MP3 audio buffers.
@@ -321,6 +505,34 @@ Supported Languages & ISO Codes:
 Execute the following test commands to verify all modules across the codebase:
 
 ```bash
+# 1. Start entire 5-container microservice stack via Docker Compose
+docker compose up --build
+
+# 2. Test core ML prediction on historical samples across all 10 cities
+python test_inference.py
+
+# 3. Test Heat Index, IMD rainfall categories, and composite hazard scoring
+python test_risk_engine.py
+
+# 4. Test real-time Open-Meteo telemetry fetching & live 24h lag pipeline
+python test_live_pipeline.py
+
+# 5. Test ML FastAPI microservice endpoints
+python test_api_server.py
+
+# 6. Test NWP multi-model consensus & anomaly analyzer
+python test_nwp_consensus.py
+
+# 7. Test AI/LLM microservice pytest suite (34 tests)
+cd ai-service && pytest tests/ -v && cd ..
+
+# 8. Test GIS & Alerts microservice pytest suite (17 tests)
+cd gis-alerts && pytest tests/ -v && cd ..
+
+# 9. Test Backend API automated test suite (34 passed, 0 failed)
+cd backend && npm test && cd ..
+
+# 10. Test Frontend application production build
 # 1. Core ML Model Historical Inference & Parity Test
 python test_inference.py
 
@@ -362,8 +574,30 @@ cd frontend && npm run build && cd ..
 
 ## 👥 10. Team Task Status Matrix
 
-| Role | Member | Completed Work | Pending Focus |
+| Role | Member | Completed Work | Current Status |
 | :--- | :--- | :--- | :--- |
+| **Frontend Lead** | Member 1 | React 18 / Vite 6 SPA, Redux Toolkit (6 slices), Web Speech STT/TTS (VoiceQueryModal), Leaflet GIS mapping with MapFlyTo, Recharts analytics, Emergency siren banner (CAP 1.2), 3D liquid AI floating action button | ✅ Fully Built & Production Dockerized |
+| **Backend Lead** | Member 2 | Express gateway, Prisma ORM, JWT Auth, Caching, SSE live stream (`/api/v1/alerts/stream`), Alert Preferences, REST APIs (34/34 tests passing) | ✅ Tested & Production Dockerized |
+| **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails (34/34 tests passing) | ✅ Maintained & Integrated |
+| **Weather/ML** | Member 4 | 10-city V3 dataset (1M rows), XGBoost/LightGBM 6h models (MAE 0.96°C, F1 0.67), live 24h lag pipeline, IMD risk engine, NWP consensus analyzer (ECMWF/GFS/ICON), FastAPI microservice (Port 8000) | ✅ Containerized via `Dockerfile.ml` |
+| **GIS & Alerts** | Member 5 | Dedicated `gis-alerts/` package, Ray-Casting PIP engine, GeoJSON layers (Metros, Cyclone corridors, Flood basins, Heat zones), IMD 4-Color hazard rules, CAP 1.2 XML/JSON generator & parser, Notification dispatcher (17/17 tests passing) | ✅ Containerized via `gis-alerts/Dockerfile` |
+| **DevOps & CI/CD** | Member 6 | Multi-service `docker-compose.yml`, Railway Full-Stack Multi-stage Dockerfile, GitHub Actions CI workflow (`.github/workflows/ci.yml`) | ✅ Fully Automated & Verified |
+
+---
+
+## 🚀 Cloud Deployment Instructions (Railway.app)
+
+1. **Deploy from GitHub**: Connect `ajstyles004/WeatherGPT-SIH-2026-` (branch: `frontend`).
+2. **Add PostgreSQL Database**: Click `+ New` $\rightarrow$ `Database` $\rightarrow$ `Add PostgreSQL`.
+3. **Environment Variables**:
+   ```env
+   NODE_ENV=production
+   PORT=5000
+   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   JWT_SECRET=weathergpt_super_secure_jwt_secret_sih_2026_key
+   ```
+4. **Automated Boot Execution**:
+   The container automatically executes `npx prisma db push --skip-generate`, seeds initial demo accounts and CAP alerts via `prisma/seed.js`, and serves the React dashboard and REST APIs on a single live URL.
 | **Frontend Lead** | Member 1 | React 18 / Vite 6 SPA, Redux Toolkit (6 slices), Emergency Siren Banner (CAP 1.2), 3D Liquid Floating AI Bot, Leaflet GIS mapping, Recharts, Voice STT/TTS UI integration | Production bundle validated on `origin/frontend` |
 | **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE stream `/api/v1/alerts/stream`, REST APIs (34/34 tests passing), Voice router `/api/v1/chat/voice` | Maintained & stable |
 | **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails, Native Voice Engine (`voice_service.py`), Voice query endpoints | Maintained & stable |
