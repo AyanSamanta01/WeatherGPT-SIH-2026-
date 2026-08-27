@@ -276,7 +276,32 @@ Supported Languages & ISO Codes:
 
 ---
 
-## 🔌 8. Complete API Endpoint Reference Matrix
+## 💻 8. Frontend Application Architecture & UI Design System (`frontend/`)
+
+The WeatherGPT frontend is an enterprise-grade, high-performance React 18 Single Page Application (SPA) powered by Vite 6, Redux Toolkit, React Router v7, and TailwindCSS.
+
+### 1. Application View Matrix (8 Interactive Screens)
+| Route | Screen Name | Key Meteorological Capabilities & Visual Components |
+| :--- | :--- | :--- |
+| `/current` | **Current Telemetry** | High-contrast crystal hero card with specular glare, SVG AQI gauge, rotating aerodynamic wind compass, live humidity/pressure meters, and quick telemetry toggles. |
+| `/forecast` | **NWP 7-Day Outlook** | Diurnal timeline cards, Recharts synoptic curves (precipitation probability & temperature), 6h interval ML forecast bands, and synoptic thermal sliders. |
+| `/map` | **GIS Disaster Map** | Interactive Leaflet GIS mapping with live GeoJSON layers (10 Metros, Cyclone corridors, River flood plains, Heat corridors), Point-in-Polygon inspector drawer, and 3D legend HUD. |
+| `/alerts` | **Severe Warnings** | IMD 4-Color hazard dispatch cards (`Green`, `Yellow`, `Orange`, `Red`), real-time sirens, CAP 1.2 disaster bulletin feeds, and multi-sector agricultural advisories. |
+| `/chat` | **AI WeatherGPT Chat** | Conversational meteorological intelligence interface, voice speech recognition & synthesis, markdown formatted highlights, quick suggestion pills, and conversation history manager. |
+| `/analytics` | **Climate Diagnostics** | Multi-year climate archive aggregation (+0.85°C anomaly KPI, monsoon surplus indicators), interactive Recharts monthly curves, and AI agro-climatic decision support. |
+| `/login` | **3D Slide Auth Portal** | Dual-mode sliding login/signup container with 3D mouse parallax tracking, liquid glare reflection, `react-hook-form` validation, and mountain/field weather backgrounds. |
+| `/settings` | **Settings & Control** | Personal identity manager, default location switcher, regional language selector (8 Indian languages), voice rate adjuster, and theme mode controller. |
+
+### 2. Layout & Global Interactivity
+- **Dynamic Liquid Navigation (`Navbar.jsx` & `Sidebar.jsx`)**: Sticky frosted navigation with centered telemetry capsule, language dropdown, profile settings modal, and collapsible hamburger drawer.
+- **3D Floating Action Bot (`FloatingAIChatButton.jsx`)**: Fixed `bottom-6 right-6 z-50` floating assistant with live RAG LLM badge, expanded tooltip hover preview, and seamless one-click transition to `/chat`.
+- **Emergency Broadcast Siren Banner (`EmergencyBanner.jsx`)**: Global top notification bar connecting to the backend Server-Sent Events (`/api/v1/alerts/stream`) to instantly broadcast Red/Orange disaster warnings.
+- **Full Dual-Theme Architecture**: Seamless runtime toggle between sleek dark mode (`bg-slate-950`) and crisp high-contrast light mode with complete persistence across all 8 screens.
+- **Centralized Redux State (`store/`)**: 6 decoupled domain slices (`authSlice`, `weatherSlice`, `alertsSlice`, `chatSlice`, `locationsSlice`, `settingsSlice`) with optimistic offline fallbacks.
+
+---
+
+## 🔌 9. Complete API Endpoint Reference Matrix
 
 ### 1. Root ML & Voice Microservice (Port 8000)
 | Method | Endpoint | Description |
@@ -316,7 +341,7 @@ Supported Languages & ISO Codes:
 
 ---
 
-## 🧪 9. Verification & Automated Test Commands
+## 🧪 10. Verification & Automated Test Commands
 
 Execute the following test commands to verify all modules across the codebase:
 
@@ -360,7 +385,7 @@ cd frontend && npm run build && cd ..
 
 ---
 
-## 👥 10. Team Task Status Matrix
+## 👥 11. Team Task Status Matrix
 
 | Role | Member | Completed Work | Pending Focus |
 | :--- | :--- | :--- | :--- |
