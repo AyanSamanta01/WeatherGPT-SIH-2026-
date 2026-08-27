@@ -322,6 +322,22 @@ const ChatPage = () => {
         </div>
       </div>
 
+      {/* Voice Listening Banner */}
+      {isListening && (
+        <div className="flex-shrink-0 px-4 py-2 flex items-center justify-between bg-cyan-950/40 border-t border-cyan-500/20 animate-pulse">
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+            <span className="text-xs font-semibold text-cyan-300">Listening to your voice... Speak now</span>
+          </div>
+          <button
+            onClick={stopVoiceInput}
+            className="text-[11px] font-bold text-red-400 hover:text-red-300 px-2 py-0.5 rounded-lg bg-red-950/60 border border-red-500/30"
+          >
+            Done / Cancel
+          </button>
+        </div>
+      )}
+
       {/* Input Row */}
       <div
         className="flex-shrink-0 px-4 pb-4 pt-2 rounded-b-3xl"
@@ -334,7 +350,18 @@ const ChatPage = () => {
         <div className="flex items-end gap-2.5">
           {/* Voice Button */}
           <button
-            onClick={isListening ? stopVoiceInput : () => startVoiceInput()}
+            onClick={() => {
+              if (isListening) {
+                stopVoiceInput();
+              } else {
+                startVoiceInput((transcript) => {
+                  setInputText(transcript);
+                  if (inputRef.current) {
+                    inputRef.current.focus();
+                  }
+                });
+              }
+            }}
             className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200"
             style={isListening ? {
               background: 'linear-gradient(135deg, #dc2626, #ef4444)',
@@ -343,7 +370,7 @@ const ChatPage = () => {
               background: 'rgba(10, 22, 42, 0.9)',
               border: '1px solid rgba(51, 65, 85, 0.7)'
             }}
-            title={isListening ? 'Stop Listening' : 'Voice Input'}
+            title={isListening ? 'Stop Listening' : 'Voice Input (Click to speak)'}
           >
             {isListening
               ? <MicOff className="w-5 h-5 text-white animate-pulse" />

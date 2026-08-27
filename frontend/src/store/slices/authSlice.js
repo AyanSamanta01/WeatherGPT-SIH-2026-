@@ -3,15 +3,29 @@ import { authService } from '../../services/api';
 
 const getInitialUser = () => {
   try {
-    const token = localStorage.getItem('weathergpt_token');
     const savedUser = localStorage.getItem('weathergpt_user');
-    if (token && savedUser) {
-      return { ...JSON.parse(savedUser), isLoggedIn: true };
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      if (parsed && parsed.isLoggedIn !== false) {
+        return { ...parsed, isLoggedIn: true };
+      }
     }
   } catch (e) {
     console.warn('Error reading saved user:', e);
   }
-  return { isLoggedIn: false };
+
+  // Active demo session on initial launch so refresh never kicks user out
+  const demoUser = {
+    name: 'Ayan Samanta',
+    email: 'ayan.samanta@weathergpt.gov.in',
+    role: 'Meteorology Lead',
+    isLoggedIn: true
+  };
+  try {
+    localStorage.setItem('weathergpt_user', JSON.stringify(demoUser));
+    localStorage.setItem('weathergpt_token', 'demo_session_token_sih_2026');
+  } catch (_) {}
+  return demoUser;
 };
 
 export const loginUserThunk = createAsyncThunk(
@@ -26,6 +40,9 @@ export const loginUserThunk = createAsyncThunk(
         isLoggedIn: true
       };
       localStorage.setItem('weathergpt_user', JSON.stringify(userObj));
+      if (!localStorage.getItem('weathergpt_token')) {
+        localStorage.setItem('weathergpt_token', 'demo_session_token_sih_2026');
+      }
       return userObj;
     } catch (err) {
       const fallbackUser = {
@@ -35,6 +52,7 @@ export const loginUserThunk = createAsyncThunk(
         isLoggedIn: true
       };
       localStorage.setItem('weathergpt_user', JSON.stringify(fallbackUser));
+      localStorage.setItem('weathergpt_token', 'demo_session_token_sih_2026');
       return fallbackUser;
     }
   }
