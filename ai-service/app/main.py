@@ -1,3 +1,4 @@
+import time
 import logging
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, status
@@ -9,12 +10,19 @@ from .models.schemas import (
     AgentQueryRequest,
     AgentQueryResponse,
     IntentResult,
-    RAGSearchResult
+    RAGSearchResult,
+    VoiceQueryRequest,
+    VoiceQueryResponse,
+    TranscribeRequest,
+    TranscribeResponse,
+    SynthesizeRequest,
+    SynthesizeResponse
 )
 from .agents.weather_agent import default_weather_agent
 from .agents.intent_classifier import default_intent_classifier
 from .tools.tool_definitions import LLM_TOOL_DEFINITIONS
 from .rag.knowledge_retriever import default_retriever
+from .services.voice_service import default_voice_service
 
 # Setup logging
 logging.basicConfig(
@@ -50,6 +58,7 @@ async def root():
         "version": "1.0.0",
         "status": "operational",
         "configured_provider": settings.AI_PROVIDER,
+        "voice_engine": "Native STT & Regional TTS Enabled",
         "docs_url": "/docs"
     }
 
@@ -59,6 +68,7 @@ async def health():
         "status": "healthy",
         "service": "ai-service",
         "provider": settings.AI_PROVIDER,
+        "voice_stt_tts": "active",
         "environment": settings.ENVIRONMENT
     }
 
@@ -84,6 +94,115 @@ async def query_agent(request: AgentQueryRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"AI Agent failed to process query: {str(err)}"
         )
+
+@app.post("/api/v1/voice/query", response_model=VoiceQueryResponse)
+async def query_voice_agent(request: VoiceQueryRequest):
+    """
+    Full Voice-in, Voice-out conversational entrypoint:
+    Transcribes spoken audio -> Runs ReAct Meteorological Reasoning -> Synthesizes Regional Spoken Audio.
+    """
+    start_time = time.time()
+    try:
+        lang = request.language or "en"
+        fmt = request.audio_format or "wav"
+
+        # 1. Speech-to-Text Transcription
+        transcript, confidence = await default_voice_service.transcribe_audio(
+            audio_base64=request.audio_base64 or "",
+            audio_format=fmt,
+            language=lang
+        )
+
+        # 2. Run ReAct Agent Reasoning
+        agent_req = AgentQueryRequest(
+            message=transcript,
+            latitude=request.latitude,
+            longitude=request.longitude,
+            language=lang,
+            conversationId=request.conversationId,
+            sector=request.sector
+        )
+        agent_resp = await default_weather_agent.process_query(agent_req)
+
+        answer_text = agent_resp.answer
+        weather_card = agent_resp.data.weatherCard if agent_resp.data else None
+        loc_name = agent_resp.location
+        risk_lvl = agent_resp.risk
+        sources = agent_resp.sources
+
+        # 3. Text-to-Speech Audio Synthesis (if requested)
+        audio_b64 = None
+        audio_mime = "audio/mp3"
+        if request.synthesize_audio:
+            audio_b64, audio_mime = await default_voice_service.synthesize_speech(
+                text=answer_text,
+                language=lang,
+                speed=request.voice_speed or 1.0
+            )
+
+        proc_ms = round((time.time() - start_time) * 1000, 2)
+
+        return VoiceQueryResponse(
+            status="success",
+            transcript=transcript,
+            answer=answer_text,
+            location=loc_name,
+            risk=risk_lvl,
+            sources=sources,
+            conversationId=request.conversationId or agent_resp.conversationId,
+            weatherCard=weather_card,
+            audio_base64=audio_b64,
+            audio_format=audio_mime,
+            language=lang,
+            processing_time_ms=proc_ms
+        )
+
+    except Exception as err:
+        logger.error(f"Voice Agent processing failure: {err}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Voice Agent failed to process query: {str(err)}"
+        )
+
+@app.post("/api/v1/voice/transcribe", response_model=TranscribeResponse)
+async def transcribe_audio_endpoint(request: TranscribeRequest):
+    """
+    Direct Speech-to-Text (STT) transcription endpoint
+    """
+    try:
+        transcript, conf = await default_voice_service.transcribe_audio(
+            audio_base64=request.audio_base64,
+            audio_format=request.audio_format or "wav",
+            language=request.language or "en"
+        )
+        return TranscribeResponse(
+            status="success",
+            transcript=transcript,
+            confidence=conf,
+            language=request.language or "en"
+        )
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+@app.post("/api/v1/voice/synthesize", response_model=SynthesizeResponse)
+async def synthesize_speech_endpoint(request: SynthesizeRequest):
+    """
+    Direct Text-to-Speech (TTS) audio generation endpoint
+    """
+    try:
+        audio_b64, audio_mime = await default_voice_service.synthesize_speech(
+            text=request.text,
+            language=request.language or "en",
+            speed=request.speed or 1.0
+        )
+        return SynthesizeResponse(
+            status="success",
+            audio_base64=audio_b64,
+            audio_format=audio_mime,
+            language=request.language or "en"
+        )
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
 
 @app.post("/api/v1/agent/intent", response_model=IntentResult)
 async def extract_intent(request: AgentQueryRequest):
@@ -133,3 +252,4 @@ if __name__ == "__main__":
         port=settings.PORT,
         reload=True
     )
+

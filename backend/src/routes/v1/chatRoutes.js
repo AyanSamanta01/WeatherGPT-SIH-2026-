@@ -39,6 +39,7 @@ const { chatQuerySchema, conversationIdParamSchema } = require('../../validation
  */
 router.post('/', optionalAuth, validate(chatQuerySchema, 'body'), chatController.handleChat);
 router.post('/chat', optionalAuth, validate(chatQuerySchema, 'body'), chatController.handleChat);
+router.post('/voice', optionalAuth, chatController.handleVoiceChat);
 
 
 
