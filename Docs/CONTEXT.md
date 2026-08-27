@@ -12,10 +12,11 @@
 1. **High-Resolution Machine Learning**: 6-hour predictive models (XGBoost, LightGBM) trained on 10+ years of meteorological data across Indian metropolises.
 2. **Extreme Hazard & Risk Engine**: Real-time NOAA Heat Index, Thom's Discomfort Index, IMD 4-Color hazard scales, and WMO-compliant emergency advisories.
 3. **NWP Ensemble Consensus Engine**: Live consensus benchmarking against ECMWF IFS (9km), NOAA GFS (13km), and DWD ICON (13km) with convective anomaly detection.
-4. **Native Server-Side AI Voice Engine (STT & TTS)**: Zero-dependency voice processing integrating Gemini 2.0 Multimodal audio, OpenAI Whisper, and regional audio synthesis with markdown speech pre-processing.
-5. **Multilingual Meteorological Reasoning**: Native understanding and slot-grounded synthesis across **11 Indian Regional Languages and English**.
-6. **Sub-5ms ONNX & Edge Inference Pipeline**: Compiled decision forest execution with zero-copy continuous memory buffers for edge/offline disaster hubs.
-7. **Spatial GIS Geofencing & CAP 1.2 Alerts**: Ray-Casting 2D Point-in-Polygon (PIP) engine with OASIS/NDMA CAP 1.2 XML/JSON early warning broadcast simulation.
+4. **Interactive Autonomous ReAct AI Agent**: Smart multi-step tool chaining with real-time observation telemetry for agricultural advisories, conversational greetings, and dynamic UI quick-action suggestion chips (`suggested_actions`).
+5. **Native Server-Side AI Voice Engine (STT & TTS)**: Zero-dependency voice processing integrating Gemini 2.0 Multimodal audio, OpenAI Whisper, and regional audio synthesis with markdown speech pre-processing.
+6. **Multilingual Meteorological Reasoning**: Native understanding and slot-grounded synthesis across **11 Indian Regional Languages and English**.
+7. **Sub-5ms ONNX & Edge Inference Pipeline**: Compiled decision forest execution with zero-copy continuous memory buffers for edge/offline disaster hubs.
+8. **Spatial GIS Geofencing & CAP 1.2 Alerts**: Ray-Casting 2D Point-in-Polygon (PIP) engine with OASIS/NDMA CAP 1.2 XML/JSON early warning broadcast simulation.
 
 ---
 
@@ -370,7 +371,7 @@ python test_multilingual_voice_evaluation.py
 # 8. ONNX & Sub-5ms Edge Inference Parity, Benchmarks & API Test Suite
 python test_onnx_inference.py
 
-# 9. Standalone AI Microservice Pytest Suite (34 tests)
+# 9. Standalone AI Microservice Pytest Suite (39 tests including interactive ReAct agent)
 cd ai-service && pytest tests/ -v && cd ..
 
 # 10. GIS & Spatial Alerts Microservice Pytest Suite (17 tests)
@@ -389,9 +390,9 @@ cd frontend && npm run build && cd ..
 
 | Role | Member | Completed Work | Pending Focus |
 | :--- | :--- | :--- | :--- |
-| **Frontend Lead** | Member 1 | React 18 / Vite 6 SPA, Redux Toolkit (6 slices), Emergency Siren Banner (CAP 1.2), 3D Liquid Floating AI Bot, Leaflet GIS mapping, Recharts, Voice STT/TTS UI integration | Production bundle validated on `origin/frontend` |
-| **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE stream `/api/v1/alerts/stream`, REST APIs (34/34 tests passing), Voice router `/api/v1/chat/voice` | Maintained & stable |
-| **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, ReAct Agent, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails, Native Voice Engine (`voice_service.py`), Voice query endpoints | Maintained & stable |
+| **Frontend Lead** | Member 1 | React 18 / Vite 6 SPA, Redux Toolkit (6 slices), Emergency Siren Banner (CAP 1.2), 3D Liquid Floating AI Bot, Leaflet GIS mapping, Recharts, Voice STT/TTS UI integration, Quick Action suggestion chips | Production bundle validated on `origin/frontend` |
+| **Backend Lead** | Member 2 | Express, Prisma ORM, JWT Auth, Caching, SSE stream `/api/v1/alerts/stream`, REST APIs (34/34 tests passing), Voice router `/api/v1/chat/voice`, AI proxy with `suggestedActions` | Maintained & stable |
+| **AI/LLM Engineer**| Member 3 | FastAPI microservice, NLU, Multi-provider LLM, Autonomous ReAct Agent with real telemetry chaining, 10 Tools, RAG, 11 Indian Languages, Memory, Guardrails, Native Voice Engine (`voice_service.py`), Voice query endpoints, Interactive quick-reply chips (39/39 tests passing) | Maintained & synchronized |
 | **Weather/ML** | Member 4 | 10-city V3 dataset (1M rows), XGBoost/LightGBM 6h models (MAE 0.96°C, F1 0.67), live 24h lag pipeline, IMD risk engine, NWP consensus analyzer (ECMWF/GFS/ICON), ONNX & Sub-5ms Edge Inference Pipeline (`weathergpt_onnx_inference.py`), FastAPI microservice (Port 8000) | Production ready & synchronized |
 | **GIS & Alerts** | Member 5 | Dedicated `gis-alerts/` package, Ray-Casting PIP engine, GeoJSON layers (Metros, Cyclone corridors, Flood basins, Heat zones), IMD 4-Color hazard rules, CAP 1.2 XML/JSON generator & parser, Notification dispatcher (17/17 tests passing) | Maintained & stable |
 | **DevOps & CI/CD** | Member 6 | GitHub Actions CI/CD workflows (`.github/workflows/ci.yml`), Docker compose orchestration, multi-stack test automation | Maintained & automated |

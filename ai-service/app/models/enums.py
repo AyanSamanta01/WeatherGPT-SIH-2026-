@@ -11,6 +11,9 @@ class IntentCategory(str, Enum):
     AGRI_ADVISORY = "agri_advisory"
     OUTDOOR_ACTIVITY = "outdoor_activity"
     METEOROLOGICAL_EXPLANATION = "meteorological_explanation"
+    GREETING_OR_CHITCHAT = "greeting_or_chitchat"
+    CAPABILITIES_QUERY = "capabilities_query"
+    CLARIFICATION = "clarification"
     GENERAL_QUERY = "general_query"
     OUT_OF_DOMAIN = "out_of_domain"
 

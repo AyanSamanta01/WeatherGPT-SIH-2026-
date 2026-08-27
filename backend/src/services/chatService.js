@@ -66,6 +66,8 @@ class ChatService {
 
     const lat = latitude ?? 22.5726; // Default to Kolkata coordinates if unspecified
     const lon = longitude ?? 88.3639;
+    let suggestedActions = [];
+    let weatherCard = null;
 
     let aiHandled = false;
 
@@ -85,6 +87,9 @@ class ChatService {
           answer = aiData.answer;
           sources.push(...(aiData.sources || ['AI-Agent-Orchestrator']));
           risk = aiData.risk || 'low';
+          locationName = aiData.location || locationName;
+          suggestedActions = aiData.suggested_actions || aiData.suggestedActions || [];
+          weatherCard = aiData.weatherCard || null;
           aiHandled = true;
           logger.info('[ChatService] Query successfully fulfilled by AI microservice');
         }
@@ -228,7 +233,10 @@ class ChatService {
       sources,
       risk,
       intent,
-      language
+      language,
+      suggestedActions,
+      suggested_actions: suggestedActions,
+      weatherCard
     };
   }
 

@@ -5,7 +5,13 @@ Tests live API telemetry retrieval, dynamic lag computation,
 ML 6-hour prediction, and hazard risk assessment across Indian cities.
 """
 
+import os
+import sys
 import json
+import pandas as pd
+
+sys.stdout.reconfigure(encoding='utf-8')
+
 from src.weathergpt_live_features import (
     resolve_location,
     fetch_live_hourly_data,

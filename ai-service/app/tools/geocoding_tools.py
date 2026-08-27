@@ -43,8 +43,36 @@ INDIAN_CITIES_GEOCODE = {
     "dehradun": (30.3165, 78.0322, "Dehradun, Uttarakhand"),
     "srinagar": (34.0837, 74.7973, "Srinagar, Jammu and Kashmir"),
     "jammu": (32.7266, 74.8570, "Jammu, Jammu and Kashmir"),
+    "punjab": (30.9010, 75.8573, "Punjab, India"),
+    "haryana": (29.0588, 76.0856, "Haryana, India"),
+    "rajasthan": (26.9124, 75.7873, "Rajasthan, India"),
+    "uttar pradesh": (26.8467, 80.9462, "Uttar Pradesh, India"),
+    "madhya pradesh": (23.2599, 77.4126, "Madhya Pradesh, India"),
+    "maharashtra": (19.0760, 72.8777, "Maharashtra, India"),
+    "west bengal": (22.5726, 88.3639, "West Bengal, India"),
+    "bihar": (25.5941, 85.1376, "Bihar, India"),
+    "gujarat": (23.0225, 72.5714, "Gujarat, India"),
+    "kerala": (8.5241, 76.9366, "Kerala, India"),
+    "tamil nadu": (13.0827, 80.2707, "Tamil Nadu, India"),
+    "karnataka": (12.9716, 77.5946, "Karnataka, India"),
+    "andhra pradesh": (16.5062, 80.6480, "Andhra Pradesh, India"),
+    "telangana": (17.3850, 78.4867, "Telangana, India"),
+    "odisha": (20.2961, 85.8245, "Odisha, India"),
+    "assam": (26.1445, 91.7362, "Assam, India"),
     "goa": (15.2993, 74.1240, "Panaji, Goa"),
-    "panaji": (15.4909, 73.8278, "Panaji, Goa")
+    "panaji": (15.4909, 73.8278, "Panaji, Goa"),
+    # Multilingual script city names
+    "दिल्ली": (28.6139, 77.2090, "New Delhi, Delhi"),
+    "मुंबई": (19.0760, 72.8777, "Mumbai, Maharashtra"),
+    "कोलकाता": (22.5726, 88.3639, "Kolkata, West Bengal"),
+    "কলকাতা": (22.5726, 88.3639, "Kolkata, West Bengal"),
+    "पंजाब": (30.9010, 75.8573, "Punjab, India"),
+    "পাঞ্জাব": (30.9010, 75.8573, "Punjab, India"),
+    "चेन्नई": (13.0827, 80.2707, "Chennai, Tamil Nadu"),
+    "बेंगलुरु": (12.9716, 77.5946, "Bengaluru, Karnataka"),
+    "जयपुर": (26.9124, 75.7873, "Jaipur, Rajasthan"),
+    "पटना": (25.5941, 85.1376, "Patna, Bihar"),
+    "लखनऊ": (26.8467, 80.9462, "Lucknow, Uttar Pradesh")
 }
 
 async def geocode_location(location_name: str) -> Tuple[float, float, str]:

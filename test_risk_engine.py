@@ -5,7 +5,13 @@ Tests meteorological hazard calculations, IMD color codes,
 heat index, discomfort index, and composite risk evaluations.
 """
 
+import os
+import sys
 import json
+import pandas as pd
+
+sys.stdout.reconfigure(encoding='utf-8')
+
 from src.weathergpt_risk_engine import (
     calculate_heat_index,
     calculate_discomfort_index,
@@ -14,8 +20,6 @@ from src.weathergpt_risk_engine import (
     assess_weather_risk
 )
 from src.weathergpt_predict import weathergpt_predict
-import pandas as pd
-import os
 
 WORKSPACE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATASET_DIR = os.path.join(WORKSPACE_DIR, "dataset")

@@ -2,6 +2,7 @@ import re
 from typing import Dict, Any, Optional
 from ..models.enums import LanguageCode
 from ..prompts.multilingual_prompts import INDIAN_WEATHER_GLOSSARY
+from ..config import settings
 
 class MultilingualService:
     """
@@ -16,7 +17,7 @@ class MultilingualService:
             code = ord(char)
             # Devanagari (Hindi, Marathi)
             if 0x0900 <= code <= 0x097F:
-                if any(w in text for w in ["आहे", "पाऊस", "कसा", "होईल", "सांगा"]):
+                if any(w in text for w in ["आहे", "पाऊस", "कसा", "होईल", "सांगा", "उद्या"]):
                     return LanguageCode.MR
                 return LanguageCode.HI
             # Bengali / Assamese
@@ -50,19 +51,42 @@ class MultilingualService:
         self,
         english_text: str,
         target_language: str,
-        tool_data: Optional[Dict[str, Any]] = None
+        tool_data: Optional[Dict[str, Any]] = None,
+        is_llm_generated: bool = False
     ) -> str:
         """
-        Localize response into target Indian language with standard meteorological terminology
+        Localize response into target Indian language with standard meteorological terminology.
+        Never overwrites LLM generated text if it already contains native language responses.
         """
         lang = (target_language or "en").lower()
         if lang == "en" or lang not in INDIAN_WEATHER_GLOSSARY:
             return english_text
 
-        glossary = INDIAN_WEATHER_GLOSSARY[lang]
+        # If LLM generated the response directly in native language or rich prose, preserve it
+        if is_llm_generated:
+            # Check if LLM already generated in native script
+            has_native_chars = any(ord(c) > 0x0800 for c in english_text)
+            if has_native_chars:
+                return english_text
+
         loc = tool_data.get("location", "क्षेत्र") if tool_data else "स्थान"
 
-        # Check if tool_data is forecast
+        # 1. Greetings & Capabilities
+        if tool_data and tool_data.get("is_greeting"):
+            if lang == "hi":
+                return (
+                    "👋 **नमस्ते! मैं WeatherGPT हूँ — आपका मौसम सलाहकार।**\n\n"
+                    "मैं आपके लिए लाइव मौसम, अगले 6 घंटे का ML पूर्वानुमान, मॉडल तुलना (GFS vs ECMWF), किसान कृषि सलाह और आपदा चेतावनी जानकारी प्रदान करता हूँ।\n\n"
+                    "💡 *आप किसी भी शहर का नाम या मौसम से जुड़ा सवाल पूछ सकते हैं!*"
+                )
+            elif lang == "bn":
+                return (
+                    "👋 **নমস্কার! আমি WeatherGPT — আপনার আবহাওয়া উপদেষ্টা।**\n\n"
+                    "আমি লাইভ আবহাওয়া, ৬ ঘণ্টার পূর্বাভাস, কৃষি পরামর্শ এবং দুর্যোগের সতর্কতা প্রদান করি।\n\n"
+                    "💡 *আপনি যেকোনো শহরের আবহাওয়া বা প্রশ্ন করতে পারেন!*"
+                )
+
+        # 2. Check if tool_data is forecast
         if tool_data and "daily" in tool_data:
             daily = tool_data.get("daily", [])
             if len(daily) > 1:
@@ -73,7 +97,7 @@ class MultilingualService:
                 rain_mm = tomorrow.get("precipitation_sum_mm", 0)
 
                 if lang == "hi":
-                    umbrella_msg = "कृपया बाहर निकलते समय छाता साथ रखें।" if p_prob >= 50 else "भारी बारिश की संभावना नहीं है।"
+                    umbrella_msg = "कृपया बाहर निकलते समय छाता साथ रखें।" if p_prob >= 40 else "भारी बारिश की संभावना नहीं है।"
                     return (
                         f"📊 **{loc} के लिए मौसम पूर्वानुमान:**\n\n"
                         f"- **कल का तापमान:** न्यूनतम **{t_min}°C** से अधिकतम **{t_max}°C**\n"
@@ -82,7 +106,7 @@ class MultilingualService:
                         f"📌 *स्रोत: IMD / Open-Meteo मौसम पूर्वानुमान मॉडल।* "
                     )
                 elif lang == "bn":
-                    umbrella_msg = "বাইরে বের হওয়ার সময় ছাতা সাথে রাখুন।" if p_prob >= 50 else "ভারী বৃষ্টির সম্ভাবনা কম।"
+                    umbrella_msg = "বাইরে বের হওয়ার সময় ছাতা সাথে রাখুন।" if p_prob >= 40 else "ভারী বৃষ্টির সম্ভাবনা কম।"
                     return (
                         f"📊 **{loc}-এর আবহাওয়ার পূর্বাভাস:**\n\n"
                         f"- **আগামীকালের তাপমাত্রা:** সর্বনিম্ন **{t_min}°C** থেকে সর্বোচ্চ **{t_max}°C**\n"
@@ -91,7 +115,7 @@ class MultilingualService:
                         f"📌 *উৎস: IMD / Open-Meteo আবহাওয়া মডেল।* "
                     )
                 elif lang == "ta":
-                    umbrella_msg = "வெளியே செல்லும்போது குடை எடுத்துச் செல்லவும்." if p_prob >= 50 else "கனமழைக்கு வாய்ப்பில்லை."
+                    umbrella_msg = "வெளியே செல்லும்போது குடை எடுத்துச் செல்லவும்." if p_prob >= 40 else "கனமழைக்கு வாய்ப்பில்லை."
                     return (
                         f"📊 **{loc} வானிலை முன்னறிவிப்பு:**\n\n"
                         f"- **நாளைய வெப்பநிலை:** குறைந்தபட்சம் **{t_min}°C** முதல் அதிகபட்சம் **{t_max}°C**\n"
@@ -100,7 +124,7 @@ class MultilingualService:
                         f"📌 *ஆதாரம்: IMD / Open-Meteo வானிலை மாதிரிகள்.* "
                     )
                 elif lang == "te":
-                    umbrella_msg = "బయటకు వెళ్ళేటప్పుడు గొడుగు తీసుకెళ్లడం మంచిది." if p_prob >= 50 else "భారీ వర్ష సూచన లేదు."
+                    umbrella_msg = "బయటకు వెళ్ళేటప్పుడు గొడుగు తీసుకెళ్లడం మంచిది." if p_prob >= 40 else "భారీ వర్ష సూచన లేదు."
                     return (
                         f"📊 **{loc} వాతావరణ సూచన:**\n\n"
                         f"- **రేపటి ఉష్ణోగ్రత:** కనిష్ట **{t_min}°C** నుండి గరిష్ట **{t_max}°C**\n"
@@ -109,7 +133,7 @@ class MultilingualService:
                         f"📌 *మూలం: IMD / Open-Meteo వాతావరణ అంచనా మోడల్స్.* "
                     )
                 elif lang == "mr":
-                    umbrella_msg = "बाहेर पडताना छत्री सोबत ठेवावी." if p_prob >= 50 else "मुसळधार पावसाची शक्यता नाही."
+                    umbrella_msg = "बाहेर पडताना छत्री सोबत ठेवावी." if p_prob >= 40 else "मुसळधार पावसाची शक्यता नाही."
                     return (
                         f"📊 **{loc} साठी हवामान अंदाज:**\n\n"
                         f"- **उद्याचे तापमान:** किमान **{t_min}°C** ते कमाल **{t_max}°C**\n"
@@ -118,7 +142,7 @@ class MultilingualService:
                         f"📌 *स्रोत: IMD / Open-Meteo हवामान अंदाज मॉडेल.* "
                     )
 
-        # Check if tool_data is current observation
+        # 3. Check if tool_data is current observation
         if tool_data and "temperature" in tool_data:
             temp = tool_data.get("temperature", 28)
             humidity = tool_data.get("humidity", 65)

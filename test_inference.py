@@ -5,8 +5,12 @@ Tests the production prediction module against sample records from each of the 1
 """
 
 import os
+import sys
 import json
 import pandas as pd
+
+sys.stdout.reconfigure(encoding='utf-8')
+
 from src.weathergpt_predict import weathergpt_predict
 
 WORKSPACE_DIR = os.path.dirname(os.path.abspath(__file__))
