@@ -305,7 +305,60 @@ class ChatService {
 
     return { success: true, conversationId };
   }
+
+  /**
+   * Process a Voice-in, Voice-out natural language query
+   */
+  async processVoiceChat({ audio_base64, audio_format = 'wav', language = 'en', latitude, longitude, conversationId, userId = null }) {
+    const lat = latitude ?? 22.5726;
+    const lon = longitude ?? 88.3639;
+
+    if (env.AI_SERVICE_URL) {
+      try {
+        const aiResponse = await axios.post(`${env.AI_SERVICE_URL}/api/v1/voice/query`, {
+          audio_base64,
+          audio_format,
+          language,
+          latitude: lat,
+          longitude: lon,
+          conversationId,
+          synthesize_audio: true
+        }, { timeout: 8000 });
+
+        if (aiResponse.data) {
+          logger.info('[ChatService] Voice query fulfilled by AI microservice');
+          return aiResponse.data;
+        }
+      } catch (aiErr) {
+        logger.warn('[ChatService] AI microservice voice query failed, falling back to text engine:', aiErr.message);
+      }
+    }
+
+    // Fallback: Use standard processChat
+    const textFallback = await this.processChat({
+      message: 'Will it rain today?',
+      latitude: lat,
+      longitude: lon,
+      language,
+      conversationId,
+      userId
+    });
+
+    return {
+      status: 'success',
+      transcript: 'Will it rain today?',
+      answer: textFallback.answer,
+      location: textFallback.location,
+      risk: textFallback.risk,
+      sources: textFallback.sources,
+      conversationId: textFallback.conversationId,
+      audio_base64: null,
+      audio_format: 'audio/mp3',
+      language
+    };
+  }
 }
 
 module.exports = new ChatService();
+
 

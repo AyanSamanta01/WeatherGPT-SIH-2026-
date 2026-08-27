@@ -3,6 +3,7 @@ from .grounding_service import GroundingService, default_grounding_service
 from .multilingual_service import MultilingualService, default_multilingual_service
 from .context_manager import ConversationContextManager, default_context_manager
 from .guardrails import GuardrailService, default_guardrail_service
+from .voice_service import VoiceService, default_voice_service, SUPPORTED_VOICE_LANGUAGES
 
 __all__ = [
     "LLMClient",
@@ -14,5 +15,8 @@ __all__ = [
     "ConversationContextManager",
     "default_context_manager",
     "GuardrailService",
-    "default_guardrail_service"
+    "default_guardrail_service",
+    "VoiceService",
+    "default_voice_service",
+    "SUPPORTED_VOICE_LANGUAGES"
 ]
