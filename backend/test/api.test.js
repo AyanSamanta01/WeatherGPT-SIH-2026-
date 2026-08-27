@@ -441,14 +441,17 @@ const testSuite = async () => {
   console.log(`Test Summary: ${passed} Passed, ${failed} Failed`);
   console.log(`========================================\n`);
 
-  server.close();
-  if (failed > 0) {
-    process.exit(1);
+  if (server) {
+    server.close(() => {
+      process.exit(failed > 0 ? 1 : 0);
+    });
+  } else {
+    process.exit(failed > 0 ? 1 : 0);
   }
 };
 
 testSuite().catch((err) => {
   console.error('Fatal test runner error:', err);
-  if (server) server.close();
-  process.exit(1);
+  if (server) server.close(() => process.exit(1));
+  else process.exit(1);
 });
