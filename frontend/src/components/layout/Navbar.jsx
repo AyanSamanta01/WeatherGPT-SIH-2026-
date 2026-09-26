@@ -142,21 +142,21 @@ const Navbar = ({ onToggleSidebar, isSidebarOpen }) => {
           
           <div className="flex items-center space-x-1 text-xs font-extrabold text-cyan-300">
             <Thermometer className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{formatTemp(weatherData.current?.temp ?? 28)}</span>
+            <span>{formatTemp(weatherData?.temp)}</span>
           </div>
 
           <div className="h-3 w-[1px] bg-slate-700" />
 
           <div className="flex items-center space-x-1 text-[11px] font-semibold text-slate-300">
             <Droplets className="w-3.5 h-3.5 text-sky-400" />
-            <span>{weatherData.current?.humidity ?? 78}%</span>
+            <span>{weatherData?.humidity ?? '--'}%</span>
           </div>
 
           <div className="h-3 w-[1px] bg-slate-700" />
 
           <div className="flex items-center space-x-1 text-[11px] font-semibold text-slate-300">
-            <Wind className="w-3 h-3 text-cyan-400" />
-            <span>{weatherData.current?.windSpeed ?? 14} km/h</span>
+            <Wind className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{weatherData?.windSpeed ?? '--'} km/h</span>
           </div>
         </NavLink>
       )}

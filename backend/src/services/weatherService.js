@@ -26,7 +26,8 @@ class WeatherService {
 
     // Background persistence to weather_records table
     try {
-      if (prisma && prisma.weatherRecord) {
+      const isDb = prisma && typeof prisma.isDbConnected === 'function' ? prisma.isDbConnected() : false;
+      if (isDb && prisma.weatherRecord) {
         prisma.weatherRecord.create({
           data: {
             locationName: `Coord (${lat.toFixed(2)}, ${lon.toFixed(2)})`,
@@ -64,7 +65,8 @@ class WeatherService {
 
     // Background persistence of forecast predictions to database
     try {
-      if (prisma && prisma.forecast && data.forecasts && Array.isArray(data.forecasts)) {
+      const isDb = prisma && typeof prisma.isDbConnected === 'function' ? prisma.isDbConnected() : false;
+      if (isDb && prisma.forecast && data.forecasts && Array.isArray(data.forecasts)) {
         const forecastRecords = data.forecasts.map(f => ({
           locationName: `Coord (${lat.toFixed(2)}, ${lon.toFixed(2)})`,
           latitude: lat,

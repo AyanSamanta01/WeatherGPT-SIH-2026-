@@ -1,6 +1,8 @@
 const dotenv = require('dotenv');
 const { z } = require('zod');
 
+const path = require('path');
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
 const envSchema = z.object({

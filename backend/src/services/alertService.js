@@ -49,7 +49,8 @@ class AlertService {
    * Get all active alerts
    */
   async getActiveAlerts(filters = {}) {
-    if (prisma && prisma.alert) {
+    const isDb = prisma && typeof prisma.isDbConnected === 'function' ? prisma.isDbConnected() : false;
+    if (isDb && prisma.alert) {
       try {
         const whereClause = {
           validUntil: { gte: new Date() }

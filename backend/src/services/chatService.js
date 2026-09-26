@@ -80,7 +80,7 @@ class ChatService {
           longitude: lon,
           language,
           conversationId
-        }, { timeout: 10000 });
+        }, { timeout: 30000 });
 
         if (aiResponse.data && (aiResponse.data.answer || aiResponse.data.data?.answer)) {
           const aiData = aiResponse.data.data || aiResponse.data;
@@ -135,8 +135,10 @@ class ChatService {
 
     let activeConversationId = conversationId || null;
 
+    const isDb = prisma && typeof prisma.isDbConnected === 'function' ? prisma.isDbConnected() : false;
+
     // Database persistence for Conversation & Messages
-    if (prisma && prisma.conversation) {
+    if (isDb && prisma.conversation) {
       try {
         if (!activeConversationId) {
           const newConv = await prisma.conversation.create({
@@ -244,7 +246,8 @@ class ChatService {
    * List all conversations for a user
    */
   async getConversations(userId) {
-    if (prisma && prisma.conversation) {
+    const isDb = prisma && typeof prisma.isDbConnected === 'function' ? prisma.isDbConnected() : false;
+    if (isDb && prisma.conversation) {
       try {
         return await prisma.conversation.findMany({
           where: userId ? { userId } : {},
@@ -271,7 +274,8 @@ class ChatService {
    * Get full message history for a conversation
    */
   async getConversationHistory(conversationId, userId = null) {
-    if (prisma && prisma.chatMessage) {
+    const isDb = prisma && typeof prisma.isDbConnected === 'function' ? prisma.isDbConnected() : false;
+    if (isDb && prisma.chatMessage) {
       try {
         const messages = await prisma.chatMessage.findMany({
           where: { conversationId },
@@ -295,7 +299,8 @@ class ChatService {
    * Delete a conversation and its messages
    */
   async deleteConversation(conversationId, userId = null) {
-    if (prisma && prisma.conversation) {
+    const isDb = prisma && typeof prisma.isDbConnected === 'function' ? prisma.isDbConnected() : false;
+    if (isDb && prisma.conversation) {
       try {
         await prisma.conversation.deleteMany({
           where: {
